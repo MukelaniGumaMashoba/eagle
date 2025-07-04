@@ -7,7 +7,6 @@ import { Badge } from '@/components/ui/badge'
 import { Plus, Search, Filter } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
-
 export default function Drivers() {
     const [drivers, setDrivers] = useState<Driver[]>([])
     const [isSheetOpen, setIsSheetOpen] = useState(false)

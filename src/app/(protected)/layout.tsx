@@ -30,11 +30,11 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-row w-full">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div 
-          className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden"
+          className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden w-full"
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -96,7 +96,7 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
       </div>
 
       {/* Main content */}
-      <div className="lg:pl-64">
+      <div className="w-full">
         {/* Top bar */}
         <div className="sticky top-0 z-30 bg-white border-b shadow-sm">
           <div className="flex items-center justify-between px-4 py-3">
@@ -111,14 +111,15 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
             
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-600">
-                Welcome back
+                Welcome back 
+                {/* {user?.firstName} {user?.surname} */}
               </span>
             </div>
           </div>
         </div>
 
         {/* Page content */}
-        <main className="p-6">
+        <main className="p-6 w-full">
           <Card className="p-6">
             {children}
           </Card>

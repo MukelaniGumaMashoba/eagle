@@ -100,7 +100,7 @@ export default function Vehicles() {
           <h1 className="text-3xl font-bold text-gray-900">Vehicles</h1>
           <p className="text-gray-600 mt-1">Manage your vehicle and trailer fleet</p>
         </div>
-        <Button 
+        <Button
           onClick={() => setIsAddingVehicle(true)}
           className="bg-blue-600 hover:bg-blue-700"
         >
@@ -473,9 +473,9 @@ export default function Vehicles() {
                     <FileText className="w-4 h-4 mr-2" />
                     Save Vehicle
                   </Button>
-                  <Button 
-                    type="button" 
-                    variant="outline" 
+                  <Button
+                    type="button"
+                    variant="outline"
                     onClick={() => setIsAddingVehicle(false)}
                   >
                     Cancel
