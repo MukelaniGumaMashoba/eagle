@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -13,7 +14,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
   const isSignup = pathname === '/signup'
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-indigo-50">
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
@@ -27,10 +28,10 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
           {/* Logo/Brand */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full mb-4">
-              <span className="text-2xl text-white font-bold">E</span>
+              <Image src="/logo.png" alt="Eagle Eye" width={100} height={100} className="object-contain" />
             </div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Eagle Eye</h1>
-            <p className="text-gray-600">Welcome back to your dashboard</p>
+            <p className="text-gray-600">Welcome back to your Eagle Eye</p>
           </div>
 
           {/* Auth form container */}
