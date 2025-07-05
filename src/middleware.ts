@@ -1,25 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
 
 const roles = [
   {
-    name: 'Call Center',
-    path: ['/dashboard', '/profile'],
+    name: 'call centre',
+    path: ['/dashboard', '/profile','/login', '/signup', '/', '/logout'],
   },
   {
-    name: 'Fleet Manager',
-    path: ['/drivers', '/vehicles', '/technician', '/ccenter', '/profile', '/logs'],
+    name: 'fleet manager',
+    path: ['/dashboard', '/drivers', '/vehicles', '/technician', '/ccenter', '/profile', '/logs','/login', '/signup', '/', '/logout'],
   },
   {
-    name: 'Customer',
-    path: ['/customer', '/profile', '/editCustomer'],
+    name: 'customer',
+    path: ['/dashboard', '/profile', '/editCustomer', '/customer','/login', '/signup', '/', '/logout'],
   },
   {
-    name: 'Cost Center',
-    path: ['/ccenter', '/profile', '/quotation', '/notification'],
+    name: 'cost centre',
+    path: ['/dashboard', '/ccenter', '/profile', '/quotation', '/notification','/login', '/signup', '/', '/logout'],
   },
 ]
 
-const publicRoutes = ['/login', '/signup', '/']
+const publicRoutes = ['/login', '/signup', '/', '/logout']
 
 function getAllowedPaths(role: string): string[] {
   return roles.find(r => r.name === role)?.path || []
@@ -27,14 +28,13 @@ function getAllowedPaths(role: string): string[] {
 
 export async function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname
-  const token = req.cookies.get('session')?.value
-  const role = req.cookies.get('role')?.value
-
-  const isAuthenticated = !!token
+  // Check for Supabase session cookies
+  const accessToken = req.cookies.get('access_token')?.value
+  const isAuthenticated = !!accessToken
   const isPublicRoute = publicRoutes.includes(path)
 
-  console.log(`[MIDDLEWARE] Path: ${path}`)
-  console.log(`[MIDDLEWARE] Authenticated: ${isAuthenticated}, Role: ${role}`)
+  // console.log(`[MIDDLEWARE] Path: ${path}`)
+  // console.log(`[MIDDLEWARE] Authenticated: ${isAuthenticated}, Role: ${role}`)
 
   // Redirect unauthenticated users trying to access protected routes
   if (!isAuthenticated && !isPublicRoute) {
@@ -43,19 +43,44 @@ export async function middleware(req: NextRequest) {
   }
 
   // Prevent authenticated users from accessing public routes again
-  if (isAuthenticated && isPublicRoute && path !== '/dashboard') {
-    console.log('Already authenticated — redirecting to /dashboard')
-    return NextResponse.redirect(new URL('/dashboard', req.url))
-  }
+  // if (isAuthenticated && isPublicRoute && path !== '/dashboard') {
+  //   console.log('Already authenticated — redirecting to /dashboard')
+  //   return NextResponse.redirect(new URL('/dashboard', req.url))
+  // }
 
-  // Authenticated + Role-specific route check
-  if (isAuthenticated && role) {
-    const allowedPaths = getAllowedPaths(role)
-    const isAllowed = allowedPaths.some(p => path.startsWith(p))
+  // If authenticated, get user role from database
+  if (isAuthenticated) {
+    try {
+      const supabase = await createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      console.log(user?.id)
+      if (user) {
+        // const role = req.cookies.get('role')?.value
+        // console.log(role)
+        const { error, data: userProfile } = await supabase.auth.getUser();
+        console.log(userProfile.user?.user_metadata.role)
+        const role = userProfile.user?.user_metadata.role
+        if (error) {
+          // console.error('Error fetching user profile:', error)
+          return NextResponse.redirect(new URL('/login', req.url))
+        }
 
-    if (!isAllowed) {
-      console.log(`Role "${role}" is not allowed to access "${path}" — redirecting to /dashboard`)
-      return NextResponse.redirect(new URL('/dashboard', req.url))
+        if (role) {
+          const allowedPaths = getAllowedPaths(role)
+          const isAllowed = allowedPaths.some(p => path.startsWith(p))
+
+          if (!isAllowed) {
+            console.log(`Role "${role}" is not allowed to access "${path}" — redirecting to /dashboard`)
+            return NextResponse.redirect(new URL('/dashboard', req.url))
+          }
+        } else {
+          console.log('No role found for user — redirecting to /dashboard')
+          return NextResponse.redirect(new URL('/dashboard', req.url))
+        }
+      }
+    } catch (error) {
+      console.error('Error in middleware:', error)
+      return NextResponse.redirect(new URL('/login', req.url))
     }
   }
 
@@ -63,5 +88,7 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!api|_next|.*\\.(?:png|jpg|jpeg|svg|ico|css|js)).*)'],
+  matcher: [
+    '/((?!api|_next|.*\\.(?:png|jpg|jpeg|svg|ico|css|js)).*)'
+  ],
 }

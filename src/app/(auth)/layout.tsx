@@ -28,7 +28,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
           {/* Logo/Brand */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full mb-4">
-              <Image src="/logo.png" alt="Eagle Eye" width={100} height={100} className="object-contain" />
+              <Image src="/Logo.jpeg" alt="Eagle Eye" width={100} height={100} className="object-contain rounded-full" />
             </div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Eagle Eye</h1>
             <p className="text-gray-600">Welcome back to your Eagle Eye</p>
