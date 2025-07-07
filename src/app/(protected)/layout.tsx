@@ -1,32 +1,79 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { getUser } from '@/lib/action/auth'
 
 interface ProtectedLayoutProps {
   children: React.ReactNode
 }
 
-const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: '📊' },
-  { name: 'Drivers', href: '/drivers', icon: '🚗' },
-  { name: 'Customers', href: '/customer', icon: '👥' },
-  { name: 'Call Center', href: '/callcenter', icon: '📞' },
-  { name: 'C-Center', href: '/ccenter', icon: '🏢' },
-  { name: 'Vehicles', href: '/vehicles', icon: '🚗' },
-]
+// Role-based navigation configuration
+const roleNavigation = {
+  'fleet manager': [
+    { name: 'Dashboard', href: '/dashboard', icon: '📊' },
+    { name: 'C-Center', href: '/ccenter', icon: '🏢' },
+    { name: 'Profile', href: '/profile', icon: '👤' },
+  ],
+  'call centre': [
+    { name: 'Dashboard', href: '/dashboard', icon: '📊' },
+    { name: 'Profile', href: '/profile', icon: '👤' },
+    { name: 'Drivers', href: '/drivers', icon: '🚗' },
+    { name: 'Vehicles', href: '/vehicles', icon: '🚗' },
+  ],
+  'customer': [
+    { name: 'Dashboard', href: '/dashboard', icon: '📊' },
+    { name: 'Drivers', href: '/drivers', icon: '🚗' },
+    { name: 'Vehicles', href: '/vehicles', icon: '🚗' },
+    { name: 'Technician', href: '/technician', icon: '🔧' },
+    { name: 'Customer', href: '/customer', icon: '👥' },
+    { name: 'Profile', href: '/profile', icon: '👤' },
+  ],
+  'cost%20centre': [
+    { name: 'Dashboard', href: '/dashboard', icon: '📊' },
+    { name: 'C-Center', href: '/ccenter', icon: '🏢' },
+    { name: 'Profile', href: '/profile', icon: '👤' },
+  ],
+}
 
 export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [userRole, setUserRole] = useState<string>('')
+  const [navigation, setNavigation] = useState<any[]>([])
   const pathname = usePathname()
 
+  useEffect(() => {
+    // Get user role from cookies
+    const getCookie = (name: string) => {
+      const value = `; ${document.cookie}`
+      const parts = value.split(`; ${name}=`)
+      if (parts.length === 2) return parts.pop()?.split(';').shift()
+      return null
+    }
+
+    const role = getCookie('role')
+    const session = getCookie('session')
+    
+    console.log('Layout - Session cookie:', session ? 'exists' : 'missing')
+    console.log('Layout - Role cookie:', role || 'missing')
+    
+    if (role) {
+      setUserRole(role)
+      // Set navigation based on role
+      const roleNav = roleNavigation[role as keyof typeof roleNavigation] || []
+      setNavigation(roleNav)
+      console.log('Layout - Navigation set for role:', role, 'Items:', roleNav.length)
+    } else {
+      console.log('Layout - No role found, redirecting to login')
+      window.location.href = '/login'
+    }
+  }, [])
+
   const handleLogout = () => {
-    // Clear session cookie
-    document.cookie = 'session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
-    window.location.href = '/login'
+    window.location.href = '/logout'
   }
 
   return (
@@ -84,6 +131,9 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
 
           {/* Footer */}
           <div className="p-4 border-t">
+            <div className="mb-2 text-xs text-gray-500 text-center">
+              Role: {userRole}
+            </div>
             <Button
               onClick={handleLogout}
               variant="outline"
