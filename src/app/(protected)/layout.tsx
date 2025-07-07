@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { getUser } from '@/lib/action/auth'
+import { Bell, Building2, Car, ChartBar, DollarSign, PlusSquare, Settings, Settings2Icon, User, Users } from 'lucide-react'
 
 interface ProtectedLayoutProps {
   children: React.ReactNode
@@ -14,28 +14,34 @@ interface ProtectedLayoutProps {
 // Role-based navigation configuration
 const roleNavigation = {
   'fleet manager': [
-    { name: 'Dashboard', href: '/dashboard', icon: '📊' },
-    { name: 'C-Center', href: '/ccenter', icon: '🏢' },
-    { name: 'Profile', href: '/profile', icon: '👤' },
+    { name: 'Dashboard', href: '/dashboard', Icon: <ChartBar /> },
+    { name: 'Manage', href: '/fleetManager', Icon: <Users /> },
+    { name: 'C-Center', href: '/ccenter', Icon: <Building2 /> },
+    { name: 'Profile', href: '/profile', Icon: <Settings2Icon /> },
+    { name: 'System Settings', href: '/settings', Icon: <Settings /> },
   ],
   'call centre': [
-    { name: 'Dashboard', href: '/dashboard', icon: '📊' },
-    { name: 'Profile', href: '/profile', icon: '👤' },
-    { name: 'Drivers', href: '/drivers', icon: '🚗' },
-    { name: 'Vehicles', href: '/vehicles', icon: '🚗' },
+    { name: 'Dashboard', href: '/dashboard', Icon: <ChartBar /> },
+    { name: 'Call Center', href: '/callcenter', Icon: <Bell /> },
+    { name: 'Drivers', href: '/drivers', Icon: <Users /> },
+    { name: 'Vehicles', href: '/vehicles', Icon: <Car /> },
+    { name: 'Profile', href: '/profile', Icon: <Settings2Icon /> },
+    { name: 'System Settings', href: '/settings', Icon: <Settings /> },
   ],
   'customer': [
-    { name: 'Dashboard', href: '/dashboard', icon: '📊' },
-    { name: 'Drivers', href: '/drivers', icon: '🚗' },
-    { name: 'Vehicles', href: '/vehicles', icon: '🚗' },
-    { name: 'Technician', href: '/technician', icon: '🔧' },
-    { name: 'Customer', href: '/customer', icon: '👥' },
-    { name: 'Profile', href: '/profile', icon: '👤' },
+    { name: 'Dashboard', href: '/dashboard', Icon: <ChartBar /> },
+    { name: 'Drivers', href: '/drivers', Icon: <Users /> },
+    { name: 'Vehicles', href: '/vehicles', Icon: <Car /> },
+    { name: 'Qoutation', href: '/customer', Icon: <PlusSquare /> },
+    { name: 'Profile', href: '/profile', Icon: <Settings2Icon /> },
+    { name: 'System Settings', href: '/customer/systemSettings', Icon: <Settings /> },
   ],
-  'cost%20centre': [
-    { name: 'Dashboard', href: '/dashboard', icon: '📊' },
-    { name: 'C-Center', href: '/ccenter', icon: '🏢' },
-    { name: 'Profile', href: '/profile', icon: '👤' },
+  'cost centre': [
+    { name: 'Dashboard', href: '/dashboard', Icon: <ChartBar /> },
+    { name: 'C-Center', href: '/ccenter', Icon: <Building2 /> },
+    { name: "Qoutation", href: '/ccenter/create-qoutation', Icon: <DollarSign /> },
+    { name: 'Profile', href: '/profile', Icon: <Settings2Icon /> },
+    { name: 'System Settings', href: '/settings', Icon: <Settings /> },
   ],
 }
 
@@ -54,12 +60,12 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
       return null
     }
 
-    const role = getCookie('role')
+    const role = decodeURIComponent(getCookie('role') || '')
     const session = getCookie('session')
-    
+
     console.log('Layout - Session cookie:', session ? 'exists' : 'missing')
     console.log('Layout - Role cookie:', role || 'missing')
-    
+
     if (role) {
       setUserRole(role)
       // Set navigation based on role
@@ -80,7 +86,7 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
     <div className="min-h-screen bg-gray-50 flex flex-row w-full">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden w-full"
           onClick={() => setSidebarOpen(false)}
         />
@@ -115,14 +121,14 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
                   href={item.href}
                   className={`
                     flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors
-                    ${isActive 
-                      ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-700' 
+                    ${isActive
+                      ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-700'
                       : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                     }
                   `}
                   onClick={() => setSidebarOpen(false)}
                 >
-                  <span className="mr-3">{item.icon}</span>
+                  <span className="mr-3">{item.Icon}</span>
                   {item.name}
                 </Link>
               )
@@ -158,10 +164,10 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
             >
               ☰
             </Button>
-            
+
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-600">
-                Welcome back 
+                Welcome back
                 {/* {user?.firstName} {user?.surname} */}
               </span>
             </div>

@@ -4,19 +4,19 @@ import { createClient } from '@/lib/supabase/server'
 const roles = [
   {
     name: 'call centre',
-    path: ['/dashboard', '/profile','/login', '/signup', '/', '/logout'],
+    path: ['/dashboard', '/profile', '/login', '/signup', '/', '/logout'],
   },
   {
     name: 'fleet manager',
-    path: ['/dashboard', '/drivers', '/vehicles', '/technician', '/ccenter', '/profile', '/logs','/login', '/signup', '/', '/logout'],
+    path: ['/fleetManager', '/dashboard', '/drivers', '/vehicles', '/technician', '/ccenter', '/profile', '/logs', '/login', '/signup', '/', '/logout'],
   },
   {
     name: 'customer',
-    path: ['/dashboard', '/profile', '/editCustomer', '/customer','/login', '/signup', '/', '/logout'],
+    path: ['/dashboard', '/profile', '/editCustomer', '/customer', '/login', '/signup', '/', '/logout'],
   },
   {
     name: 'cost centre',
-    path: ['/dashboard', '/ccenter', '/profile', '/quotation', '/notification','/login', '/signup', '/', '/logout'],
+    path: ['/dashboard', '/ccenter', '/profile', '/quotation', '/notification', '/login', '/signup', '/', '/logout', '/userManagement'],
   },
 ]
 
@@ -33,46 +33,48 @@ export async function middleware(req: NextRequest) {
   const isAuthenticated = !!accessToken
   const isPublicRoute = publicRoutes.includes(path)
 
-  // console.log(`[MIDDLEWARE] Path: ${path}`)
-  // console.log(`[MIDDLEWARE] Authenticated: ${isAuthenticated}, Role: ${role}`)
-
   // Redirect unauthenticated users trying to access protected routes
   if (!isAuthenticated && !isPublicRoute) {
     console.log('Not authenticated — redirecting to /login')
     return NextResponse.redirect(new URL('/login', req.url))
   }
 
-  // Prevent authenticated users from accessing public routes again
-  // if (isAuthenticated && isPublicRoute && path !== '/dashboard') {
-  //   console.log('Already authenticated — redirecting to /dashboard')
-  //   return NextResponse.redirect(new URL('/dashboard', req.url))
-  // }
-
   // If authenticated, get user role from database
   if (isAuthenticated) {
     try {
       const supabase = await createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      console.log(user?.id)
-      if (user) {
-        // const role = req.cookies.get('role')?.value
-        // console.log(role)
-        const { error, data: userProfile } = await supabase.auth.getUser();
-        console.log(userProfile.user?.user_metadata.role)
-        const role = userProfile.user?.user_metadata.role
-        if (error) {
-          // console.error('Error fetching user profile:', error)
-          return NextResponse.redirect(new URL('/login', req.url))
-        }
+      const { data: { user }, error } = await supabase.auth.getUser()
+      if (error) {
+        return NextResponse.redirect(new URL('/login', req.url))
+      }
+      console.log("The user id is", user?.id)
+      console.log("The user role is", user?.user_metadata.role)
 
+      if (user) {
+        const role = decodeURIComponent(user.user_metadata.role)
         if (role) {
           const allowedPaths = getAllowedPaths(role)
           const isAllowed = allowedPaths.some(p => path.startsWith(p))
-
           if (!isAllowed) {
             console.log(`Role "${role}" is not allowed to access "${path}" — redirecting to /dashboard`)
-            return NextResponse.redirect(new URL('/dashboard', req.url))
+            return NextResponse.redirect(new URL('/login', req.url))
           }
+          // switch (role) {
+          //   case "call center":
+          //     return NextResponse.redirect(new URL('/callcenter', req.url))
+          //     break
+          //   case "fleet manager":
+          //     return NextResponse.redirect(new URL('/fleetManager', req.url))
+          //     break
+          //   case "cost center":
+          //     return NextResponse.redirect(new URL('/ccenter', req.url))
+          //     break
+          //   case "customer":
+          //     return NextResponse.redirect(new URL('/customer', req.url))
+          //     break
+          //   default:
+          //     return NextResponse.redirect(new URL('/dashboard', req.url))
+          // }
         } else {
           console.log('No role found for user — redirecting to /dashboard')
           return NextResponse.redirect(new URL('/dashboard', req.url))

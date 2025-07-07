@@ -7,35 +7,42 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Plus, Truck, Car, FileText } from 'lucide-react'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
+import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
+
 
 const vehicleFormSchema = z.object({
-  registrationNumber: z.string().min(1, 'Registration number is required'),
-  engineNumber: z.string().min(1, 'Engine number is required'),
-  vinNumber: z.string().min(1, 'VIN number is required'),
+  registration_number: z.string().min(1, 'Registration number is required'),
+  engine_number: z.string().min(1, 'Engine number is required'),
+  vin_number: z.string().min(1, 'VIN number is required'),
   make: z.string().min(1, 'Make is required'),
   model: z.string().min(1, 'Model is required'),
-  subModel: z.string().optional(),
-  manufacturedYear: z.string().min(1, 'Manufactured year is required'),
-  vehicleType: z.enum(['vehicle', 'trailer'], { required_error: 'Vehicle type is required' }),
-  registrationDate: z.string().min(1, 'Registration date is required'),
-  licenseExpiryDate: z.string().min(1, 'License expiry date is required'),
-  purchasePrice: z.string().min(1, 'Purchase price is required'),
-  retailPrice: z.string().min(1, 'Retail price is required'),
-  vehiclePriority: z.enum(['high', 'medium', 'low'], { required_error: 'Vehicle priority is required' }),
-  fuelType: z.enum(['petrol', 'diesel', 'electric', 'hybrid', 'lpg'], { required_error: 'Fuel type is required' }),
-  transmissionType: z.enum(['manual', 'automatic', 'cvt'], { required_error: 'Transmission type is required' }),
-  tankCapacity: z.string().optional(),
-  registerNumber: z.string().optional(),
-  takeOnKilometers: z.string().min(1, 'Take on kilometers is required'),
-  serviceIntervals: z.string().min(1, 'Service intervals is required'),
-  boardingKmHours: z.string().optional(),
-  expectedBoardingDate: z.string().optional(),
-  costCentres: z.string().optional(),
+  sub_model: z.string().optional(),
+  manufactured_year: z.string().min(1, 'Manufactured year is required'),
+  vehicle_type: z.enum(['vehicle', 'trailer'], { required_error: 'Vehicle type is required' }),
+  registration_date: z.string().min(1, 'Registration date is required'),
+  license_expiry_date: z.string().min(1, 'License expiry date is required'),
+  purchase_price: z.string().min(1, 'Purchase price is required'),
+  retail_price: z.string().min(1, 'Retail price is required'),
+  vehicle_priority: z.enum(['high', 'medium', 'low'], { required_error: 'Vehicle priority is required' }),
+  fuel_type: z.enum(['petrol', 'diesel', 'electric', 'hybrid', 'lpg'], { required_error: 'Fuel type is required' }),
+  transmission_type: z.enum(['manual', 'automatic', 'cvt'], { required_error: 'Transmission type is required' }),
+  tank_capacity: z.string().optional(),
+  register_number: z.string().optional(),
+  take_on_kilometers: z.string().min(1, 'Take on kilometers is required'),
+  service_intervals: z.string().min(1, 'Service intervals is required'),
+  boarding_km_hours: z.string().optional(),
+  expected_boarding_date: z.string().optional(),
+  cost_centres: z.string().optional(),
   colour: z.string().min(1, 'Colour is required'),
+  created_by: z.string().optional(),
+  created_at: z.string().optional(),
+  updated_at: z.string().optional(),
 })
 
 type VehicleFormValues = z.infer<typeof vehicleFormSchema>
@@ -43,40 +50,73 @@ type VehicleFormValues = z.infer<typeof vehicleFormSchema>
 export default function Vehicles() {
   const [vehicles, setVehicles] = useState<VehicleFormValues[]>([])
   const [isAddingVehicle, setIsAddingVehicle] = useState(false)
+  const router = useRouter()
+  const supabase = createClient()
+
+  useEffect(() => {
+    const fetchVehicles = async () => {
+      const { data: vehicles, error } = await supabase.from('vehiclesc').select('*')
+      if (error) {
+        console.error("the error is", error.name, error.message)
+      } else {
+        setVehicles(vehicles)
+      }
+    }
+    fetchVehicles()
+  }, [])
+
 
   const form = useForm<VehicleFormValues>({
     resolver: zodResolver(vehicleFormSchema),
     defaultValues: {
-      registrationNumber: '',
-      engineNumber: '',
-      vinNumber: '',
+      registration_number: '',
+      engine_number: '',
+      vin_number: '',
       make: '',
       model: '',
-      subModel: '',
-      manufacturedYear: '',
-      vehicleType: 'vehicle',
-      registrationDate: '',
-      licenseExpiryDate: '',
-      purchasePrice: '',
-      retailPrice: '',
-      vehiclePriority: 'medium',
-      fuelType: 'petrol',
-      transmissionType: 'manual',
-      tankCapacity: '',
-      registerNumber: '',
-      takeOnKilometers: '',
-      serviceIntervals: '',
-      boardingKmHours: '',
-      expectedBoardingDate: '',
-      costCentres: '',
+      sub_model: '',
+      manufactured_year: '',
+      vehicle_type: 'vehicle',
+      registration_date: new Date().toISOString(),
+      license_expiry_date: new Date().toISOString(),
+      purchase_price: '',
+      retail_price: '',
+      vehicle_priority: 'medium',
+      fuel_type: 'petrol',
+      transmission_type: 'manual',
+      tank_capacity: '',
+      register_number: '',
+      take_on_kilometers: '',
+      service_intervals: '',
+      boarding_km_hours: '',
+      expected_boarding_date: new Date().toISOString(),
+      cost_centres: '',
       colour: '',
+      // created_by: '',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     },
   })
 
-  const onSubmit = (data: VehicleFormValues) => {
-    setVehicles(prev => [...prev, { ...data, id: Date.now().toString() }])
+  const onSubmit = async (data: VehicleFormValues) => {
+    await handleAddVehicle(data)
     form.reset()
     setIsAddingVehicle(false)
+    router.push('/vehicles')
+  }
+
+
+  const handleAddVehicle = async (data: VehicleFormValues) => {
+    const supabase = await createClient()
+    const { data: vehicle, error } = await supabase
+      .from('vehiclesc')
+      .insert(data)
+    if (error) {
+      console.error(error.message)
+    } else {
+      console.log(vehicle)
+      toast.success('Vehicle added successfully')
+    }
   }
 
   const getVehicleTypeIcon = (type: string) => {
@@ -130,7 +170,7 @@ export default function Vehicles() {
               <div>
                 <p className="text-sm font-medium text-gray-600">Vehicles</p>
                 <p className="text-2xl font-bold text-green-600">
-                  {vehicles.filter(v => v.vehicleType === 'vehicle').length}
+                  {vehicles.filter(v => v.vehicle_type === 'vehicle').length}
                 </p>
               </div>
               <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
@@ -145,7 +185,7 @@ export default function Vehicles() {
               <div>
                 <p className="text-sm font-medium text-gray-600">Trailers</p>
                 <p className="text-2xl font-bold text-purple-600">
-                  {vehicles.filter(v => v.vehicleType === 'trailer').length}
+                  {vehicles.filter(v => v.vehicle_type === 'trailer').length}
                 </p>
               </div>
               <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
@@ -160,7 +200,7 @@ export default function Vehicles() {
               <div>
                 <p className="text-sm font-medium text-gray-600">High Priority</p>
                 <p className="text-2xl font-bold text-red-600">
-                  {vehicles.filter(v => v.vehiclePriority === 'high').length}
+                  {vehicles.filter(v => v.vehicle_priority === 'high').length}
                 </p>
               </div>
               <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
@@ -184,22 +224,22 @@ export default function Vehicles() {
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-2">
-                        {getVehicleTypeIcon(vehicle.vehicleType)}
+                        {getVehicleTypeIcon(vehicle.vehicle_type)}
                         <span className="font-medium text-gray-900">
                           {vehicle.make} {vehicle.model}
                         </span>
                       </div>
-                      {getPriorityBadge(vehicle.vehiclePriority)}
+                      {getPriorityBadge(vehicle.vehicle_priority)}
                     </div>
                     <div className="space-y-2 text-sm">
                       <p className="text-gray-600">
-                        <span className="font-medium">Reg:</span> {vehicle.registrationNumber}
+                        <span className="font-medium">Reg:</span> {vehicle.registration_number}
                       </p>
                       <p className="text-gray-600">
-                        <span className="font-medium">Year:</span> {vehicle.manufacturedYear}
+                        <span className="font-medium">Year:</span> {vehicle.manufactured_year}
                       </p>
                       <p className="text-gray-600">
-                        <span className="font-medium">Fuel:</span> {vehicle.fuelType}
+                        <span className="font-medium">Fuel:</span> {vehicle.fuel_type}
                       </p>
                       <p className="text-gray-600">
                         <span className="font-medium">Color:</span> {vehicle.colour}
@@ -226,7 +266,7 @@ export default function Vehicles() {
                   {/* Vehicle Type Selection */}
                   <FormField
                     control={form.control}
-                    name="vehicleType"
+                    name="vehicle_type"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Vehicle Type *</FormLabel>
@@ -258,7 +298,7 @@ export default function Vehicles() {
 
                   <FormField
                     control={form.control}
-                    name="registrationNumber"
+                    name="registration_number"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Registration Number *</FormLabel>
@@ -300,7 +340,7 @@ export default function Vehicles() {
 
                   <FormField
                     control={form.control}
-                    name="subModel"
+                    name="sub_model"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Sub Model</FormLabel>
@@ -314,7 +354,7 @@ export default function Vehicles() {
 
                   <FormField
                     control={form.control}
-                    name="manufacturedYear"
+                    name="manufactured_year"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Manufactured Year *</FormLabel>
@@ -328,7 +368,7 @@ export default function Vehicles() {
 
                   <FormField
                     control={form.control}
-                    name="fuelType"
+                    name="fuel_type"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Fuel Type *</FormLabel>
@@ -353,7 +393,7 @@ export default function Vehicles() {
 
                   <FormField
                     control={form.control}
-                    name="transmissionType"
+                    name="transmission_type"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Transmission *</FormLabel>
@@ -373,10 +413,80 @@ export default function Vehicles() {
                       </FormItem>
                     )}
                   />
+                  <FormField
+                    control={form.control}
+                    name="boarding_km_hours"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Boarding KM/Hours</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., 1000" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
                   <FormField
                     control={form.control}
-                    name="vehiclePriority"
+                    name="expected_boarding_date"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Expected Boarding Date</FormLabel>
+                        <FormControl>
+                          <Input type="date" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="cost_centres"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Cost Centres</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., Admin Dept" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="register_number"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Register Number</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., ZN123456" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="tank_capacity"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Tank Capacity (L)</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., 80" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+
+                  <FormField
+                    control={form.control}
+                    name="vehicle_priority"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Priority *</FormLabel>
@@ -413,7 +523,7 @@ export default function Vehicles() {
 
                   <FormField
                     control={form.control}
-                    name="purchasePrice"
+                    name="purchase_price"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Purchase Price *</FormLabel>
@@ -427,7 +537,7 @@ export default function Vehicles() {
 
                   <FormField
                     control={form.control}
-                    name="retailPrice"
+                    name="retail_price"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Retail Price *</FormLabel>
@@ -441,7 +551,7 @@ export default function Vehicles() {
 
                   <FormField
                     control={form.control}
-                    name="takeOnKilometers"
+                    name="take_on_kilometers"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Take On Kilometers *</FormLabel>
@@ -455,7 +565,7 @@ export default function Vehicles() {
 
                   <FormField
                     control={form.control}
-                    name="serviceIntervals"
+                    name="service_intervals"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Service Intervals *</FormLabel>
@@ -469,7 +579,9 @@ export default function Vehicles() {
                 </div>
 
                 <div className="flex gap-4">
-                  <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+                  <Button
+                    onClick={() => handleAddVehicle(form.getValues())}
+                    type="submit" className="bg-blue-600 hover:bg-blue-700">
                     <FileText className="w-4 h-4 mr-2" />
                     Save Vehicle
                   </Button>

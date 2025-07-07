@@ -168,3 +168,14 @@ export async function sendPasswordResetComplete(email: string, newpassword: stri
   redirect("/");
 
 }
+
+
+export async function getUserId() {
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.getUser();
+  if (error) {
+    redirect(`/error?message=${error.message}`);
+  }
+  console.log("The data is", data.user?.id)
+  return data.user.id;
+}

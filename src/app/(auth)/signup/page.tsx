@@ -6,12 +6,22 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { signup } from "@/lib/action/auth"
 import { useSearchParams } from "next/navigation"
+import { Phone, Truck, DollarSign, User } from "lucide-react"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export default function SignupPage() {
   const searchParams = useSearchParams()
   const message = searchParams.get("message")
   const [isLoading, setIsLoading] = useState(false)
+  const [role, setRole] = useState("")
 
+  const roles = [
+    { value: "call-center", label: "Call Center", icon: Phone },
+    { value: "fleet-manager", label: "Fleet Manager", icon: Truck },
+    { value: "cost-center", label: "Cost Center", icon: DollarSign },
+    { value: "customer", label: "Customer", icon: User },
+  ]
 
   return (
     <>
@@ -78,21 +88,24 @@ export default function SignupPage() {
             />
           </div>
 
-          <div>
-            <label
-              htmlFor="Role"
-              className="mb-2 block text-sm font-medium text-gray-900 dark:text-white"
-            >
-              Role
-            </label>
-            <Input
-              type="text"
-              name="role"
-              id="role"
-              placeholder="fleet manager, customer, call center, cost center"
-              className="focus:ring-primary-600 focus:border-primary-600 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500 sm:text-sm"
-              required
-            />
+
+          <div className="space-y-2">
+            <Label htmlFor="role">Role</Label>
+            <Select value={role} onValueChange={setRole} required>
+              <SelectTrigger>
+                <SelectValue placeholder="Select your role" />
+              </SelectTrigger>
+              <SelectContent>
+                {roles.map((roleOption) => (
+                  <SelectItem key={roleOption.value} value={roleOption.value}>
+                    <div className="flex items-center gap-2">
+                      <roleOption.icon className="h-4 w-4" />
+                      {roleOption.label}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
 
