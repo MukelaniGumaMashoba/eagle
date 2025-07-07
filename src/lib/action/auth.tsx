@@ -31,24 +31,23 @@ export async function signup(formData: FormData) {
   const supabase = await createClient();
 
   const role = formData.get("role") as string;
-  const roleLower = role.toLowerCase();
   const data = {
     email: formData.get("email") as string,
     password: formData.get("password") as string,
     options: {
       data: {
         name: formData.get("name") as string,
-        role: roleLower,
+        role: role,
       },
     },
   };
 
   const { error } = await supabase.auth.signUp(data);
   if (
-    roleLower !== "fleet manager" &&
-    roleLower !== "customer" &&
-    roleLower !== "call centre" &&
-    roleLower !== "cost centre" 
+    role !== "fleet manager" &&
+    role !== "customer" &&
+    role !== "call centre" &&
+    role !== "cost centre" 
   ) {
     redirect(`/signup?message=Role not found`);
   }
@@ -113,7 +112,7 @@ export async function signInWithEmail(formData: FormData) {
       // redirectTo: "",
       // redirectTo: "http://localhost:3000/signup",
       data: {
-        role: "driver",
+        role: formData.get("role") as string,
       },
     }
   );

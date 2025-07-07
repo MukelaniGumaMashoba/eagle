@@ -187,14 +187,12 @@ export default function SettingsPage() {
 
                 <Tabs defaultValue="users" className="space-y-4">
                     <TabsList>
-                        <TabsTrigger value="users">User Management</TabsTrigger>
-                        <TabsTrigger value="roles">Roles & Permissions</TabsTrigger>
                         <TabsTrigger value="system">System Settings</TabsTrigger>
                         <TabsTrigger value="locations">Locations</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="system" className="space-y-4">
-                        <h3 className="text-lg font-semibold">System Configuration</h3>
+                        <h3 className="text-lg font-semibold">System Settings</h3>
                         <div className="space-y-6">
                             {Object.entries(groupedSettings).map(([category, categorySettings]) => (
                                 <Card key={category}>

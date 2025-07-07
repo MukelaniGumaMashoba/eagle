@@ -17,9 +17,9 @@ export default function SignupPage() {
   const [role, setRole] = useState("")
 
   const roles = [
-    { value: "call-center", label: "Call Center", icon: Phone },
-    { value: "fleet-manager", label: "Fleet Manager", icon: Truck },
-    { value: "cost-center", label: "Cost Center", icon: DollarSign },
+    { value: "call centre", label: "Call Centre", icon: Phone },
+    { value: "fleet manager", label: "Fleet Manager", icon: Truck },
+    { value: "cost centre", label: "Cost Centre", icon: DollarSign },
     { value: "customer", label: "Customer", icon: User },
   ]
 
@@ -91,7 +91,9 @@ export default function SignupPage() {
 
           <div className="space-y-2">
             <Label htmlFor="role">Role</Label>
-            <Select value={role} onValueChange={setRole} required>
+            <Select value={role} onValueChange={setRole} required
+            name="role"
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select your role" />
               </SelectTrigger>
