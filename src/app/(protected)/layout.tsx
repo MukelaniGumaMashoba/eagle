@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Bell, Building2, Car, ChartBar, DollarSign, PlusSquare, Settings, Settings2Icon, User, Users } from 'lucide-react'
+import { Bell, Building2, Car, ChartBar, DollarSign, Phone, PlusSquare, Settings, Settings2Icon, Truck, User, Users, Wrench } from 'lucide-react'
 
 interface ProtectedLayoutProps {
   children: React.ReactNode
@@ -22,9 +22,10 @@ const roleNavigation = {
   ],
   'call centre': [
     { name: 'Dashboard', href: '/dashboard', Icon: <ChartBar /> },
-    { name: 'Call Center', href: '/callcenter', Icon: <Bell /> },
-    { name: 'Drivers', href: '/drivers', Icon: <Users /> },
-    { name: 'Vehicles', href: '/vehicles', Icon: <Car /> },
+    { name: 'Call Center', href: '/callcenter', Icon: <Phone /> },
+    { name: 'Technicians', href: '/callcenter/technician', Icon: <Wrench /> },
+    { name: 'Breakdowns', href: '/callcenter/breakdowns', Icon: <Truck /> },
+    { name: 'External Clients', href: '/callcenter/clients', Icon: <Users /> },
     { name: 'Profile', href: '/profile', Icon: <Settings2Icon /> },
     { name: 'System Settings', href: '/settings', Icon: <Settings /> },
   ],

@@ -167,201 +167,203 @@ export default function CallCenterPage() {
 
   return (
     <>
-        <div className="flex-1 space-y-4 p-4 pt-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-3xl font-bold tracking-tight">Breakdown Management</h2>
-            <div className="flex items-center space-x-2">
-              <div className="relative">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search breakdowns..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8 w-64"
-                />
-              </div>
+
+
+      <div className="flex-1 space-y-4 p-4 pt-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-3xl font-bold tracking-tight">Breakdown Management</h2>
+          <div className="flex items-center space-x-2">
+            <div className="relative">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search breakdowns..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-8 w-64"
+              />
             </div>
           </div>
+        </div>
 
-          <Tabs defaultValue="active" className="space-y-4">
-            <TabsList>
-              <TabsTrigger value="active">Active Breakdowns</TabsTrigger>
-              <TabsTrigger value="technicians">Available Technicians</TabsTrigger>
-              <TabsTrigger value="map">Map View</TabsTrigger>
-            </TabsList>
+        <Tabs defaultValue="active" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="active">Active Breakdowns</TabsTrigger>
+            <TabsTrigger value="technicians">Available Technicians</TabsTrigger>
+            <TabsTrigger value="map">Map View</TabsTrigger>
+          </TabsList>
 
-            <TabsContent value="active" className="space-y-4">
-              <div className="grid gap-4">
-                {filteredBreakdowns.map((breakdown) => (
-                  <Card key={breakdown.id} className="hover:shadow-md transition-shadow">
-                    <CardHeader className="pb-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="flex items-center gap-2">
-                            <AlertTriangle className="h-5 w-5 text-orange-500" />
-                            <CardTitle className="text-lg">{breakdown.orderNo}</CardTitle>
-                          </div>
-                          <Badge className={getPriorityColor(breakdown.priority)}>
-                            {breakdown.priority.toUpperCase()}
-                          </Badge>
-                          <Badge className={getStatusColor(breakdown.status)}>
-                            {breakdown.status.replace("-", " ").toUpperCase()}
-                          </Badge>
-                        </div>
+          <TabsContent value="active" className="space-y-4">
+            <div className="grid gap-4">
+              {filteredBreakdowns.map((breakdown) => (
+                <Card key={breakdown.id} className="hover:shadow-md transition-shadow">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
                         <div className="flex items-center gap-2">
-                          <Clock className="h-4 w-4 text-gray-500" />
-                          <span className="text-sm text-gray-500">{breakdown.createdAt}</span>
+                          <AlertTriangle className="h-5 w-5 text-orange-500" />
+                          <CardTitle className="text-lg">{breakdown.orderNo}</CardTitle>
                         </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                          <h4 className="font-semibold mb-2">Driver Information</h4>
-                          <p className="text-sm">
-                            <strong>Name:</strong> {breakdown.driverName}
-                          </p>
-                          <p className="text-sm">
-                            <strong>Phone:</strong> {breakdown.driverPhone}
-                          </p>
-                          <p className="text-sm">
-                            <strong>Vehicle:</strong> {breakdown.vehicleReg}
-                          </p>
-                        </div>
-                        <div>
-                          <h4 className="font-semibold mb-2">Location</h4>
-                          <div className="flex items-start gap-2">
-                            <MapPin className="h-4 w-4 text-red-500 mt-0.5" />
-                            <p className="text-sm">{breakdown.location}</p>
-                          </div>
-                        </div>
-                        <div>
-                          <h4 className="font-semibold mb-2">Issue Description</h4>
-                          <p className="text-sm text-gray-600">{breakdown.description}</p>
-                          {breakdown.assignedTech && (
-                            <div className="mt-2">
-                              <p className="text-sm">
-                                <strong>Assigned:</strong> {breakdown.assignedTech}
-                              </p>
-                              <p className="text-sm">
-                                <strong>ETA:</strong> {breakdown.estimatedTime}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex justify-end gap-2 mt-4">
-                        <Button variant="outline" size="sm">
-                          <Phone className="h-4 w-4 mr-2" />
-                          Call Driver
-                        </Button>
-                        {breakdown.status === "pending" && (
-                          <Dialog open={isDispatchDialogOpen} onOpenChange={setIsDispatchDialogOpen}>
-                            <DialogTrigger asChild>
-                              <Button size="sm" onClick={() => setSelectedBreakdown(breakdown)}>
-                                Dispatch Technician
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                              <DialogHeader>
-                                <DialogTitle>Dispatch Technician</DialogTitle>
-                                <DialogDescription>
-                                  Select an available technician for breakdown {selectedBreakdown?.orderNo}
-                                </DialogDescription>
-                              </DialogHeader>
-                              <div className="space-y-4">
-                                {technicians
-                                  .filter((t) => t.available)
-                                  .map((tech) => (
-                                    <Card
-                                      key={tech.id}
-                                      className="cursor-pointer hover:bg-gray-50"
-                                      onClick={() => handleDispatchTechnician(selectedBreakdown?.id || "", tech.id)}
-                                    >
-                                      <CardContent className="p-4">
-                                        <div className="flex justify-between items-start">
-                                          <div>
-                                            <h4 className="font-semibold">{tech.name}</h4>
-                                            <p className="text-sm text-gray-600">{tech.phone}</p>
-                                            <p className="text-sm text-gray-600">Location: {tech.location}</p>
-                                            <div className="flex gap-1 mt-2">
-                                              {tech.specialties.map((specialty) => (
-                                                <Badge key={specialty} variant="secondary" className="text-xs">
-                                                  {specialty}
-                                                </Badge>
-                                              ))}
-                                            </div>
-                                          </div>
-                                          <Badge className="bg-green-100 text-green-800">Available</Badge>
-                                        </div>
-                                      </CardContent>
-                                    </Card>
-                                  ))}
-                              </div>
-                            </DialogContent>
-                          </Dialog>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="technicians" className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {technicians.map((tech) => (
-                  <Card key={tech.id}>
-                    <CardHeader>
-                      <div className="flex justify-between items-start">
-                        <CardTitle className="text-lg">{tech.name}</CardTitle>
-                        <Badge className={tech.available ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
-                          {tech.available ? "Available" : "Busy"}
+                        <Badge className={getPriorityColor(breakdown.priority)}>
+                          {breakdown.priority.toUpperCase()}
+                        </Badge>
+                        <Badge className={getStatusColor(breakdown.status)}>
+                          {breakdown.status.replace("-", " ").toUpperCase()}
                         </Badge>
                       </div>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm mb-2">
-                        <strong>Phone:</strong> {tech.phone}
-                      </p>
-                      <p className="text-sm mb-3">
-                        <strong>Location:</strong> {tech.location}
-                      </p>
-                      <div className="space-y-2">
-                        <h4 className="font-semibold text-sm">Specialties:</h4>
-                        <div className="flex flex-wrap gap-1">
-                          {tech.specialties.map((specialty) => (
-                            <Badge key={specialty} variant="secondary" className="text-xs">
-                              {specialty}
-                            </Badge>
-                          ))}
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-gray-500" />
+                        <span className="text-sm text-gray-500">{breakdown.createdAt}</span>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <h4 className="font-semibold mb-2">Driver Information</h4>
+                        <p className="text-sm">
+                          <strong>Name:</strong> {breakdown.driverName}
+                        </p>
+                        <p className="text-sm">
+                          <strong>Phone:</strong> {breakdown.driverPhone}
+                        </p>
+                        <p className="text-sm">
+                          <strong>Vehicle:</strong> {breakdown.vehicleReg}
+                        </p>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold mb-2">Location</h4>
+                        <div className="flex items-start gap-2">
+                          <MapPin className="h-4 w-4 text-red-500 mt-0.5" />
+                          <p className="text-sm">{breakdown.location}</p>
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="map" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Breakdown Locations</CardTitle>
-                  <CardDescription>Real-time map view of active breakdowns and technician locations</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-96 bg-gray-100 rounded-lg flex items-center justify-center">
-                    <div className="text-center">
-                      <MapPin className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-500">Interactive map would be integrated here</p>
-                      <p className="text-sm text-gray-400 mt-2">Showing {breakdowns.length} active breakdowns</p>
+                      <div>
+                        <h4 className="font-semibold mb-2">Issue Description</h4>
+                        <p className="text-sm text-gray-600">{breakdown.description}</p>
+                        {breakdown.assignedTech && (
+                          <div className="mt-2">
+                            <p className="text-sm">
+                              <strong>Assigned:</strong> {breakdown.assignedTech}
+                            </p>
+                            <p className="text-sm">
+                              <strong>ETA:</strong> {breakdown.estimatedTime}
+                            </p>
+                          </div>
+                        )}
+                      </div>
                     </div>
+                    <div className="flex justify-end gap-2 mt-4">
+                      <Button variant="outline" size="sm">
+                        <Phone className="h-4 w-4 mr-2" />
+                        Call Driver
+                      </Button>
+                      {breakdown.status === "pending" && (
+                        <Dialog open={isDispatchDialogOpen} onOpenChange={setIsDispatchDialogOpen}>
+                          <DialogTrigger asChild>
+                            <Button size="sm" onClick={() => setSelectedBreakdown(breakdown)}>
+                              Dispatch Technician
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Dispatch Technician</DialogTitle>
+                              <DialogDescription>
+                                Select an available technician for breakdown {selectedBreakdown?.orderNo}
+                              </DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                              {technicians
+                                .filter((t) => t.available)
+                                .map((tech) => (
+                                  <Card
+                                    key={tech.id}
+                                    className="cursor-pointer hover:bg-gray-50"
+                                    onClick={() => handleDispatchTechnician(selectedBreakdown?.id || "", tech.id)}
+                                  >
+                                    <CardContent className="p-4">
+                                      <div className="flex justify-between items-start">
+                                        <div>
+                                          <h4 className="font-semibold">{tech.name}</h4>
+                                          <p className="text-sm text-gray-600">{tech.phone}</p>
+                                          <p className="text-sm text-gray-600">Location: {tech.location}</p>
+                                          <div className="flex gap-1 mt-2">
+                                            {tech.specialties.map((specialty) => (
+                                              <Badge key={specialty} variant="secondary" className="text-xs">
+                                                {specialty}
+                                              </Badge>
+                                            ))}
+                                          </div>
+                                        </div>
+                                        <Badge className="bg-green-100 text-green-800">Available</Badge>
+                                      </div>
+                                    </CardContent>
+                                  </Card>
+                                ))}
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="technicians" className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {technicians.map((tech) => (
+                <Card key={tech.id}>
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <CardTitle className="text-lg">{tech.name}</CardTitle>
+                      <Badge className={tech.available ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
+                        {tech.available ? "Available" : "Busy"}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm mb-2">
+                      <strong>Phone:</strong> {tech.phone}
+                    </p>
+                    <p className="text-sm mb-3">
+                      <strong>Location:</strong> {tech.location}
+                    </p>
+                    <div className="space-y-2">
+                      <h4 className="font-semibold text-sm">Specialties:</h4>
+                      <div className="flex flex-wrap gap-1">
+                        {tech.specialties.map((specialty) => (
+                          <Badge key={specialty} variant="secondary" className="text-xs">
+                            {specialty}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="map" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Breakdown Locations</CardTitle>
+                <CardDescription>Real-time map view of active breakdowns and technician locations</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-96 bg-gray-100 rounded-lg flex items-center justify-center">
+                  <div className="text-center">
+                    <MapPin className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-500">Interactive map would be integrated here</p>
+                    <p className="text-sm text-gray-400 mt-2">Showing {breakdowns.length} active breakdowns</p>
                   </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
     </>
   )
 }
