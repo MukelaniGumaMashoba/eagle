@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, use } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Bell, Building2, Car, ChartBar, DollarSign, Phone, PlusSquare, Settings, Settings2Icon, Truck, User, Users, Wrench } from 'lucide-react'
+import { Briefcase, Building2, Car, ChartBar, DollarSign, Phone, PlusSquare, Settings, Settings2Icon, Truck, Users, Wrench } from 'lucide-react'
 
 interface ProtectedLayoutProps {
   children: React.ReactNode
@@ -15,6 +15,7 @@ interface ProtectedLayoutProps {
 const roleNavigation = {
   'fleet manager': [
     { name: 'Dashboard', href: '/dashboard', Icon: <ChartBar /> },
+    { name: 'Jobs', href: '/jobs', Icon: <Briefcase /> },
     { name: 'Manage', href: '/fleetManager', Icon: <Users /> },
     { name: 'C-Center', href: '/ccenter', Icon: <Building2 /> },
     { name: 'Profile', href: '/profile', Icon: <Settings2Icon /> },
@@ -22,6 +23,7 @@ const roleNavigation = {
   ],
   'call centre': [
     { name: 'Dashboard', href: '/dashboard', Icon: <ChartBar /> },
+    { name: 'Jobs', href: '/jobs', Icon: <Briefcase /> },
     { name: 'Call Center', href: '/callcenter', Icon: <Phone /> },
     { name: 'Technicians', href: '/callcenter/technician', Icon: <Wrench /> },
     { name: 'Breakdowns', href: '/callcenter/breakdowns', Icon: <Truck /> },
@@ -169,7 +171,6 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-600">
                 Welcome back
-                {/* {user?.firstName} {user?.surname} */}
               </span>
             </div>
           </div>

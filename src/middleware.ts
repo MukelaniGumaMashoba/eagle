@@ -4,11 +4,11 @@ import { createClient } from '@/lib/supabase/server'
 const roles = [
   {
     name: 'call centre',
-    path: ['/dashboard', '/profile', '/login', '/signup', '/', '/logout'],
+    path: ['/dashboard', '/profile', '/login', '/signup', '/', '/logout','jobs'],
   },
   {
     name: 'fleet manager',
-    path: ['/fleetManager', '/dashboard', '/drivers', '/vehicles', '/technician', '/ccenter', '/profile', '/logs', '/login', '/signup', '/', '/logout'],
+    path: ['/fleetManager','jobs', '/dashboard', '/drivers', '/vehicles', '/technician', '/ccenter', '/profile', '/logs', '/login', '/signup', '/', '/logout'],
   },
   {
     name: 'customer',
@@ -16,7 +16,7 @@ const roles = [
   },
   {
     name: 'cost centre',
-    path: ['/dashboard', '/ccenter', '/profile', '/quotation', '/notification', '/login', '/signup', '/', '/logout', '/userManagement'],
+    path: ['/dashboard', '/ccenter','jobs', '/profile', '/quotation', '/notification', '/login', '/signup', '/', '/logout', '/userManagement'],
   },
 ]
 

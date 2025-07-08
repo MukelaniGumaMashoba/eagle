@@ -59,7 +59,7 @@ export default function Vehicles() {
       if (error) {
         console.error("the error is", error.name, error.message)
       } else {
-        setVehicles(vehicles)
+        setVehicles(vehicles || [])
       }
     }
     fetchVehicles()
@@ -107,7 +107,6 @@ export default function Vehicles() {
 
 
   const handleAddVehicle = async (data: VehicleFormValues) => {
-    const supabase = await createClient()
     const { data: vehicle, error } = await supabase
       .from('vehiclesc')
       .insert(data)

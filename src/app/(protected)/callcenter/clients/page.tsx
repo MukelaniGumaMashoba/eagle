@@ -8,1193 +8,1004 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Building, Plus, Phone, Mail, Star, Users, Truck, Edit, Eye } from "lucide-react"
+import {
+  Building,
+  Plus,
+  Search,
+  Phone,
+  Mail,
+  MapPin,
+  Star,
+  Users,
+  DollarSign,
+  Clock,
+  AlertTriangle,
+  FileText,
+} from "lucide-react"
 import { toast } from "sonner"
 
 interface ExternalClient {
-    id: string
-    companyName: string
-    contactPerson: string
-    phone: string
-    email: string
-    address: string
-    clientType: "corporate" | "individual" | "government"
-    contractType: "one-time" | "monthly" | "annual"
-    rating: number
-    totalJobs: number
-    totalRevenue: number
-    status: "active" | "inactive" | "pending"
-    joinDate: string
-    lastServiceDate?: string
-    preferredServices: string[]
-    paymentTerms: string
-    creditLimit: number
+  id: string
+  companyName: string
+  contactPerson: string
+  phone: string
+  email: string
+  address: string
+  city: string
+  province: string
+  postalCode: string
+  clientType: "corporate" | "sme" | "individual"
+  status: "active" | "inactive" | "pending"
+  rating: number
+  totalJobs: number
+  totalRevenue: number
+  averageJobValue: number
+  paymentTerms: string
+  creditLimit: number
+  registrationDate: string
+  lastJobDate?: string
+  preferredServices: string[]
+  contractType: "standard" | "premium" | "custom"
+  accountManager: string
 }
 
 interface Subcontractor {
-    id: string
-    companyName: string
-    contactPerson: string
-    phone: string
-    email: string
-    location: string
-    services: string[]
-    rating: number
-    completedJobs: number
-    status: "active" | "inactive" | "pending"
-    hourlyRate: number
-    availability: "available" | "busy" | "unavailable"
-    certifications: string[]
-    coverageAreas: string[]
-    joinDate: string
+  id: string
+  companyName: string
+  contactPerson: string
+  phone: string
+  email: string
+  specialties: string[]
+  serviceAreas: string[]
+  rating: number
+  completedJobs: number
+  responseTime: string
+  hourlyRate: number
+  availability: "available" | "busy" | "unavailable"
+  certifications: string[]
+  equipmentTypes: string[]
+  contractStatus: "active" | "pending" | "suspended"
+  lastActive: string
 }
 
 interface TowingCompany {
-    id: string
-    companyName: string
-    contactPerson: string
-    phone: string
-    emergencyPhone: string
-    email: string
-    location: string
-    fleetSize: number
-    vehicleTypes: string[]
-    coverageRadius: number
-    rating: number
-    responseTime: string
-    status: "active" | "inactive"
-    pricing: {
-        baseRate: number
-        perKmRate: number
-        heavyVehicleSurcharge: number
-    }
-    availability24h: boolean
+  id: string
+  companyName: string
+  contactPerson: string
+  phone: string
+  emergencyPhone: string
+  email: string
+  serviceAreas: string[]
+  vehicleTypes: string[]
+  capacity: {
+    lightVehicles: number
+    heavyVehicles: number
+    specializedEquipment: number
+  }
+  rates: {
+    perKm: number
+    baseRate: number
+    emergencyRate: number
+  }
+  rating: number
+  responseTime: string
+  availability: "24/7" | "business-hours" | "on-call"
+  status: "active" | "inactive"
+  lastUsed?: string
 }
 
 export default function ExternalClientsPage() {
-    const [externalClients, setExternalClients] = useState<ExternalClient[]>([])
-    const [subcontractors, setSubcontractors] = useState<Subcontractor[]>([])
-    const [towingCompanies, setTowingCompanies] = useState<TowingCompany[]>([])
-    const [isAddClientOpen, setIsAddClientOpen] = useState(false)
-    const [isAddSubcontractorOpen, setIsAddSubcontractorOpen] = useState(false)
-    const [isAddTowingOpen, setIsAddTowingOpen] = useState(false)
-    const [selectedClient, setSelectedClient] = useState<ExternalClient | null>(null)
-    const [isViewClientOpen, setIsViewClientOpen] = useState(false)
+  const [clients, setClients] = useState<ExternalClient[]>([])
+  const [subcontractors, setSubcontractors] = useState<Subcontractor[]>([])
+  const [towingCompanies, setTowingCompanies] = useState<TowingCompany[]>([])
+  const [searchTerm, setSearchTerm] = useState("")
+  const [statusFilter, setStatusFilter] = useState("all")
+  const [isAddClientOpen, setIsAddClientOpen] = useState(false)
+  const [isAddSubcontractorOpen, setIsAddSubcontractorOpen] = useState(false)
+  const [isAddTowingOpen, setIsAddTowingOpen] = useState(false)
 
-    useEffect(() => {
-        // Mock data for external clients
-        setExternalClients([
-            {
-                id: "1",
-                companyName: "Independent Trucking Co",
-                contactPerson: "Michael Johnson",
-                phone: "+27 12 555 0123",
-                email: "dispatch@independenttrucking.co.za",
-                address: "123 Industrial Road, Pretoria",
-                clientType: "corporate",
-                contractType: "monthly",
-                rating: 4.5,
-                totalJobs: 45,
-                totalRevenue: 125000,
-                status: "active",
-                joinDate: "2023-06-15",
-                lastServiceDate: "2024-01-10",
-                preferredServices: ["Emergency Breakdown", "Preventive Maintenance", "Towing"],
-                paymentTerms: "30 days",
-                creditLimit: 50000,
-            },
-            {
-                id: "2",
-                companyName: "City Delivery Services",
-                contactPerson: "Sarah Williams",
-                phone: "+27 21 444 5678",
-                email: "fleet@citydelivery.co.za",
-                address: "456 Commerce Street, Cape Town",
-                clientType: "corporate",
-                contractType: "annual",
-                rating: 4.8,
-                totalJobs: 78,
-                totalRevenue: 230000,
-                status: "active",
-                joinDate: "2022-11-20",
-                lastServiceDate: "2024-01-12",
-                preferredServices: ["Emergency Breakdown", "Fleet Maintenance"],
-                paymentTerms: "15 days",
-                creditLimit: 100000,
-            },
-            {
-                id: "3",
-                companyName: "Provincial Transport Dept",
-                contactPerson: "David Mthembu",
-                phone: "+27 11 789 0123",
-                email: "fleet.manager@transport.gov.za",
-                address: "Government Complex, Johannesburg",
-                clientType: "government",
-                contractType: "annual",
-                rating: 4.2,
-                totalJobs: 156,
-                totalRevenue: 450000,
-                status: "active",
-                joinDate: "2021-03-10",
-                lastServiceDate: "2024-01-08",
-                preferredServices: ["Emergency Breakdown", "Scheduled Maintenance", "Inspections"],
-                paymentTerms: "60 days",
-                creditLimit: 200000,
-            },
-        ])
+  useEffect(() => {
+    // Mock data - in real app, fetch from API
+    setClients([
+      {
+        id: "1",
+        companyName: "ABC Logistics",
+        contactPerson: "John Smith",
+        phone: "+27 11 123 4567",
+        email: "john@abclogistics.co.za",
+        address: "123 Industrial Street",
+        city: "Johannesburg",
+        province: "Gauteng",
+        postalCode: "2000",
+        clientType: "corporate",
+        status: "active",
+        rating: 4.8,
+        totalJobs: 156,
+        totalRevenue: 450000,
+        averageJobValue: 2885,
+        paymentTerms: "30 days",
+        creditLimit: 100000,
+        registrationDate: "2022-03-15",
+        lastJobDate: "2024-01-15",
+        preferredServices: ["Breakdown Recovery", "Maintenance", "Emergency Response"],
+        contractType: "premium",
+        accountManager: "Sarah Wilson",
+      },
+      {
+        id: "2",
+        companyName: "Quick Delivery Services",
+        contactPerson: "Maria Santos",
+        phone: "+27 21 987 6543",
+        email: "maria@quickdelivery.co.za",
+        address: "456 Commerce Road",
+        city: "Cape Town",
+        province: "Western Cape",
+        postalCode: "8000",
+        clientType: "sme",
+        status: "active",
+        rating: 4.5,
+        totalJobs: 89,
+        totalRevenue: 180000,
+        averageJobValue: 2022,
+        paymentTerms: "15 days",
+        creditLimit: 50000,
+        registrationDate: "2023-01-20",
+        lastJobDate: "2024-01-10",
+        preferredServices: ["Tire Service", "Battery Replacement", "Towing"],
+        contractType: "standard",
+        accountManager: "Mike Johnson",
+      },
+    ])
 
-        setSubcontractors([
-            {
-                id: "1",
-                companyName: "Elite Auto Repair",
-                contactPerson: "James Smith",
-                phone: "+27 84 123 4567",
-                email: "james@eliteauto.co.za",
-                location: "Sandton",
-                services: ["Engine Repair", "Transmission", "Electrical"],
-                rating: 4.7,
-                completedJobs: 89,
-                status: "active",
-                hourlyRate: 450,
-                availability: "available",
-                certifications: ["ASE Certified", "Mercedes Specialist"],
-                coverageAreas: ["Johannesburg", "Sandton", "Randburg"],
-                joinDate: "2023-02-15",
-            },
-            {
-                id: "2",
-                companyName: "Heavy Duty Solutions",
-                contactPerson: "Lisa Davis",
-                phone: "+27 82 987 6543",
-                email: "lisa@heavyduty.co.za",
-                location: "Pretoria",
-                services: ["Heavy Vehicle Repair", "Hydraulics", "Towing"],
-                rating: 4.9,
-                completedJobs: 134,
-                status: "active",
-                hourlyRate: 520,
-                availability: "busy",
-                certifications: ["Heavy Vehicle License", "Crane Operator"],
-                coverageAreas: ["Pretoria", "Centurion", "Midrand"],
-                joinDate: "2022-08-20",
-            },
-        ])
+    setSubcontractors([
+      {
+        id: "1",
+        companyName: "Elite Mobile Mechanics",
+        contactPerson: "David Brown",
+        phone: "+27 82 555 1234",
+        email: "david@elitemechanics.co.za",
+        specialties: ["Engine Repair", "Electrical Systems", "Hydraulics"],
+        serviceAreas: ["Johannesburg", "Pretoria", "Sandton"],
+        rating: 4.9,
+        completedJobs: 234,
+        responseTime: "15 min avg",
+        hourlyRate: 450,
+        availability: "available",
+        certifications: ["ASE Certified", "Heavy Vehicle Specialist"],
+        equipmentTypes: ["Mobile Workshop", "Diagnostic Equipment"],
+        contractStatus: "active",
+        lastActive: "2024-01-16T10:30:00Z",
+      },
+      {
+        id: "2",
+        companyName: "Rapid Recovery Services",
+        contactPerson: "Lisa Davis",
+        phone: "+27 84 777 9999",
+        email: "lisa@rapidrecovery.co.za",
+        specialties: ["Towing", "Recovery", "Accident Response"],
+        serviceAreas: ["Cape Town", "Stellenbosch", "Paarl"],
+        rating: 4.7,
+        completedJobs: 189,
+        responseTime: "12 min avg",
+        hourlyRate: 380,
+        availability: "busy",
+        certifications: ["Recovery Specialist", "Crane Operator"],
+        equipmentTypes: ["Recovery Truck", "Flatbed Trailer"],
+        contractStatus: "active",
+        lastActive: "2024-01-16T09:15:00Z",
+      },
+    ])
 
-        setTowingCompanies([
-            {
-                id: "1",
-                companyName: "24/7 Recovery Services",
-                contactPerson: "Robert Johnson",
-                phone: "+27 11 555 7777",
-                emergencyPhone: "+27 82 911 0000",
-                email: "dispatch@247recovery.co.za",
-                location: "Johannesburg",
-                fleetSize: 12,
-                vehicleTypes: ["Light Vehicle Tow", "Heavy Duty Tow", "Flatbed", "Recovery Truck"],
-                coverageRadius: 50,
-                rating: 4.6,
-                responseTime: "15-30 minutes",
-                status: "active",
-                pricing: {
-                    baseRate: 350,
-                    perKmRate: 15,
-                    heavyVehicleSurcharge: 200,
-                },
-                availability24h: true,
-            },
-            {
-                id: "2",
-                companyName: "Metro Towing",
-                contactPerson: "Patricia Williams",
-                phone: "+27 21 333 8888",
-                emergencyPhone: "+27 83 911 1111",
-                email: "ops@metrotowing.co.za",
-                location: "Cape Town",
-                fleetSize: 8,
-                vehicleTypes: ["Light Vehicle Tow", "Medium Duty Tow", "Flatbed"],
-                coverageRadius: 35,
-                rating: 4.3,
-                responseTime: "20-40 minutes",
-                status: "active",
-                pricing: {
-                    baseRate: 320,
-                    perKmRate: 12,
-                    heavyVehicleSurcharge: 150,
-                },
-                availability24h: true,
-            },
-        ])
-    }, [])
+    setTowingCompanies([
+      {
+        id: "1",
+        companyName: "24/7 Towing Solutions",
+        contactPerson: "Peter Wilson",
+        phone: "+27 11 555 0000",
+        emergencyPhone: "+27 82 911 0000",
+        email: "dispatch@247towing.co.za",
+        serviceAreas: ["Johannesburg", "Sandton", "Randburg", "Midrand"],
+        vehicleTypes: ["Light Vehicles", "Heavy Trucks", "Motorcycles"],
+        capacity: {
+          lightVehicles: 8,
+          heavyVehicles: 4,
+          specializedEquipment: 2,
+        },
+        rates: {
+          perKm: 15,
+          baseRate: 350,
+          emergencyRate: 500,
+        },
+        rating: 4.6,
+        responseTime: "18 min avg",
+        availability: "24/7",
+        status: "active",
+        lastUsed: "2024-01-15T16:30:00Z",
+      },
+      {
+        id: "2",
+        companyName: "Highway Heroes Towing",
+        contactPerson: "James Miller",
+        phone: "+27 21 444 5555",
+        emergencyPhone: "+27 83 911 5555",
+        email: "ops@highwayheroes.co.za",
+        serviceAreas: ["Cape Town", "N1 Highway", "N2 Highway"],
+        vehicleTypes: ["All Vehicle Types", "Construction Equipment"],
+        capacity: {
+          lightVehicles: 6,
+          heavyVehicles: 8,
+          specializedEquipment: 4,
+        },
+        rates: {
+          perKm: 18,
+          baseRate: 400,
+          emergencyRate: 600,
+        },
+        rating: 4.8,
+        responseTime: "22 min avg",
+        availability: "24/7",
+        status: "active",
+        lastUsed: "2024-01-14T14:20:00Z",
+      },
+    ])
+  }, [])
 
-    const handleAddClient = (e: React.FormEvent) => {
-        e.preventDefault()
-        const formData = new FormData(e.target as HTMLFormElement)
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "active":
+      case "available":
+        return "bg-green-100 text-green-800"
+      case "inactive":
+      case "unavailable":
+        return "bg-red-100 text-red-800"
+      case "pending":
+        return "bg-yellow-100 text-yellow-800"
+      case "busy":
+        return "bg-orange-100 text-orange-800"
+      case "suspended":
+        return "bg-gray-100 text-gray-800"
+      default:
+        return "bg-gray-100 text-gray-800"
+    }
+  }
 
-        const newClient: ExternalClient = {
-            id: Date.now().toString(),
-            companyName: formData.get("companyName") as string,
-            contactPerson: formData.get("contactPerson") as string,
-            phone: formData.get("phone") as string,
-            email: formData.get("email") as string,
-            address: formData.get("address") as string,
-            clientType: formData.get("clientType") as any,
-            contractType: formData.get("contractType") as any,
-            rating: 0,
-            totalJobs: 0,
-            totalRevenue: 0,
-            status: "pending",
-            joinDate: new Date().toISOString().split("T")[0],
-            preferredServices: (formData.get("preferredServices") as string).split(",").map((s) => s.trim()),
-            paymentTerms: formData.get("paymentTerms") as string,
-            creditLimit: Number.parseFloat(formData.get("creditLimit") as string) || 0,
-        }
+  const handleAddClient = (e: React.FormEvent) => {
+    e.preventDefault()
+    const formData = new FormData(e.target as HTMLFormElement)
 
-        setExternalClients((prev) => [...prev, newClient])
-        setIsAddClientOpen(false)
-        toast.success(`${newClient.companyName} has been added as an external client.`)
+    const newClient: ExternalClient = {
+      id: Date.now().toString(),
+      companyName: formData.get("companyName") as string,
+      contactPerson: formData.get("contactPerson") as string,
+      phone: formData.get("phone") as string,
+      email: formData.get("email") as string,
+      address: formData.get("address") as string,
+      city: formData.get("city") as string,
+      province: formData.get("province") as string,
+      postalCode: formData.get("postalCode") as string,
+      clientType: formData.get("clientType") as ExternalClient["clientType"],
+      status: "pending",
+      rating: 0,
+      totalJobs: 0,
+      totalRevenue: 0,
+      averageJobValue: 0,
+      paymentTerms: formData.get("paymentTerms") as string,
+      creditLimit: Number.parseInt(formData.get("creditLimit") as string),
+      registrationDate: new Date().toISOString(),
+      preferredServices: [],
+      contractType: "standard",
+      accountManager: "Unassigned",
     }
 
-    const handleAddSubcontractor = (e: React.FormEvent) => {
-        e.preventDefault()
-        const formData = new FormData(e.target as HTMLFormElement)
+    setClients((prev) => [...prev, newClient])
+    setIsAddClientOpen(false)
+    toast.success(`${newClient.companyName} has been added to the system`)
+  }
 
-        const newSubcontractor: Subcontractor = {
-            id: Date.now().toString(),
-            companyName: formData.get("companyName") as string,
-            contactPerson: formData.get("contactPerson") as string,
-            phone: formData.get("phone") as string,
-            email: formData.get("email") as string,
-            location: formData.get("location") as string,
-            services: (formData.get("services") as string).split(",").map((s) => s.trim()),
-            rating: 0,
-            completedJobs: 0,
-            status: "pending",
-            hourlyRate: Number.parseFloat(formData.get("hourlyRate") as string) || 0,
-            availability: "available",
-            certifications: (formData.get("certifications") as string).split(",").map((c) => c.trim()),
-            coverageAreas: (formData.get("coverageAreas") as string).split(",").map((a) => a.trim()),
-            joinDate: new Date().toISOString().split("T")[0],
-        }
+  const filteredClients = clients.filter((client) => {
+    const matchesSearch =
+      client.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      client.contactPerson.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      client.email.toLowerCase().includes(searchTerm.toLowerCase())
 
-        setSubcontractors((prev) => [...prev, newSubcontractor])
-        setIsAddSubcontractorOpen(false)
-        toast.success(`${newSubcontractor.companyName} has been added as a subcontractor.`)
-    }
+    const matchesStatus = statusFilter === "all" || client.status === statusFilter
 
-    const handleAddTowingCompany = (e: React.FormEvent) => {
-        e.preventDefault()
-        const formData = new FormData(e.target as HTMLFormElement)
+    return matchesSearch && matchesStatus
+  })
 
-        const newTowingCompany: TowingCompany = {
-            id: Date.now().toString(),
-            companyName: formData.get("companyName") as string,
-            contactPerson: formData.get("contactPerson") as string,
-            phone: formData.get("phone") as string,
-            emergencyPhone: formData.get("emergencyPhone") as string,
-            email: formData.get("email") as string,
-            location: formData.get("location") as string,
-            fleetSize: Number.parseInt(formData.get("fleetSize") as string) || 0,
-            vehicleTypes: (formData.get("vehicleTypes") as string).split(",").map((v) => v.trim()),
-            coverageRadius: Number.parseInt(formData.get("coverageRadius") as string) || 0,
-            rating: 0,
-            responseTime: formData.get("responseTime") as string,
-            status: "active",
-            pricing: {
-                baseRate: Number.parseFloat(formData.get("baseRate") as string) || 0,
-                perKmRate: Number.parseFloat(formData.get("perKmRate") as string) || 0,
-                heavyVehicleSurcharge: Number.parseFloat(formData.get("heavyVehicleSurcharge") as string) || 0,
-            },
-            availability24h: formData.get("availability24h") === "on",
-        }
-
-        setTowingCompanies((prev) => [...prev, newTowingCompany])
-        setIsAddTowingOpen(false)
-        toast.success(`${newTowingCompany.companyName} has been added to the towing network.`)
-    }
-
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case "active":
-                return "bg-green-100 text-green-800"
-            case "inactive":
-                return "bg-red-100 text-red-800"
-            case "pending":
-                return "bg-yellow-100 text-yellow-800"
-            default:
-                return "bg-gray-100 text-gray-800"
-        }
-    }
-
-    const getAvailabilityColor = (availability: string) => {
-        switch (availability) {
-            case "available":
-                return "bg-green-100 text-green-800"
-            case "busy":
-                return "bg-orange-100 text-orange-800"
-            case "unavailable":
-                return "bg-red-100 text-red-800"
-            default:
-                return "bg-gray-100 text-gray-800"
-        }
-    }
-
-    return (
-        <>
-            <div className="flex-1 space-y-4 p-4 pt-6">
-                <div className="flex items-center justify-between">
-                    <h2 className="text-3xl font-bold tracking-tight">External Network Management</h2>
-                </div>
-
-                <Tabs defaultValue="clients" className="space-y-4">
-                    <TabsList>
-                        <TabsTrigger value="clients">External Clients ({externalClients.length})</TabsTrigger>
-                        <TabsTrigger value="subcontractors">Subcontractors ({subcontractors.length})</TabsTrigger>
-                        <TabsTrigger value="towing">Towing Companies ({towingCompanies.length})</TabsTrigger>
-                        <TabsTrigger value="analytics">Network Analytics</TabsTrigger>
-                    </TabsList>
-
-                    <TabsContent value="clients" className="space-y-4">
-                        <div className="flex justify-between items-center">
-                            <h3 className="text-lg font-semibold">External Client Management</h3>
-                            <Dialog open={isAddClientOpen} onOpenChange={setIsAddClientOpen}>
-                                <DialogTrigger asChild>
-                                    <Button>
-                                        <Plus className="h-4 w-4 mr-2" />
-                                        Add Client
-                                    </Button>
-                                </DialogTrigger>
-                                <DialogContent className="max-w-2xl">
-                                    <DialogHeader>
-                                        <DialogTitle>Add External Client</DialogTitle>
-                                        <DialogDescription>Register a new external client for breakdown services.</DialogDescription>
-                                    </DialogHeader>
-                                    <form onSubmit={handleAddClient} className="space-y-4">
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <Label htmlFor="companyName">Company Name</Label>
-                                                <Input id="companyName" name="companyName" required />
-                                            </div>
-                                            <div>
-                                                <Label htmlFor="contactPerson">Contact Person</Label>
-                                                <Input id="contactPerson" name="contactPerson" required />
-                                            </div>
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <Label htmlFor="phone">Phone Number</Label>
-                                                <Input id="phone" name="phone" type="tel" required />
-                                            </div>
-                                            <div>
-                                                <Label htmlFor="email">Email Address</Label>
-                                                <Input id="email" name="email" type="email" required />
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <Label htmlFor="address">Address</Label>
-                                            <Textarea id="address" name="address" required />
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <Label htmlFor="clientType">Client Type</Label>
-                                                <Select name="clientType" required>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Select client type" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="corporate">Corporate</SelectItem>
-                                                        <SelectItem value="individual">Individual</SelectItem>
-                                                        <SelectItem value="government">Government</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-                                            <div>
-                                                <Label htmlFor="contractType">Contract Type</Label>
-                                                <Select name="contractType" required>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Select contract type" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="one-time">One-time</SelectItem>
-                                                        <SelectItem value="monthly">Monthly</SelectItem>
-                                                        <SelectItem value="annual">Annual</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <Label htmlFor="preferredServices">Preferred Services (comma-separated)</Label>
-                                            <Input
-                                                id="preferredServices"
-                                                name="preferredServices"
-                                                placeholder="Emergency Breakdown, Preventive Maintenance"
-                                            />
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <Label htmlFor="paymentTerms">Payment Terms</Label>
-                                                <Input id="paymentTerms" name="paymentTerms" placeholder="30 days" />
-                                            </div>
-                                            <div>
-                                                <Label htmlFor="creditLimit">Credit Limit (R)</Label>
-                                                <Input id="creditLimit" name="creditLimit" type="number" />
-                                            </div>
-                                        </div>
-                                        <Button type="submit" className="w-full">
-                                            Add Client
-                                        </Button>
-                                    </form>
-                                </DialogContent>
-                            </Dialog>
-                        </div>
-
-                        <div className="grid gap-4">
-                            {externalClients.map((client) => (
-                                <Card key={client.id} className="hover:shadow-md transition-shadow">
-                                    <CardHeader>
-                                        <div className="flex justify-between items-start">
-                                            <div className="flex items-center gap-3">
-                                                <div className="flex items-center gap-2">
-                                                    <Building className="h-5 w-5 text-blue-500" />
-                                                    <CardTitle className="text-lg">{client.companyName}</CardTitle>
-                                                </div>
-                                                <Badge className={getStatusColor(client.status)}>{client.status.toUpperCase()}</Badge>
-                                                <Badge variant="outline">{client.clientType.toUpperCase()}</Badge>
-                                            </div>
-                                            <div className="flex items-center gap-1">
-                                                <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                                                <span className="text-sm font-semibold">{client.rating}</span>
-                                            </div>
-                                        </div>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-                                            <div>
-                                                <h4 className="font-semibold mb-2">Contact Information</h4>
-                                                <div className="space-y-1 text-sm">
-                                                    <p>
-                                                        <strong>Contact:</strong> {client.contactPerson}
-                                                    </p>
-                                                    <p>
-                                                        <strong>Phone:</strong> {client.phone}
-                                                    </p>
-                                                    <p>
-                                                        <strong>Email:</strong> {client.email}
-                                                    </p>
-                                                    <p>
-                                                        <strong>Address:</strong> {client.address}
-                                                    </p>
-                                                </div>
-                                            </div>
-
-                                            <div>
-                                                <h4 className="font-semibold mb-2">Contract Details</h4>
-                                                <div className="space-y-1 text-sm">
-                                                    <p>
-                                                        <strong>Type:</strong> {client.contractType}
-                                                    </p>
-                                                    <p>
-                                                        <strong>Payment:</strong> {client.paymentTerms}
-                                                    </p>
-                                                    <p>
-                                                        <strong>Credit Limit:</strong> R {client.creditLimit.toLocaleString()}
-                                                    </p>
-                                                    <p>
-                                                        <strong>Joined:</strong> {client.joinDate}
-                                                    </p>
-                                                </div>
-                                            </div>
-
-                                            <div>
-                                                <h4 className="font-semibold mb-2">Service History</h4>
-                                                <div className="space-y-1 text-sm">
-                                                    <p>
-                                                        <strong>Total Jobs:</strong> {client.totalJobs}
-                                                    </p>
-                                                    <p>
-                                                        <strong>Revenue:</strong> R {client.totalRevenue.toLocaleString()}
-                                                    </p>
-                                                    {client.lastServiceDate && (
-                                                        <p>
-                                                            <strong>Last Service:</strong> {client.lastServiceDate}
-                                                        </p>
-                                                    )}
-                                                </div>
-                                            </div>
-
-                                            <div>
-                                                <h4 className="font-semibold mb-2">Preferred Services</h4>
-                                                <div className="flex flex-wrap gap-1">
-                                                    {client.preferredServices.map((service) => (
-                                                        <Badge key={service} variant="secondary" className="text-xs">
-                                                            {service}
-                                                        </Badge>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex justify-end gap-2 mt-4">
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => {
-                                                    setSelectedClient(client)
-                                                    setIsViewClientOpen(true)
-                                                }}
-                                            >
-                                                <Eye className="h-4 w-4 mr-2" />
-                                                View Details
-                                            </Button>
-                                            <Button variant="outline" size="sm">
-                                                <Phone className="h-4 w-4 mr-2" />
-                                                Call
-                                            </Button>
-                                            <Button variant="outline" size="sm">
-                                                <Mail className="h-4 w-4 mr-2" />
-                                                Email
-                                            </Button>
-                                            <Button variant="outline" size="sm">
-                                                <Edit className="h-4 w-4 mr-2" />
-                                                Edit
-                                            </Button>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            ))}
-                        </div>
-                    </TabsContent>
-
-                    <TabsContent value="subcontractors" className="space-y-4">
-                        <div className="flex justify-between items-center">
-                            <h3 className="text-lg font-semibold">Subcontractor Network</h3>
-                            <Dialog open={isAddSubcontractorOpen} onOpenChange={setIsAddSubcontractorOpen}>
-                                <DialogTrigger asChild>
-                                    <Button>
-                                        <Plus className="h-4 w-4 mr-2" />
-                                        Add Subcontractor
-                                    </Button>
-                                </DialogTrigger>
-                                <DialogContent className="max-w-2xl">
-                                    <DialogHeader>
-                                        <DialogTitle>Add Subcontractor</DialogTitle>
-                                        <DialogDescription>Register a new subcontractor for specialized services.</DialogDescription>
-                                    </DialogHeader>
-                                    <form onSubmit={handleAddSubcontractor} className="space-y-4">
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <Label htmlFor="companyName">Company Name</Label>
-                                                <Input id="companyName" name="companyName" required />
-                                            </div>
-                                            <div>
-                                                <Label htmlFor="contactPerson">Contact Person</Label>
-                                                <Input id="contactPerson" name="contactPerson" required />
-                                            </div>
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <Label htmlFor="phone">Phone Number</Label>
-                                                <Input id="phone" name="phone" type="tel" required />
-                                            </div>
-                                            <div>
-                                                <Label htmlFor="email">Email Address</Label>
-                                                <Input id="email" name="email" type="email" required />
-                                            </div>
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <Label htmlFor="location">Location</Label>
-                                                <Input id="location" name="location" required />
-                                            </div>
-                                            <div>
-                                                <Label htmlFor="hourlyRate">Hourly Rate (R)</Label>
-                                                <Input id="hourlyRate" name="hourlyRate" type="number" required />
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <Label htmlFor="services">Services Offered (comma-separated)</Label>
-                                            <Input
-                                                id="services"
-                                                name="services"
-                                                placeholder="Engine Repair, Transmission, Electrical"
-                                                required
-                                            />
-                                        </div>
-                                        <div>
-                                            <Label htmlFor="certifications">Certifications (comma-separated)</Label>
-                                            <Input
-                                                id="certifications"
-                                                name="certifications"
-                                                placeholder="ASE Certified, Mercedes Specialist"
-                                            />
-                                        </div>
-                                        <div>
-                                            <Label htmlFor="coverageAreas">Coverage Areas (comma-separated)</Label>
-                                            <Input
-                                                id="coverageAreas"
-                                                name="coverageAreas"
-                                                placeholder="Johannesburg, Sandton, Randburg"
-                                                required
-                                            />
-                                        </div>
-                                        <Button type="submit" className="w-full">
-                                            Add Subcontractor
-                                        </Button>
-                                    </form>
-                                </DialogContent>
-                            </Dialog>
-                        </div>
-
-                        <div className="grid gap-4 md:grid-cols-2">
-                            {subcontractors.map((subcontractor) => (
-                                <Card key={subcontractor.id} className="hover:shadow-md transition-shadow">
-                                    <CardHeader>
-                                        <div className="flex justify-between items-start">
-                                            <div className="flex items-center gap-3">
-                                                <div className="flex items-center gap-2">
-                                                    <Users className="h-5 w-5 text-purple-500" />
-                                                    <CardTitle className="text-lg">{subcontractor.companyName}</CardTitle>
-                                                </div>
-                                                <Badge className={getStatusColor(subcontractor.status)}>
-                                                    {subcontractor.status.toUpperCase()}
-                                                </Badge>
-                                            </div>
-                                            <div className="flex items-center gap-1">
-                                                <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                                                <span className="text-sm font-semibold">{subcontractor.rating}</span>
-                                            </div>
-                                        </div>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="space-y-3">
-                                            <div className="grid grid-cols-2 gap-4 text-sm">
-                                                <div>
-                                                    <p>
-                                                        <strong>Contact:</strong> {subcontractor.contactPerson}
-                                                    </p>
-                                                    <p>
-                                                        <strong>Phone:</strong> {subcontractor.phone}
-                                                    </p>
-                                                    <p>
-                                                        <strong>Location:</strong> {subcontractor.location}
-                                                    </p>
-                                                </div>
-                                                <div>
-                                                    <p>
-                                                        <strong>Rate:</strong> R {subcontractor.hourlyRate}/hour
-                                                    </p>
-                                                    <p>
-                                                        <strong>Jobs:</strong> {subcontractor.completedJobs}
-                                                    </p>
-                                                    <Badge className={getAvailabilityColor(subcontractor.availability)}>
-                                                        {subcontractor.availability.toUpperCase()}
-                                                    </Badge>
-                                                </div>
-                                            </div>
-
-                                            <div>
-                                                <h4 className="font-semibold text-sm mb-2">Services:</h4>
-                                                <div className="flex flex-wrap gap-1">
-                                                    {subcontractor.services.map((service) => (
-                                                        <Badge key={service} variant="secondary" className="text-xs">
-                                                            {service}
-                                                        </Badge>
-                                                    ))}
-                                                </div>
-                                            </div>
-
-                                            <div>
-                                                <h4 className="font-semibold text-sm mb-2">Coverage Areas:</h4>
-                                                <div className="flex flex-wrap gap-1">
-                                                    {subcontractor.coverageAreas.map((area) => (
-                                                        <Badge key={area} variant="outline" className="text-xs">
-                                                            {area}
-                                                        </Badge>
-                                                    ))}
-                                                </div>
-                                            </div>
-
-                                            <div className="flex gap-2 pt-2">
-                                                <Button variant="outline" size="sm" className="flex-1 bg-transparent">
-                                                    <Phone className="h-3 w-3 mr-1" />
-                                                    Call
-                                                </Button>
-                                                <Button variant="outline" size="sm" className="flex-1 bg-transparent">
-                                                    <Mail className="h-3 w-3 mr-1" />
-                                                    Email
-                                                </Button>
-                                                <Button variant="outline" size="sm">
-                                                    <Edit className="h-3 w-3" />
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            ))}
-                        </div>
-                    </TabsContent>
-
-                    <TabsContent value="towing" className="space-y-4">
-                        <div className="flex justify-between items-center">
-                            <h3 className="text-lg font-semibold">Towing Company Network</h3>
-                            <Dialog open={isAddTowingOpen} onOpenChange={setIsAddTowingOpen}>
-                                <DialogTrigger asChild>
-                                    <Button>
-                                        <Plus className="h-4 w-4 mr-2" />
-                                        Add Towing Company
-                                    </Button>
-                                </DialogTrigger>
-                                <DialogContent className="max-w-2xl">
-                                    <DialogHeader>
-                                        <DialogTitle>Add Towing Company</DialogTitle>
-                                        <DialogDescription>Register a new towing company for recovery services.</DialogDescription>
-                                    </DialogHeader>
-                                    <form onSubmit={handleAddTowingCompany} className="space-y-4">
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <Label htmlFor="companyName">Company Name</Label>
-                                                <Input id="companyName" name="companyName" required />
-                                            </div>
-                                            <div>
-                                                <Label htmlFor="contactPerson">Contact Person</Label>
-                                                <Input id="contactPerson" name="contactPerson" required />
-                                            </div>
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <Label htmlFor="phone">Phone Number</Label>
-                                                <Input id="phone" name="phone" type="tel" required />
-                                            </div>
-                                            <div>
-                                                <Label htmlFor="emergencyPhone">Emergency Phone</Label>
-                                                <Input id="emergencyPhone" name="emergencyPhone" type="tel" required />
-                                            </div>
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <Label htmlFor="email">Email Address</Label>
-                                                <Input id="email" name="email" type="email" required />
-                                            </div>
-                                            <div>
-                                                <Label htmlFor="location">Location</Label>
-                                                <Input id="location" name="location" required />
-                                            </div>
-                                        </div>
-                                        <div className="grid grid-cols-3 gap-4">
-                                            <div>
-                                                <Label htmlFor="fleetSize">Fleet Size</Label>
-                                                <Input id="fleetSize" name="fleetSize" type="number" required />
-                                            </div>
-                                            <div>
-                                                <Label htmlFor="coverageRadius">Coverage Radius (km)</Label>
-                                                <Input id="coverageRadius" name="coverageRadius" type="number" required />
-                                            </div>
-                                            <div>
-                                                <Label htmlFor="responseTime">Response Time</Label>
-                                                <Input id="responseTime" name="responseTime" placeholder="15-30 minutes" required />
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <Label htmlFor="vehicleTypes">Vehicle Types (comma-separated)</Label>
-                                            <Input
-                                                id="vehicleTypes"
-                                                name="vehicleTypes"
-                                                placeholder="Light Vehicle Tow, Heavy Duty Tow, Flatbed"
-                                                required
-                                            />
-                                        </div>
-                                        <div className="grid grid-cols-3 gap-4">
-                                            <div>
-                                                <Label htmlFor="baseRate">Base Rate (R)</Label>
-                                                <Input id="baseRate" name="baseRate" type="number" required />
-                                            </div>
-                                            <div>
-                                                <Label htmlFor="perKmRate">Per KM Rate (R)</Label>
-                                                <Input id="perKmRate" name="perKmRate" type="number" required />
-                                            </div>
-                                            <div>
-                                                <Label htmlFor="heavyVehicleSurcharge">Heavy Vehicle Surcharge (R)</Label>
-                                                <Input id="heavyVehicleSurcharge" name="heavyVehicleSurcharge" type="number" />
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center space-x-2">
-                                            <input type="checkbox" id="availability24h" name="availability24h" />
-                                            <Label htmlFor="availability24h">24/7 Availability</Label>
-                                        </div>
-                                        <Button type="submit" className="w-full">
-                                            Add Towing Company
-                                        </Button>
-                                    </form>
-                                </DialogContent>
-                            </Dialog>
-                        </div>
-
-                        <div className="grid gap-4">
-                            {towingCompanies.map((company) => (
-                                <Card key={company.id} className="hover:shadow-md transition-shadow">
-                                    <CardHeader>
-                                        <div className="flex justify-between items-start">
-                                            <div className="flex items-center gap-3">
-                                                <div className="flex items-center gap-2">
-                                                    <Truck className="h-5 w-5 text-orange-500" />
-                                                    <CardTitle className="text-lg">{company.companyName}</CardTitle>
-                                                </div>
-                                                <Badge className={getStatusColor(company.status)}>{company.status.toUpperCase()}</Badge>
-                                                {company.availability24h && <Badge className="bg-blue-100 text-blue-800">24/7</Badge>}
-                                            </div>
-                                            <div className="flex items-center gap-1">
-                                                <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                                                <span className="text-sm font-semibold">{company.rating}</span>
-                                            </div>
-                                        </div>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-                                            <div>
-                                                <h4 className="font-semibold mb-2">Contact Information</h4>
-                                                <div className="space-y-1 text-sm">
-                                                    <p>
-                                                        <strong>Contact:</strong> {company.contactPerson}
-                                                    </p>
-                                                    <p>
-                                                        <strong>Phone:</strong> {company.phone}
-                                                    </p>
-                                                    <p>
-                                                        <strong>Emergency:</strong> {company.emergencyPhone}
-                                                    </p>
-                                                    <p>
-                                                        <strong>Email:</strong> {company.email}
-                                                    </p>
-                                                    <p>
-                                                        <strong>Location:</strong> {company.location}
-                                                    </p>
-                                                </div>
-                                            </div>
-
-                                            <div>
-                                                <h4 className="font-semibold mb-2">Fleet Details</h4>
-                                                <div className="space-y-1 text-sm">
-                                                    <p>
-                                                        <strong>Fleet Size:</strong> {company.fleetSize} vehicles
-                                                    </p>
-                                                    <p>
-                                                        <strong>Coverage:</strong> {company.coverageRadius} km radius
-                                                    </p>
-                                                    <p>
-                                                        <strong>Response Time:</strong> {company.responseTime}
-                                                    </p>
-                                                </div>
-                                            </div>
-
-                                            <div>
-                                                <h4 className="font-semibold mb-2">Pricing</h4>
-                                                <div className="space-y-1 text-sm">
-                                                    <p>
-                                                        <strong>Base Rate:</strong> R {company.pricing.baseRate}
-                                                    </p>
-                                                    <p>
-                                                        <strong>Per KM:</strong> R {company.pricing.perKmRate}
-                                                    </p>
-                                                    <p>
-                                                        <strong>Heavy Vehicle:</strong> +R {company.pricing.heavyVehicleSurcharge}
-                                                    </p>
-                                                </div>
-                                            </div>
-
-                                            <div>
-                                                <h4 className="font-semibold mb-2">Vehicle Types</h4>
-                                                <div className="flex flex-wrap gap-1">
-                                                    {company.vehicleTypes.map((type) => (
-                                                        <Badge key={type} variant="secondary" className="text-xs">
-                                                            {type}
-                                                        </Badge>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex justify-end gap-2 mt-4">
-                                            <Button variant="outline" size="sm">
-                                                <Phone className="h-4 w-4 mr-2" />
-                                                Call
-                                            </Button>
-                                            <Button variant="outline" size="sm">
-                                                <Phone className="h-4 w-4 mr-2" />
-                                                Emergency
-                                            </Button>
-                                            <Button variant="outline" size="sm">
-                                                <Mail className="h-4 w-4 mr-2" />
-                                                Email
-                                            </Button>
-                                            <Button variant="outline" size="sm">
-                                                <Edit className="h-4 w-4 mr-2" />
-                                                Edit
-                                            </Button>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            ))}
-                        </div>
-                    </TabsContent>
-
-                    <TabsContent value="analytics" className="space-y-4">
-                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                            <Card>
-                                <CardHeader className="pb-2">
-                                    <CardTitle className="text-sm font-medium">Total External Clients</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold text-blue-600">{externalClients.length}</div>
-                                    <p className="text-xs text-muted-foreground">
-                                        {externalClients.filter((c) => c.status === "active").length} active
-                                    </p>
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader className="pb-2">
-                                    <CardTitle className="text-sm font-medium">Available Subcontractors</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold text-green-600">
-                                        {subcontractors.filter((s) => s.availability === "available").length}
-                                    </div>
-                                    <p className="text-xs text-muted-foreground">Out of {subcontractors.length} total</p>
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader className="pb-2">
-                                    <CardTitle className="text-sm font-medium">Towing Coverage</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold text-orange-600">
-                                        {Math.max(...towingCompanies.map((t) => t.coverageRadius))} km
-                                    </div>
-                                    <p className="text-xs text-muted-foreground">Maximum coverage radius</p>
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader className="pb-2">
-                                    <CardTitle className="text-sm font-medium">External Revenue</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold text-purple-600">
-                                        R {externalClients.reduce((sum, client) => sum + client.totalRevenue, 0).toLocaleString()}
-                                    </div>
-                                    <p className="text-xs text-muted-foreground">Total from external clients</p>
-                                </CardContent>
-                            </Card>
-                        </div>
-
-                        <div className="grid gap-4 md:grid-cols-2">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Top External Clients</CardTitle>
-                                    <CardDescription>By revenue generated</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="space-y-3">
-                                        {externalClients
-                                            .sort((a, b) => b.totalRevenue - a.totalRevenue)
-                                            .slice(0, 5)
-                                            .map((client) => (
-                                                <div key={client.id} className="flex justify-between items-center">
-                                                    <div>
-                                                        <p className="font-medium">{client.companyName}</p>
-                                                        <p className="text-sm text-gray-600">{client.totalJobs} jobs</p>
-                                                    </div>
-                                                    <div className="text-right">
-                                                        <p className="font-semibold">R {client.totalRevenue.toLocaleString()}</p>
-                                                        <div className="flex items-center gap-1">
-                                                            <Star className="h-3 w-3 text-yellow-500 fill-current" />
-                                                            <span className="text-xs">{client.rating}</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                    </div>
-                                </CardContent>
-                            </Card>
-
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Network Performance</CardTitle>
-                                    <CardDescription>Key metrics and trends</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="space-y-4">
-                                        <div className="flex justify-between items-center p-3 border rounded-lg">
-                                            <div>
-                                                <p className="font-medium">Average Client Rating</p>
-                                                <p className="text-sm text-gray-600">Across all external clients</p>
-                                            </div>
-                                            <div className="flex items-center gap-1">
-                                                <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                                                <span className="font-semibold">
-                                                    {(
-                                                        externalClients.reduce((sum, client) => sum + client.rating, 0) / externalClients.length
-                                                    ).toFixed(1)}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div className="flex justify-between items-center p-3 border rounded-lg">
-                                            <div>
-                                                <p className="font-medium">Subcontractor Utilization</p>
-                                                <p className="text-sm text-gray-600">Currently busy contractors</p>
-                                            </div>
-                                            <span className="font-semibold">
-                                                {Math.round(
-                                                    (subcontractors.filter((s) => s.availability === "busy").length / subcontractors.length) *
-                                                    100,
-                                                )}
-                                                %
-                                            </span>
-                                        </div>
-                                        <div className="flex justify-between items-center p-3 border rounded-lg">
-                                            <div>
-                                                <p className="font-medium">Average Response Time</p>
-                                                <p className="text-sm text-gray-600">Towing companies</p>
-                                            </div>
-                                            <span className="font-semibold">22 min</span>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </div>
-                    </TabsContent>
-                </Tabs>
-
-                {/* Client Details Dialog */}
-                <Dialog open={isViewClientOpen} onOpenChange={setIsViewClientOpen}>
-                    <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                        <DialogHeader>
-                            <DialogTitle>Client Details - {selectedClient?.companyName}</DialogTitle>
-                            <DialogDescription>Complete information and service history for external client</DialogDescription>
-                        </DialogHeader>
-
-                        {selectedClient && (
-                            <div className="space-y-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <Card>
-                                        <CardHeader>
-                                            <CardTitle className="text-lg">Company Information</CardTitle>
-                                        </CardHeader>
-                                        <CardContent className="space-y-2 text-sm">
-                                            <div className="grid grid-cols-2 gap-2">
-                                                <span className="font-medium">Company:</span>
-                                                <span>{selectedClient.companyName}</span>
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-2">
-                                                <span className="font-medium">Contact Person:</span>
-                                                <span>{selectedClient.contactPerson}</span>
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-2">
-                                                <span className="font-medium">Phone:</span>
-                                                <span>{selectedClient.phone}</span>
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-2">
-                                                <span className="font-medium">Email:</span>
-                                                <span>{selectedClient.email}</span>
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-2">
-                                                <span className="font-medium">Address:</span>
-                                                <span>{selectedClient.address}</span>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-
-                                    <Card>
-                                        <CardHeader>
-                                            <CardTitle className="text-lg">Contract & Financial</CardTitle>
-                                        </CardHeader>
-                                        <CardContent className="space-y-2 text-sm">
-                                            <div className="grid grid-cols-2 gap-2">
-                                                <span className="font-medium">Client Type:</span>
-                                                <Badge variant="outline">{selectedClient.clientType.toUpperCase()}</Badge>
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-2">
-                                                <span className="font-medium">Contract Type:</span>
-                                                <span>{selectedClient.contractType}</span>
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-2">
-                                                <span className="font-medium">Payment Terms:</span>
-                                                <span>{selectedClient.paymentTerms}</span>
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-2">
-                                                <span className="font-medium">Credit Limit:</span>
-                                                <span>R {selectedClient.creditLimit.toLocaleString()}</span>
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-2">
-                                                <span className="font-medium">Status:</span>
-                                                <Badge className={getStatusColor(selectedClient.status)}>
-                                                    {selectedClient.status.toUpperCase()}
-                                                </Badge>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                </div>
-
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle className="text-lg">Service Performance</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="grid grid-cols-4 gap-4 text-center">
-                                            <div>
-                                                <div className="text-2xl font-bold text-blue-600">{selectedClient.totalJobs}</div>
-                                                <p className="text-sm text-gray-600">Total Jobs</p>
-                                            </div>
-                                            <div>
-                                                <div className="text-2xl font-bold text-green-600">
-                                                    R {selectedClient.totalRevenue.toLocaleString()}
-                                                </div>
-                                                <p className="text-sm text-gray-600">Total Revenue</p>
-                                            </div>
-                                            <div>
-                                                <div className="text-2xl font-bold text-yellow-600 flex items-center justify-center gap-1">
-                                                    <Star className="h-6 w-6 fill-current" />
-                                                    {selectedClient.rating}
-                                                </div>
-                                                <p className="text-sm text-gray-600">Client Rating</p>
-                                            </div>
-                                            <div>
-                                                <div className="text-2xl font-bold text-purple-600">
-                                                    R {Math.round(selectedClient.totalRevenue / selectedClient.totalJobs).toLocaleString()}
-                                                </div>
-                                                <p className="text-sm text-gray-600">Avg Job Value</p>
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle className="text-lg">Preferred Services</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="flex flex-wrap gap-2">
-                                            {selectedClient.preferredServices.map((service) => (
-                                                <Badge key={service} variant="secondary">
-                                                    {service}
-                                                </Badge>
-                                            ))}
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            </div>
-                        )}
-                    </DialogContent>
-                </Dialog>
+  return (
+    <>
+        <div className="flex-1 space-y-4 p-4 pt-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-3xl font-bold tracking-tight">External Network</h2>
+            <div className="flex items-center space-x-2">
+              <div className="relative">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search clients..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-8 w-64"
+                />
+              </div>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-        </>
-    )
+          </div>
+
+          <Tabs defaultValue="clients" className="space-y-4">
+            <TabsList>
+              <TabsTrigger value="clients">External Clients</TabsTrigger>
+              <TabsTrigger value="subcontractors">Subcontractors</TabsTrigger>
+              <TabsTrigger value="towing">Towing Companies</TabsTrigger>
+              <TabsTrigger value="analytics">Network Analytics</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="clients" className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold">Client Database</h3>
+                <Dialog open={isAddClientOpen} onOpenChange={setIsAddClientOpen}>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Client
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle>Add New External Client</DialogTitle>
+                      <DialogDescription>Enter client details to add them to the system</DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleAddClient} className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="companyName">Company Name</Label>
+                          <Input id="companyName" name="companyName" required />
+                        </div>
+                        <div>
+                          <Label htmlFor="contactPerson">Contact Person</Label>
+                          <Input id="contactPerson" name="contactPerson" required />
+                        </div>
+                        <div>
+                          <Label htmlFor="phone">Phone Number</Label>
+                          <Input id="phone" name="phone" type="tel" required />
+                        </div>
+                        <div>
+                          <Label htmlFor="email">Email Address</Label>
+                          <Input id="email" name="email" type="email" required />
+                        </div>
+                        <div>
+                          <Label htmlFor="clientType">Client Type</Label>
+                          <Select name="clientType" required>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="corporate">Corporate</SelectItem>
+                              <SelectItem value="sme">SME</SelectItem>
+                              <SelectItem value="individual">Individual</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label htmlFor="paymentTerms">Payment Terms</Label>
+                          <Select name="paymentTerms" required>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select terms" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="immediate">Immediate</SelectItem>
+                              <SelectItem value="15 days">15 Days</SelectItem>
+                              <SelectItem value="30 days">30 Days</SelectItem>
+                              <SelectItem value="60 days">60 Days</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <div>
+                        <Label htmlFor="address">Address</Label>
+                        <Input id="address" name="address" required />
+                      </div>
+                      <div className="grid grid-cols-3 gap-4">
+                        <div>
+                          <Label htmlFor="city">City</Label>
+                          <Input id="city" name="city" required />
+                        </div>
+                        <div>
+                          <Label htmlFor="province">Province</Label>
+                          <Input id="province" name="province" required />
+                        </div>
+                        <div>
+                          <Label htmlFor="postalCode">Postal Code</Label>
+                          <Input id="postalCode" name="postalCode" required />
+                        </div>
+                      </div>
+                      <div>
+                        <Label htmlFor="creditLimit">Credit Limit (R)</Label>
+                        <Input id="creditLimit" name="creditLimit" type="number" required />
+                      </div>
+                      <div className="flex gap-2">
+                        <Button type="submit" className="flex-1">
+                          Add Client
+                        </Button>
+                        <Button type="button" variant="outline" onClick={() => setIsAddClientOpen(false)}>
+                          Cancel
+                        </Button>
+                      </div>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              <div className="grid gap-4">
+                {filteredClients.map((client) => (
+                  <Card key={client.id} className="hover:shadow-md transition-shadow">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                            <Building className="h-6 w-6 text-blue-600" />
+                          </div>
+                          <div>
+                            <CardTitle className="text-lg">{client.companyName}</CardTitle>
+                            <p className="text-sm text-gray-600">{client.contactPerson}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge className={getStatusColor(client.status)}>{client.status.toUpperCase()}</Badge>
+                          <Badge variant="outline">{client.clientType.toUpperCase()}</Badge>
+                          <div className="flex items-center gap-1">
+                            <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                            <span className="text-sm">{client.rating}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                        <div>
+                          <h4 className="font-semibold mb-2">Contact Information</h4>
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <Phone className="h-4 w-4 text-gray-500" />
+                              <span className="text-sm">{client.phone}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Mail className="h-4 w-4 text-gray-500" />
+                              <span className="text-sm">{client.email}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <MapPin className="h-4 w-4 text-gray-500" />
+                              <span className="text-sm">
+                                {client.city}, {client.province}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold mb-2">Business Metrics</h4>
+                          <div className="space-y-1">
+                            <p className="text-sm">
+                              <strong>Total Jobs:</strong> {client.totalJobs}
+                            </p>
+                            <p className="text-sm">
+                              <strong>Revenue:</strong> R {client.totalRevenue.toLocaleString()}
+                            </p>
+                            <p className="text-sm">
+                              <strong>Avg Job:</strong> R {client.averageJobValue.toLocaleString()}
+                            </p>
+                          </div>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold mb-2">Account Details</h4>
+                          <div className="space-y-1">
+                            <p className="text-sm">
+                              <strong>Payment:</strong> {client.paymentTerms}
+                            </p>
+                            <p className="text-sm">
+                              <strong>Credit Limit:</strong> R {client.creditLimit.toLocaleString()}
+                            </p>
+                            <p className="text-sm">
+                              <strong>Manager:</strong> {client.accountManager}
+                            </p>
+                          </div>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold mb-2">Service History</h4>
+                          <div className="space-y-1">
+                            <p className="text-sm">
+                              <strong>Member Since:</strong> {new Date(client.registrationDate).toLocaleDateString()}
+                            </p>
+                            {client.lastJobDate && (
+                              <p className="text-sm">
+                                <strong>Last Job:</strong> {new Date(client.lastJobDate).toLocaleDateString()}
+                              </p>
+                            )}
+                            <p className="text-sm">
+                              <strong>Contract:</strong> {client.contractType}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {client.preferredServices.length > 0 && (
+                        <div className="mb-4">
+                          <h4 className="font-semibold mb-2">Preferred Services</h4>
+                          <div className="flex flex-wrap gap-1">
+                            {client.preferredServices.map((service) => (
+                              <Badge key={service} variant="secondary" className="text-xs">
+                                {service}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex justify-between items-center">
+                        <div className="flex gap-2">
+                          <Button variant="outline" size="sm">
+                            <Phone className="h-4 w-4 mr-2" />
+                            Call
+                          </Button>
+                          <Button variant="outline" size="sm">
+                            <Mail className="h-4 w-4 mr-2" />
+                            Email
+                          </Button>
+                          <Button variant="outline" size="sm">
+                            <FileText className="h-4 w-4 mr-2" />
+                            View History
+                          </Button>
+                        </div>
+                        <Button size="sm">Edit Client</Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="subcontractors" className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold">Subcontractor Network</h3>
+                <Dialog open={isAddSubcontractorOpen} onOpenChange={setIsAddSubcontractorOpen}>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Subcontractor
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle>Add New Subcontractor</DialogTitle>
+                      <DialogDescription>Enter subcontractor details</DialogDescription>
+                    </DialogHeader>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="subCompanyName">Company Name</Label>
+                        <Input id="subCompanyName" required />
+                      </div>
+                      <div>
+                        <Label htmlFor="subContactPerson">Contact Person</Label>
+                        <Input id="subContactPerson" required />
+                      </div>
+                      <div>
+                        <Label htmlFor="subPhone">Phone Number</Label>
+                        <Input id="subPhone" type="tel" required />
+                      </div>
+                      <div>
+                        <Label htmlFor="subEmail">Email Address</Label>
+                        <Input id="subEmail" type="email" required />
+                      </div>
+                      <div>
+                        <Label htmlFor="hourlyRate">Hourly Rate (R)</Label>
+                        <Input id="hourlyRate" type="number" required />
+                      </div>
+                    </div>
+                    <div className="flex gap-2 mt-4">
+                      <Button className="flex-1">Add Subcontractor</Button>
+                      <Button variant="outline" onClick={() => setIsAddSubcontractorOpen(false)}>
+                        Cancel
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                {subcontractors.map((sub) => (
+                  <Card key={sub.id} className="hover:shadow-md transition-shadow">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <CardTitle className="text-lg">{sub.companyName}</CardTitle>
+                          <p className="text-sm text-gray-600">{sub.contactPerson}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge className={getStatusColor(sub.availability)}>{sub.availability.toUpperCase()}</Badge>
+                          <div className="flex items-center gap-1">
+                            <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                            <span className="text-sm">{sub.rating}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <h4 className="font-semibold mb-2">Contact</h4>
+                          <p className="text-sm">{sub.phone}</p>
+                          <p className="text-sm">{sub.email}</p>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold mb-2">Performance</h4>
+                          <p className="text-sm">
+                            <strong>Jobs:</strong> {sub.completedJobs}
+                          </p>
+                          <p className="text-sm">
+                            <strong>Response:</strong> {sub.responseTime}
+                          </p>
+                          <p className="text-sm">
+                            <strong>Rate:</strong> R {sub.hourlyRate}/hr
+                          </p>
+                        </div>
+                      </div>
+
+                      <div>
+                        <h4 className="font-semibold mb-2">Specialties</h4>
+                        <div className="flex flex-wrap gap-1">
+                          {sub.specialties.map((specialty) => (
+                            <Badge key={specialty} variant="secondary" className="text-xs">
+                              {specialty}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div>
+                        <h4 className="font-semibold mb-2">Service Areas</h4>
+                        <div className="flex flex-wrap gap-1">
+                          {sub.serviceAreas.map((area) => (
+                            <Badge key={area} variant="outline" className="text-xs">
+                              {area}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" className="flex-1 bg-transparent">
+                          <Phone className="h-4 w-4 mr-2" />
+                          Contact
+                        </Button>
+                        <Button size="sm" className="flex-1">
+                          Assign Job
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="towing" className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold">Towing Company Network</h3>
+                <Dialog open={isAddTowingOpen} onOpenChange={setIsAddTowingOpen}>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Towing Company
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle>Add New Towing Company</DialogTitle>
+                      <DialogDescription>Enter towing company details</DialogDescription>
+                    </DialogHeader>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="towCompanyName">Company Name</Label>
+                        <Input id="towCompanyName" required />
+                      </div>
+                      <div>
+                        <Label htmlFor="towContactPerson">Contact Person</Label>
+                        <Input id="towContactPerson" required />
+                      </div>
+                      <div>
+                        <Label htmlFor="towPhone">Phone Number</Label>
+                        <Input id="towPhone" type="tel" required />
+                      </div>
+                      <div>
+                        <Label htmlFor="towEmergencyPhone">Emergency Phone</Label>
+                        <Input id="towEmergencyPhone" type="tel" required />
+                      </div>
+                      <div>
+                        <Label htmlFor="towEmail">Email Address</Label>
+                        <Input id="towEmail" type="email" required />
+                      </div>
+                      <div>
+                        <Label htmlFor="baseRate">Base Rate (R)</Label>
+                        <Input id="baseRate" type="number" required />
+                      </div>
+                    </div>
+                    <div className="flex gap-2 mt-4">
+                      <Button className="flex-1">Add Towing Company</Button>
+                      <Button variant="outline" onClick={() => setIsAddTowingOpen(false)}>
+                        Cancel
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              <div className="grid gap-4">
+                {towingCompanies.map((company) => (
+                  <Card key={company.id} className="hover:shadow-md transition-shadow">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <CardTitle className="text-lg">{company.companyName}</CardTitle>
+                          <p className="text-sm text-gray-600">{company.contactPerson}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge className={getStatusColor(company.status)}>{company.status.toUpperCase()}</Badge>
+                          <Badge variant="outline">{company.availability}</Badge>
+                          <div className="flex items-center gap-1">
+                            <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                            <span className="text-sm">{company.rating}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                        <div>
+                          <h4 className="font-semibold mb-2">Contact Information</h4>
+                          <div className="space-y-1">
+                            <p className="text-sm">
+                              <strong>Phone:</strong> {company.phone}
+                            </p>
+                            <p className="text-sm">
+                              <strong>Emergency:</strong> {company.emergencyPhone}
+                            </p>
+                            <p className="text-sm">
+                              <strong>Email:</strong> {company.email}
+                            </p>
+                          </div>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold mb-2">Capacity</h4>
+                          <div className="space-y-1">
+                            <p className="text-sm">
+                              <strong>Light:</strong> {company.capacity.lightVehicles} units
+                            </p>
+                            <p className="text-sm">
+                              <strong>Heavy:</strong> {company.capacity.heavyVehicles} units
+                            </p>
+                            <p className="text-sm">
+                              <strong>Special:</strong> {company.capacity.specializedEquipment} units
+                            </p>
+                          </div>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold mb-2">Rates</h4>
+                          <div className="space-y-1">
+                            <p className="text-sm">
+                              <strong>Base:</strong> R {company.rates.baseRate}
+                            </p>
+                            <p className="text-sm">
+                              <strong>Per KM:</strong> R {company.rates.perKm}
+                            </p>
+                            <p className="text-sm">
+                              <strong>Emergency:</strong> R {company.rates.emergencyRate}
+                            </p>
+                          </div>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold mb-2">Performance</h4>
+                          <div className="space-y-1">
+                            <p className="text-sm">
+                              <strong>Response:</strong> {company.responseTime}
+                            </p>
+                            <p className="text-sm">
+                              <strong>Availability:</strong> {company.availability}
+                            </p>
+                            {company.lastUsed && (
+                              <p className="text-sm">
+                                <strong>Last Used:</strong> {new Date(company.lastUsed).toLocaleDateString()}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mb-4">
+                        <h4 className="font-semibold mb-2">Service Areas</h4>
+                        <div className="flex flex-wrap gap-1">
+                          {company.serviceAreas.map((area) => (
+                            <Badge key={area} variant="outline" className="text-xs">
+                              {area}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="mb-4">
+                        <h4 className="font-semibold mb-2">Vehicle Types</h4>
+                        <div className="flex flex-wrap gap-1">
+                          {company.vehicleTypes.map((type) => (
+                            <Badge key={type} variant="secondary" className="text-xs">
+                              {type}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm">
+                          <Phone className="h-4 w-4 mr-2" />
+                          Call
+                        </Button>
+                        <Button variant="outline" size="sm">
+                          <AlertTriangle className="h-4 w-4 mr-2" />
+                          Emergency
+                        </Button>
+                        <Button size="sm">Request Service</Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="analytics" className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Clients</CardTitle>
+                    <Building className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{clients.length}</div>
+                    <p className="text-xs text-muted-foreground">
+                      {clients.filter((c) => c.status === "active").length} active
+                    </p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+                    <DollarSign className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">
+                      R {clients.reduce((sum, c) => sum + c.totalRevenue, 0).toLocaleString()}
+                    </div>
+                    <p className="text-xs text-muted-foreground">From external clients</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Network Partners</CardTitle>
+                    <Users className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{subcontractors.length + towingCompanies.length}</div>
+                    <p className="text-xs text-muted-foreground">Subcontractors & towing companies</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Avg Response Time</CardTitle>
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">16 min</div>
+                    <p className="text-xs text-muted-foreground">Network average</p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Top Performing Clients</CardTitle>
+                    <CardDescription>Ranked by total revenue</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {clients
+                        .sort((a, b) => b.totalRevenue - a.totalRevenue)
+                        .slice(0, 5)
+                        .map((client, index) => (
+                          <div key={client.id} className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <span className="font-semibold">#{index + 1}</span>
+                              <div>
+                                <p className="font-medium">{client.companyName}</p>
+                                <p className="text-sm text-gray-500">{client.totalJobs} jobs</p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-semibold">R {client.totalRevenue.toLocaleString()}</p>
+                              <div className="flex items-center gap-1">
+                                <Star className="h-3 w-3 text-yellow-500 fill-current" />
+                                <span className="text-xs">{client.rating}</span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Network Performance</CardTitle>
+                    <CardDescription>Subcontractor and towing company metrics</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div>
+                        <h4 className="font-semibold mb-2">Subcontractor Availability</h4>
+                        <div className="space-y-2">
+                          <div className="flex justify-between">
+                            <span className="text-sm">Available</span>
+                            <span className="text-sm font-medium">
+                              {subcontractors.filter((s) => s.availability === "available").length}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm">Busy</span>
+                            <span className="text-sm font-medium">
+                              {subcontractors.filter((s) => s.availability === "busy").length}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold mb-2">Towing Capacity</h4>
+                        <div className="space-y-2">
+                          <div className="flex justify-between">
+                            <span className="text-sm">Light Vehicles</span>
+                            <span className="text-sm font-medium">
+                              {towingCompanies.reduce((sum, c) => sum + c.capacity.lightVehicles, 0)} units
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm">Heavy Vehicles</span>
+                            <span className="text-sm font-medium">
+                              {towingCompanies.reduce((sum, c) => sum + c.capacity.heavyVehicles, 0)} units
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
+    </>
+  )
 }

@@ -194,7 +194,7 @@ export default function SettingsPage() {
                     <TabsContent value="system" className="space-y-4">
                         <h3 className="text-lg font-semibold">System Settings</h3>
                         <div className="space-y-6">
-                            {Object.entries(groupedSettings).map(([category, categorySettings]) => (
+                            {groupedSettings && Object.entries(groupedSettings).map(([category, categorySettings]) => (
                                 <Card key={category}>
                                     <CardHeader>
                                         <CardTitle className="text-lg">{category} Settings</CardTitle>
