@@ -282,7 +282,7 @@ export default function JobsPage() {
                         </div>
                         <Badge className={getPriorityColor(job.priority)}>{job.priority}</Badge>
                         <Badge className={getStatusColor(job.status)}>
-                          {/* {job.status.replace("-", " ")} */}
+                          {job.status}
                         </Badge>
                         {job.clientType === "external" && <Badge variant="outline">External</Badge>}
                       </div>
@@ -519,7 +519,7 @@ export default function JobsPage() {
                 <Card key={status}>
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-medium capitalize">
-                      {/* {status.replace("-", " ")} */}
+                      {status}
                       <Badge className="ml-2" variant="secondary">
                         {filteredJobs.filter((job) => job.status === status).length}
                       </Badge>
@@ -624,7 +624,7 @@ export default function JobsPage() {
                       <div key={status} className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Badge className={getStatusColor(status)}>
-
+                            {status}
                           </Badge>
                           <span className="text-sm">{count} jobs</span>
                         </div>

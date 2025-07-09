@@ -6,7 +6,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Truck, Car, FileText } from 'lucide-react'
+import { Plus, Truck, Car, FileText, TruckElectricIcon } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -24,7 +24,7 @@ const vehicleFormSchema = z.object({
   model: z.string().min(1, 'Model is required'),
   sub_model: z.string().optional(),
   manufactured_year: z.string().min(1, 'Manufactured year is required'),
-  vehicle_type: z.enum(['vehicle', 'trailer'], { required_error: 'Vehicle type is required' }),
+  vehicle_type: z.enum(['vehicle', 'trailer', 'commercial', 'tanker', 'truck', 'specialized'], { required_error: 'Vehicle type is required' }),
   registration_date: z.string().min(1, 'Registration date is required'),
   license_expiry_date: z.string().min(1, 'License expiry date is required'),
   purchase_price: z.string().min(1, 'Purchase price is required'),
@@ -280,6 +280,30 @@ export default function Vehicles() {
                               <div className="flex items-center gap-2">
                                 <Car className="w-4 h-4" />
                                 Vehicle
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="commercial">
+                              <div className="flex items-center gap-2">
+                                <Truck className="w-4 h-4" />
+                                Commercial
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="tanker">
+                              <div className="flex items-center gap-2">
+                                <TruckElectricIcon className="w-4 h-4" />
+                                Truck
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="truck">
+                              <div className="flex items-center gap-2">
+                                <Truck className="w-4 h-4" />
+                                Tanker
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="specialized">
+                              <div className="flex items-center gap-2">
+                                <Truck className="w-4 h-4" />
+                                Specialized
                               </div>
                             </SelectItem>
                             <SelectItem value="trailer">

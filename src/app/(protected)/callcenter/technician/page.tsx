@@ -42,7 +42,7 @@ interface Technician {
   email: string
   location: string
   coordinates: { lat: number; lng: number }
-  status: "available" | "busy" | "off-duty" | "emergency"
+  availability: "available" | "busy" | "off-duty" | "emergency"
   specialties: string[]
   skillLevels: {
     electrical: number
@@ -185,7 +185,7 @@ export default function TechniciansPage() {
 
     const skillMatchPercentage = (skillMatches / job.requiredSkills.length) * 100
     const locationScore = 100 // Simplified - in real app, calculate distance
-    const availabilityScore = technician.status === "available" ? 100 : 0
+    const availabilityScore = technician.availability === "available" ? 100 : 0
 
     return Math.round(skillMatchPercentage * 0.5 + locationScore * 0.3 + availabilityScore * 0.2)
   }
@@ -213,7 +213,7 @@ export default function TechniciansPage() {
       tech.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
       tech.specialties.some((s) => s.toLowerCase().includes(searchTerm.toLowerCase()))
 
-    const matchesStatus = statusFilter === "all" || tech.status === statusFilter
+    const matchesStatus = statusFilter === "all" || tech.availability === statusFilter
 
     return matchesSearch && matchesStatus
   })
@@ -311,8 +311,8 @@ export default function TechniciansPage() {
                           </div>
                         </div>
                       </div>
-                      <Badge className={getStatusColor(technician.status)}>
-                        {technician.status.replace("-", " ").toUpperCase()}
+                      <Badge className={getStatusColor(technician.availability)}>
+                        {technician.availability}
                       </Badge>
                     </div>
                   </CardHeader>
@@ -383,7 +383,7 @@ export default function TechniciansPage() {
                         <MapPin className="h-4 w-4 mr-1" />
                         Track
                       </Button>
-                      {technician.status === "available" && (
+                      {technician.availability === "available" && (
                         <Dialog open={isAssignDialogOpen} onOpenChange={setIsAssignDialogOpen}>
                           <DialogTrigger asChild>
                             <Button size="sm" className="flex-1" onClick={() => setSelectedTechnician(technician)}>
@@ -479,7 +479,7 @@ export default function TechniciansPage() {
                     <TableBody>
                       {availableJobs.map((job) => {
                         const bestMatch = technicians
-                          .filter((t) => t.status === "available")
+                          .filter((t) => t.availability === "available")
                           .map((t) => ({ technician: t, score: calculateJobMatch(t, job) }))
                           .sort((a, b) => b.score - a.score)[0]
 
@@ -536,7 +536,7 @@ export default function TechniciansPage() {
                 <CardContent>
                   <div className="text-2xl font-bold">{technicians.length}</div>
                   <p className="text-xs text-muted-foreground">
-                    {technicians.filter((t) => t.status === "available").length} available
+                    {technicians.filter((t) => t.availability === "available").length} available
                   </p>
                 </CardContent>
               </Card>
@@ -607,8 +607,8 @@ export default function TechniciansPage() {
                           {/* <TableCell>{technician.completedJobs}</TableCell>
                             <TableCell>{technician.responseTime}</TableCell> */}
                           <TableCell>
-                            <Badge className={getStatusColor(technician.status)}>
-                              {technician.status.replace("-", " ").toUpperCase()}
+                            <Badge className={getStatusColor(technician.availability)}>
+                              {technician.availability}
                             </Badge>
                           </TableCell>
                         </TableRow>

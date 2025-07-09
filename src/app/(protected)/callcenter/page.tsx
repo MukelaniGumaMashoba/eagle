@@ -16,10 +16,11 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { MapPin, Phone, Clock, AlertTriangle, Search } from "lucide-react"
 import { toast } from "sonner"
+import { createClient } from "@/lib/supabase/client"
 
 interface Breakdown {
   id: string
-  orderNo: string
+  order_no: string
   driverName: string
   driverPhone: string
   vehicleReg: string
@@ -38,7 +39,7 @@ interface Technician {
   name: string
   phone: string
   location: string
-  available: boolean
+  status: boolean
   specialties: string[]
 }
 
@@ -48,13 +49,33 @@ export default function CallCenterPage() {
   const [selectedBreakdown, setSelectedBreakdown] = useState<Breakdown | null>(null)
   const [isDispatchDialogOpen, setIsDispatchDialogOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
-
+  const supabase = createClient()
   useEffect(() => {
+    const getBreakdowns = async () => {
+      const { data: breakdowns, error } = await supabase.from('breakdowns').select('*')
+      if (error) {
+        console.error(error)
+      } else {
+        setBreakdowns(breakdowns as unknown as Breakdown[])
+      }
+    }
+
+    const getTechnicians = async () => {
+      const { data: technicians, error } = await supabase.from('technicians').select('*')
+      if (error) {
+        console.error(error)
+      } else {
+        setTechnicians(technicians as unknown as Technician[])
+      }
+    }
+    getTechnicians()
+    getBreakdowns()
+
     // Mock data - in real app, fetch from API
     setBreakdowns([
       {
         id: "1",
-        orderNo: "OR.128651312",
+        order_no: "OR.128651312",
         driverName: "John Smith",
         driverPhone: "+27 82 123 4567",
         vehicleReg: "ABC 123 GP",
@@ -67,7 +88,7 @@ export default function CallCenterPage() {
       },
       {
         id: "2",
-        orderNo: "OR.128651313",
+        order_no: "OR.128651313",
         driverName: "Sarah Johnson",
         driverPhone: "+27 83 987 6543",
         vehicleReg: "XYZ 789 GP",
@@ -88,7 +109,7 @@ export default function CallCenterPage() {
         name: "Mike Wilson",
         phone: "+27 84 111 2222",
         location: "Sandton",
-        available: false,
+        status: false,
         specialties: ["Engine Repair", "Tire Service"],
       },
       {
@@ -96,7 +117,7 @@ export default function CallCenterPage() {
         name: "David Brown",
         phone: "+27 85 333 4444",
         location: "Johannesburg CBD",
-        available: true,
+        status: true,
         specialties: ["Electrical", "Battery Service"],
       },
       {
@@ -104,7 +125,7 @@ export default function CallCenterPage() {
         name: "Lisa Davis",
         phone: "+27 86 555 6666",
         location: "Randburg",
-        available: true,
+        status: true,
         specialties: ["Towing", "Recovery"],
       },
     ])
@@ -153,16 +174,16 @@ export default function CallCenterPage() {
         ),
       )
       setTechnicians((prev) => prev.map((t) => (t.id === techId ? { ...t, available: false } : t)))
-      toast.success(`${tech.name} has been assigned to breakdown ${breakdowns.find((b) => b.id === breakdownId)?.orderNo}`)
+      toast.success(`${tech.name} has been assigned to breakdown ${breakdowns.find((b) => b.id === breakdownId)?.order_no}`)
       setIsDispatchDialogOpen(false)
     }
   }
 
   const filteredBreakdowns = breakdowns.filter(
     (breakdown) =>
-      breakdown.orderNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      breakdown.driverName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      breakdown.vehicleReg.toLowerCase().includes(searchTerm.toLowerCase()),
+      breakdown.order_no ||
+      breakdown.driverName ||
+      breakdown.vehicleReg,
   )
 
   return (
@@ -201,13 +222,13 @@ export default function CallCenterPage() {
                       <div className="flex items-center gap-3">
                         <div className="flex items-center gap-2">
                           <AlertTriangle className="h-5 w-5 text-orange-500" />
-                          <CardTitle className="text-lg">{breakdown.orderNo}</CardTitle>
+                          <CardTitle className="text-lg">{breakdown.order_no}</CardTitle>
                         </div>
                         <Badge className={getPriorityColor(breakdown.priority)}>
-                          {breakdown.priority.toUpperCase()}
+                          {breakdown.priority}
                         </Badge>
                         <Badge className={getStatusColor(breakdown.status)}>
-                          {breakdown.status.replace("-", " ").toUpperCase()}
+                          {breakdown.status}
                         </Badge>
                       </div>
                       <div className="flex items-center gap-2">
@@ -268,12 +289,12 @@ export default function CallCenterPage() {
                             <DialogHeader>
                               <DialogTitle>Dispatch Technician</DialogTitle>
                               <DialogDescription>
-                                Select an available technician for breakdown {selectedBreakdown?.orderNo}
+                                Select an available technician for breakdown {selectedBreakdown?.order_no}
                               </DialogDescription>
                             </DialogHeader>
                             <div className="space-y-4">
                               {technicians
-                                .filter((t) => t.available)
+                                .filter((t) => t.status)
                                 .map((tech) => (
                                   <Card
                                     key={tech.id}
@@ -317,8 +338,8 @@ export default function CallCenterPage() {
                   <CardHeader>
                     <div className="flex justify-between items-start">
                       <CardTitle className="text-lg">{tech.name}</CardTitle>
-                      <Badge className={tech.available ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
-                        {tech.available ? "Available" : "Busy"}
+                      <Badge className={tech.status ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
+                        {tech.status ? "Available" : "Busy"}
                       </Badge>
                     </div>
                   </CardHeader>
