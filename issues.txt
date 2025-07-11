@@ -1,0 +1,16 @@
+1. Dont adding viheclec fkey when job is created.
+2. When creating a driver it auto check the user role and change to driver.
+3. No location for mobile
+4. Technician is not added in authitication just in table only
+5. Need to change the RSL for Job Assignment to USING (created_by = auth.uid())
+6. 
+
+
+
+
+
+
+
+
+Done Task
+1. Record to dbs the status which is assigned
