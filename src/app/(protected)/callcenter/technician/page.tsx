@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
@@ -34,9 +34,10 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import { createClient } from "@/lib/supabase/client"
+import { assignJob } from "@/lib/action/assign"
 
 interface Technician {
-  id: string
+  id: number
   name: string
   phone: string
   email: string
@@ -49,11 +50,11 @@ interface Technician {
     mechanical: number
     hydraulic: number
     diagnostic: number
-  }
+  }[]
   rating: number
   // completedJobs: number
   // responseTime: string
-  currentJob?: string
+  job_allocation?: JobAssignment
   joinDate: string
   certifications: string[]
   vehicleType: string
@@ -61,15 +62,15 @@ interface Technician {
 }
 
 interface JobAssignment {
-  id: string
-  orderNo: string
+  id: number
+  job_id: string
   description: string
   location: string
   priority: "low" | "medium" | "high" | "emergency"
-  requiredSkills: string[]
-  estimatedDuration: string
-  driverName: string
-  vehicleReg: string
+  status: "pending" | "assigned" | "in-progress" | "awaiting-approval" | "approved" | "completed" | "cancelled"
+  assigned_technician?: string
+  created_at: string
+  updated_at?: string
 }
 
 export default function TechniciansPage() {
@@ -83,54 +84,43 @@ export default function TechniciansPage() {
   const [isAddTechnicianOpen, setIsAddTechnicianOpen] = useState(false)
   const supabase = createClient()
 
-  useEffect(() => {
-    // Mock data - in real app, fetch from API
+  const refreshData = async () => {
+    // Fetch technicians with their job allocations
     const getTechnicians = async () => {
-      const { data: technicians, error } = await supabase.from('technicians').select('*')
+      const { data: technicians, error } = await supabase
+        .from('technicians')
+        .select(`
+          *,
+          job_allocation:job_assignments!job_assignments_technician_id_fkey(*)
+        `)
+        .eq('availability', 'available')
       if (error) {
-        console.error(error)
+        console.error('Error fetching technicians:', error)
       } else {
         setTechnicians((technicians || []) as unknown as Technician[])
-        console.log(technicians)
+        console.log('Technicians:', technicians)
       }
     }
     getTechnicians()
 
-    setAvailableJobs([
-      {
-        id: "1",
-        orderNo: "JOB-2024-004",
-        description: "Battery replacement needed - truck won't start",
-        location: "Midrand Industrial",
-        priority: "medium",
-        requiredSkills: ["Electrical", "Battery Service"],
-        estimatedDuration: "1 hour",
-        driverName: "Peter Johnson",
-        vehicleReg: "GHI 789 GP",
-      },
-      {
-        id: "2",
-        orderNo: "JOB-2024-005",
-        description: "Hydraulic system failure - crane not operating",
-        location: "Kempton Park",
-        priority: "high",
-        requiredSkills: ["Hydraulic", "Diagnostic"],
-        estimatedDuration: "3 hours",
-        driverName: "Mary Smith",
-        vehicleReg: "JKL 012 GP",
-      },
-      {
-        id: "3",
-        orderNo: "JOB-2024-006",
-        description: "Emergency recovery - vehicle accident on highway",
-        location: "N3 Highway",
-        priority: "emergency",
-        requiredSkills: ["Towing", "Recovery"],
-        estimatedDuration: "2 hours",
-        driverName: "Emergency Services",
-        vehicleReg: "MNO 345 GP",
-      },
-    ])
+    // Fetch available jobs (not assigned to any technician)
+    const getAvailableJobs = async () => {
+      const { data: jobs, error } = await supabase
+        .from('job_assignments')
+        .select('*')
+        .is('technician_id', null)
+      if (error) {
+        console.error('Error fetching available jobs:', error)
+      } else {
+        setAvailableJobs((jobs || []) as unknown as JobAssignment[])
+        console.log('Available jobs:', jobs)
+      }
+    }
+    getAvailableJobs()
+  }
+
+  useEffect(() => {
+    refreshData()
   }, [])
 
   const getStatusColor = (status: string) => {
@@ -164,7 +154,7 @@ export default function TechniciansPage() {
   }
 
   const getSkillIcon = (skill: string) => {
-    switch (skill.toLowerCase()) {
+    switch (skill) {
       case "electrical":
         return <Zap className="h-4 w-4" />
       case "mechanical":
@@ -179,31 +169,20 @@ export default function TechniciansPage() {
   }
 
   const calculateJobMatch = (technician: Technician, job: JobAssignment) => {
-    const skillMatches = job.requiredSkills.filter((skill) =>
-      technician.specialties.some((specialty) => specialty.toLowerCase().includes(skill.toLowerCase())),
-    ).length
-
-    const skillMatchPercentage = (skillMatches / job.requiredSkills.length) * 100
+    // Simplified matching since we don't have requiredSkills in the database
     const locationScore = 100 // Simplified - in real app, calculate distance
     const availabilityScore = technician.availability === "available" ? 100 : 0
 
-    return Math.round(skillMatchPercentage * 0.5 + locationScore * 0.3 + availabilityScore * 0.2)
+    return Math.round(locationScore * 0.5 + availabilityScore * 0.5)
   }
 
-  const handleAssignJob = (technicianId: string, jobId: string) => {
-    const technician = technicians.find((t) => t.id === technicianId)
-    const job = availableJobs.find((j) => j.id === jobId)
+  const handleAssignJob = async () => {
+    try {
+      // const { data, error } = await assignJob(selectedJob)
 
-    if (technician && job) {
-      setTechnicians((prev) =>
-        prev.map((t) => (t.id === technicianId ? { ...t, status: "busy", currentJob: job.orderNo } : t)),
-      )
-
-      setAvailableJobs((prev) => prev.filter((j) => j.id !== jobId))
-
-      toast.success(`${job.orderNo} assigned to ${technician.name}`)
-
-      setIsAssignDialogOpen(false)
+    } catch (error) {
+      console.error('Error assigning job:', error)
+      toast.error("Failed to assign job")
     }
   }
 
@@ -289,7 +268,7 @@ export default function TechniciansPage() {
         <Tabs defaultValue="directory" className="space-y-4">
           <TabsList>
             <TabsTrigger value="directory">Technician Directory</TabsTrigger>
-            <TabsTrigger value="assignments">Job Assignments</TabsTrigger>
+            {/* <TabsTrigger value="assignments">Job Assignments</TabsTrigger> */}
             <TabsTrigger value="performance">Performance</TabsTrigger>
           </TabsList>
 
@@ -305,9 +284,12 @@ export default function TechniciansPage() {
                         </div>
                         <div>
                           <CardTitle className="text-lg">{technician.name}</CardTitle>
+                          <div>
+                            <p>{technician.id}</p>
+                          </div>
                           <div className="flex items-center gap-1">
                             <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                            <span className="text-sm text-gray-600">{technician.rating}</span>
+                            {/* <span className="text-sm text-gray-600">{technician.rating}</span> */}
                           </div>
                         </div>
                       </div>
@@ -353,7 +335,7 @@ export default function TechniciansPage() {
                               <div className="w-16 bg-gray-200 rounded-full h-2">
                                 <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${level}%` }}></div>
                               </div>
-                              <span className="text-xs text-gray-500">{level}%</span>
+                              {/* <span className="text-xs text-gray-500">{level}%</span> */}
                             </div>
                           </div>
                         ))}
@@ -371,10 +353,19 @@ export default function TechniciansPage() {
                         </div>
                       </div> */}
 
-                    {technician.currentJob && (
+                    {technician.job_allocation && (
                       <div className="bg-orange-50 p-3 rounded-md">
                         <p className="text-sm font-medium">Current Job</p>
-                        <p className="text-sm text-gray-600">{technician.currentJob}</p>
+                        <p className="text-sm text-gray-600">{technician.job_allocation.job_id}</p>
+                        <p className="text-sm text-gray-600">{technician.job_allocation.id}</p>
+                        {/* <Button
+                          size="sm"
+                          variant="outline"
+                          className="mt-2 w-full"
+                        // onClick={() => handleUnassignJob(technician.id.toString())}
+                        >
+                           Job
+                        </Button> */}
                       </div>
                     )}
 
@@ -397,27 +388,22 @@ export default function TechniciansPage() {
                             </DialogHeader>
                             <div className="space-y-4">
                               {availableJobs.map((job) => {
-                                const matchScore = selectedTechnician ? calculateJobMatch(selectedTechnician, job) : 0
                                 return (
                                   <Card
                                     key={job.id}
-                                    className="cursor-pointer hover:bg-gray-50"
-                                    onClick={() => {
-                                      setSelectedJob(job)
-                                      handleAssignJob(selectedTechnician?.id || "", job.id)
-                                    }}
+                                    className="hover:bg-gray-50"
                                   >
                                     <CardContent className="p-4">
                                       <div className="flex justify-between items-start mb-2">
                                         <div>
-                                          <h4 className="font-semibold">{job.orderNo}</h4>
+                                          <h4 className="font-semibold">{job.job_id}</h4>
                                           <p className="text-sm text-gray-600">{job.description}</p>
                                         </div>
                                         <div className="flex items-center gap-2">
                                           <Badge className={getPriorityColor(job.priority)}>
-                                            {job.priority.toUpperCase()}
+                                            {job.priority}
                                           </Badge>
-                                          <Badge variant="outline">{matchScore}% Match</Badge>
+                                          {/* <Badge variant="outline">{matchScore}% Match</Badge> */}
                                         </div>
                                       </div>
                                       <div className="grid grid-cols-2 gap-4 text-sm">
@@ -427,10 +413,10 @@ export default function TechniciansPage() {
                                         </div>
                                         <div>
                                           <span className="text-gray-500">Duration:</span>
-                                          <p>{job.estimatedDuration}</p>
+                                          <p>Estimated time not available</p>
                                         </div>
                                       </div>
-                                      <div className="mt-2">
+                                      {/* <div className="mt-2">
                                         <span className="text-gray-500 text-sm">Required Skills:</span>
                                         <div className="flex gap-1 mt-1">
                                           {job.requiredSkills.map((skill) => (
@@ -439,7 +425,43 @@ export default function TechniciansPage() {
                                             </Badge>
                                           ))}
                                         </div>
-                                      </div>
+                                      </div> */}
+
+                                      <CardFooter className="mt-2">
+                                        <Button variant={"outline"} className="bg-transparent"
+                                          onClick={async () => {
+                                            if (!selectedTechnician) {
+                                              toast.error("No technician selected");
+                                              return;
+                                            }
+                                            if (!job) {
+                                              toast.error("No job selected");
+                                              return;
+                                            }
+                                            try {
+                                              const result = await assignJob({ ...job, accepted: true }, selectedTechnician.id);
+                                              console.log("Result:", result);
+                                              console.log("Selected job:", job);
+                                              console.log("Selected technician:", selectedTechnician);
+
+
+                                              if ('error' in result && result.error) {
+                                                toast.error("Error assigning job:" + result.error);
+                                              }
+                                              else {
+                                                toast.success("Job assigned successfully")
+                                                refreshData()
+                                                setIsAssignDialogOpen(false)
+                                              }
+                                            }
+                                            catch (error) {
+                                              console.error("Error assigning job:", error)
+                                            }
+                                          }}
+                                        >
+                                          Assign
+                                        </Button>
+                                      </CardFooter>
                                     </CardContent>
                                   </Card>
                                 )
@@ -455,7 +477,7 @@ export default function TechniciansPage() {
             </div>
           </TabsContent>
 
-          <TabsContent value="assignments" className="space-y-4">
+          {/* <TabsContent value="assignments" className="space-y-4">
             <div className="grid gap-4">
               <Card>
                 <CardHeader>
@@ -485,7 +507,7 @@ export default function TechniciansPage() {
 
                         return (
                           <TableRow key={job.id}>
-                            <TableCell className="font-medium">{job.orderNo}</TableCell>
+                            <TableCell className="font-medium">{job.job_id}</TableCell>
                             <TableCell>{job.description}</TableCell>
                             <TableCell>{job.location}</TableCell>
                             <TableCell>
@@ -524,7 +546,7 @@ export default function TechniciansPage() {
                 </CardContent>
               </Card>
             </div>
-          </TabsContent>
+          </TabsContent> */}
 
           <TabsContent value="performance" className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

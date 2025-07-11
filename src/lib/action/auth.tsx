@@ -22,7 +22,7 @@ export async function login(formData: FormData) {
   cookieStore.set('access_token', resData.session.access_token)
   cookieStore.set('refresh_token', resData.session.refresh_token)
   cookieStore.set('role', resData.user.user_metadata.role)
-  
+
   revalidatePath("/", "layout");
   redirect("/");
 }
@@ -31,12 +31,16 @@ export async function signup(formData: FormData) {
   const supabase = await createClient();
 
   const role = formData.get("role") as string;
+  const fullName = formData.get("name") as string;
+  const phone = formData.get("phone") as string;
+
   const data = {
     email: formData.get("email") as string,
     password: formData.get("password") as string,
     options: {
       data: {
-        name: formData.get("name") as string,
+        name: fullName,
+        phone,
         role: role,
       },
     },
@@ -47,18 +51,35 @@ export async function signup(formData: FormData) {
     role !== "fleet manager" &&
     role !== "customer" &&
     role !== "call centre" &&
-    role !== "cost centre" 
+    role !== "cost centre"
   ) {
     redirect(`/signup?message=Role not found`);
   }
+  const userId = (await getUser()).user.id;
+  console.log("The id," + userId);
+  if (!userId) {
+    alert("User ID not available after signup");
+    redirect("/signup?message=User ID missing");
+  }
+
+  await supabase.from("profiles").insert([
+    {
+      id: userId,
+      full_name: fullName,
+      role: role,
+      phone_number: phone,
+      email: data.email,
+    },
+  ]);
+
 
   if (error) {
-    console.log(error);
     redirect("/signup?message=" + error.message);
   }
 
+
   revalidatePath("/", "layout");
-  redirect("/");
+  redirect("/login");
 }
 
 export async function getUser() {

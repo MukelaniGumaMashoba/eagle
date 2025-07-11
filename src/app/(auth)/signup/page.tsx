@@ -62,6 +62,20 @@ export default function SignupPage() {
             </div>
 
             <div>
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                Phone number
+              </label>
+              <Input
+                id="phone"
+                name="phone"
+                type="tel"
+                placeholder="Enter your phone number"
+                required
+                className="w-full"
+              />
+            </div>
+
+            <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
                 Password
               </label>

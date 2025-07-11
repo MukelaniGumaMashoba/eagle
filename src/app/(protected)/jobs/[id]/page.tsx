@@ -36,17 +36,18 @@ interface Job {
     status: "pending" | "assigned" | "in-progress" | "awaiting-approval" | "approved" | "completed" | "cancelled"
     priority: "low" | "medium" | "high" | "emergency"
     created_at: string
-    updatedAt: string
+    updated_at: string
     drivers: {
-        first_name: string
-        surname: string
-        cell_number: string
-    }
+        first_name: string | null
+        surname: string | null
+        cell_number: string | null
+        job_allocated: boolean
+    }[]
     vehiclesc: {
-        registration_number: string
-        make: string
-        model: string
-    }
+        registration_number: string | null
+        make: string | null
+        model: string | null
+    }[]
     location: string
     coordinates: { lat: number; lng: number }
     assignedTechnician?: string
@@ -58,7 +59,7 @@ interface Job {
     approvalRequired: boolean
     approvedBy?: string
     approvedAt?: string
-    notes: string[]
+    notes: string
     attachments: string[]
 }
 
@@ -78,7 +79,7 @@ export default function JobDetailPage() {
             try {
                 const { data: jobData, error } = await supabase
                     .from('job_assignments')
-                    .select('*, drivers(*), vehiclesc(*)')
+                    .select('*, drivers!drivers_job_allocated_fkey(*), vehiclesc(*)')
                     .eq('id', params.id)
                     .single()
 
@@ -143,13 +144,11 @@ export default function JobDetailPage() {
         if (!newNote.trim() || !job) return
 
         try {
-            const updatedNotes = [...(job.notes || []), newNote]
-            
             const { error } = await supabase
                 .from('job_assignments')
-                .update({ 
-                    notes: updatedNotes,
-                    updatedAt: new Date().toISOString()
+                .update({
+                    notes: newNote,
+                    updated_at: new Date().toISOString()
                 })
                 .eq('id', job.id)
 
@@ -161,8 +160,8 @@ export default function JobDetailPage() {
             // Update local state
             setJob({
                 ...job,
-                notes: updatedNotes,
-                updatedAt: new Date().toISOString(),
+                notes: newNote,
+                updated_at: new Date().toISOString(),
             })
             setNewNote("")
         } catch (error) {
@@ -176,9 +175,9 @@ export default function JobDetailPage() {
         try {
             const { error } = await supabase
                 .from('job_assignments')
-                .update({ 
+                .update({
                     status: newStatus,
-                    updatedAt: new Date().toISOString()
+                    updated_at: new Date().toISOString()
                 })
                 .eq('id', job.id)
 
@@ -191,7 +190,7 @@ export default function JobDetailPage() {
             setJob({
                 ...job,
                 status: newStatus as Job["status"],
-                updatedAt: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
             })
         } catch (error) {
             console.error('Error updating job status:', error)
@@ -234,8 +233,8 @@ export default function JobDetailPage() {
                             <p className="text-muted-foreground mt-1">{job.description}</p>
                         </div>
                         <div className="flex items-center gap-2">
-                            <Badge className={getPriorityColor(job.priority)}>{job.priority.toUpperCase()}</Badge>
-                            <Badge className={getStatusColor(job.status)}>{job.status.replace("-", " ").toUpperCase()}</Badge>
+                            <Badge className={getPriorityColor(job.priority)}>{job.priority}</Badge>
+                            <Badge className={getStatusColor(job.status)}>{job.status}</Badge>
                             {job.clientType === "external" && <Badge variant="outline">External Client</Badge>}
                         </div>
                     </div>
@@ -287,12 +286,12 @@ export default function JobDetailPage() {
                                 <CardContent className="space-y-3">
                                     <div>
                                         <Label className="text-sm font-medium">Name</Label>
-                                        <p className="text-sm">{job.drivers?.first_name} {job.drivers?.surname}</p>
+                                        <p className="text-sm">{job.drivers?.[0]?.first_name} {job.drivers?.[0]?.surname}</p>
                                     </div>
                                     <div>
                                         <Label className="text-sm font-medium">Phone</Label>
                                         <div className="flex items-center gap-2">
-                                            <p className="text-sm">{job.drivers?.cell_number}</p>
+                                            <p className="text-sm">{job.drivers?.[0]?.cell_number}</p>
                                             <Button size="sm" variant="outline">
                                                 <Phone className="h-4 w-4" />
                                             </Button>
@@ -318,12 +317,12 @@ export default function JobDetailPage() {
                                 <CardContent className="space-y-3">
                                     <div>
                                         <Label className="text-sm font-medium">Registration</Label>
-                                        <p className="text-sm font-mono">{job.vehiclesc?.registration_number}</p>
+                                        <p className="text-sm font-mono">{job.vehiclesc?.[0]?.registration_number}</p>
                                     </div>
                                     <div>
                                         <Label className="text-sm font-medium">Make & Model</Label>
                                         <p className="text-sm">
-                                            {job.vehiclesc?.make} {job.vehiclesc?.model}
+                                            {job.vehiclesc?.[0]?.make} {job.vehiclesc?.[0]?.model}
                                         </p>
                                     </div>
                                 </CardContent>
@@ -490,20 +489,18 @@ export default function JobDetailPage() {
                                 {/* Existing Notes */}
                                 <div className="space-y-3">
                                     <h4 className="font-semibold">Previous Notes</h4>
-                                    {job.notes && job.notes.length > 0 ? (
-                                        job.notes.map((note, index) => (
-                                            <div key={index} className="bg-gray-50 p-3 rounded-md">
-                                                <p className="text-sm">{note}</p>
-                                                <p className="text-xs text-gray-500 mt-1">
-                                                    Added on {new Date(job.updatedAt).toLocaleDateString()}
-                                                </p>
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <div className="text-center py-4 text-gray-500">
-                                            <p>No notes available</p>
+                                    {job.notes && job.notes.length > 0 ?
+                                        <div className="bg-gray-50 p-3 rounded-md">
+                                            <p className="text-sm">{job.notes}</p>
+                                            <p className="text-xs text-gray-500 mt-1">
+                                                Added on {new Date().toLocaleDateString()}
+                                            </p>
                                         </div>
-                                    )}
+                                        : (
+                                            <div className="text-center py-4 text-gray-500">
+                                                <p>No notes available</p>
+                                            </div>
+                                        )}
                                 </div>
                             </CardContent>
                         </Card>

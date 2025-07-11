@@ -44,21 +44,21 @@ interface Job {
   status: "pending" | "assigned" | "in-progress" | "awaiting-approval" | "approved" | "completed" | "cancelled"
   priority: "low" | "medium" | "high" | "emergency"
   created_at: string
-  updatedAt: string
+  updated_at: string
   drivers: {
-    first_name: string
-    surname: string
-    cell_number: string
-  }
+    first_name: string | null
+    surname: string | null
+    cell_number: string | null
+    job_allocated: boolean
+  }[]
   vehiclesc: {
-    registration_number: string
-    make: string
-    model: string
-  }
+    registration_number: string | null
+    make: string | null
+    model: string | null
+  }[]
   location: string
   coordinates: { lat: number; lng: number }
-  assignedTechnician?: string
-  technicianPhone?: string
+  technician_id: number | null
   estimatedCost?: number
   actualCost?: number
   clientType: "internal" | "external"
@@ -66,7 +66,7 @@ interface Job {
   approvalRequired: boolean
   approvedBy?: string
   approvedAt?: string
-  notes: string[]
+  notes: string
   attachments: string[]
 }
 
@@ -92,11 +92,12 @@ export default function JobsPage() {
     const getJobs = async () => {
       const { data: jobs, error } = await supabase
         .from('job_assignments')
-        .select('*, drivers(*), vehiclesc(*)')
+        .select('*, drivers!drivers_job_allocated_fkey(*), vehiclesc(*)')
       if (error) {
         console.error(error)
       } else {
         setJobs(jobs as unknown as Job[])
+        console.log(jobs)
       }
     }
     getJobs()
@@ -111,35 +112,34 @@ export default function JobsPage() {
       filtered = filtered.filter(
         (job) => {
           const searchLower = searchTerm.toLowerCase()
-          
+
           // Basic job fields
           if (job.job_id?.toLowerCase().includes(searchLower) ||
-              job.description?.toLowerCase().includes(searchLower)) {
+            job.description?.toLowerCase().includes(searchLower)) {
             return true
           }
-          
+
           // Driver information
           if (job.drivers) {
-            const driverFirstName = job.drivers.first_name || 'none'
-            const driverSurname = job.drivers.surname || ''
-            if (driverFirstName.toLowerCase().includes(searchLower) ||
-                driverSurname.toLowerCase().includes(searchLower)) {
+            const driverName = job.drivers?.[0]?.first_name?.toLowerCase() || ''
+            const driverSurname = job.drivers?.[0]?.surname?.toLowerCase() || ''
+            if (driverName.includes(searchLower) || driverSurname.includes(searchLower)) {
               return true
             }
           }
-          
+
           // Vehicle information
           if (job.vehiclesc) {
-            const regNumber = job.vehiclesc.registration_number || ''
-            const make = job.vehiclesc.make || ''
-            const model = job.vehiclesc.model || ''
+            const regNumber = job.vehiclesc[0].registration_number || ''
+            const make = job.vehiclesc[0].make || ''
+            const model = job.vehiclesc[0].model || ''
             if (regNumber.toLowerCase().includes(searchLower) ||
-                make.toLowerCase().includes(searchLower) ||
-                model.toLowerCase().includes(searchLower)) {
+              make.toLowerCase().includes(searchLower) ||
+              model.toLowerCase().includes(searchLower)) {
               return true
             }
           }
-          
+
           return false
         }
       )
@@ -194,24 +194,29 @@ export default function JobsPage() {
     }
   }
 
-  const handleUpdateJobStatus = (jobId: number, status: string, notes?: string) => {
-    setJobs((prev) =>
-      prev.map((job) => {
-        if (job.id === jobId) {
-          const updatedJob = {
-            ...job,
-            status: status as Job["status"],
-            updatedAt: new Date().toISOString(),
-            notes: notes ? [...job.notes, notes] : job.notes,
-          }
-          return updatedJob
-        }
-        return job
-      }),
-    )
-    setIsUpdateDialogOpen(false)
-    setNewStatus("")
-    setUpdateNotes("")
+  const handleUpdateJobStatus = async (jobId: number, status: string, notes?: string) => {
+    try {
+      const { error } = await supabase
+        .from('job_assignments')
+        .update({
+          status: status,
+          notes: notes || '',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', jobId)
+
+      if (error) {
+        console.error('Error updating job status:', error)
+        return
+      }
+
+
+      setIsUpdateDialogOpen(false)
+      setNewStatus("")
+      setUpdateNotes("")
+    } catch (error) {
+      console.error('Error updating job status:', error)
+    }
   }
 
   const canApproveJobs = userRole === "fleet-manager"
@@ -304,10 +309,10 @@ export default function JobsPage() {
                           Driver Information
                         </h4>
                         <p className="text-sm">
-                          <strong>Name:</strong> {job.drivers?.first_name} {job.drivers?.surname}
+                          <strong>Name:</strong> {job.drivers[0].first_name} {job.drivers[0].surname}
                         </p>
                         <p className="text-sm">
-                          <strong>Phone:</strong> {job.drivers?.cell_number}
+                          <strong>Phone:</strong> {job.drivers[0].cell_number}
                         </p>
                         {job.clientName && (
                           <p className="text-sm">
@@ -321,13 +326,13 @@ export default function JobsPage() {
                           Vehicle Details
                         </h4>
                         <p className="text-sm">
-                          <strong>Reg:</strong> {job.vehiclesc?.registration_number}
+                          <strong>Reg:</strong> {job.vehiclesc[0].registration_number}
                         </p>
                         <p className="text-sm">
-                          <strong>Make:</strong> {job.vehiclesc?.make}
+                          <strong>Make:</strong> {job.vehiclesc[0].make}
                         </p>
                         <p className="text-sm">
-                          <strong>Model:</strong> {job.vehiclesc?.model}
+                          <strong>Model:</strong> {job.vehiclesc[0].model}
                         </p>
                       </div>
                       <div>
@@ -336,14 +341,16 @@ export default function JobsPage() {
                           Location & Technician
                         </h4>
                         <p className="text-sm text-gray-600">{job.location}</p>
-                        {job.assignedTechnician && (
+                        {job.technician_id && (
                           <>
                             <p className="text-sm">
-                              <strong>Tech:</strong> {job.assignedTechnician}
+                              <strong>Tech:</strong> {job.technician_id}
                             </p>
-                            <p className="text-sm">
-                              <strong>Phone:</strong> {job.technicianPhone}
-                            </p>
+                            {Array.isArray(job.technician_id) && job.technician_id.length > 0 && (
+                              <p className="text-sm">
+                                <strong>Phone:</strong> {job.technician_id[0].name}
+                              </p>
+                            )}
                           </>
                         )}
                       </div>
@@ -363,15 +370,15 @@ export default function JobsPage() {
                           </p>
                         )}
                         {/* {job.estimatedTime && (
-                            <p className="text-sm">
-                              <strong>Est. Time:</strong> {job.estimatedTime}
-                            </p>
-                          )}
-                          {job.completionTime && (
-                            <p className="text-sm">
-                              <strong>Completed:</strong> {job.completionTime}
-                            </p>
-                          )} */}
+                              <p className="text-sm">
+                                <strong>Est. Time:</strong> {job.estimatedTime}
+                              </p>
+                            )}
+                            {job.completionTime && (
+                              <p className="text-sm">
+                                <strong>Completed:</strong> {job.completionTime}
+                              </p>
+                            )} */}
                       </div>
                     </div>
 
@@ -379,36 +386,36 @@ export default function JobsPage() {
                       <p className="text-sm text-gray-600">{job.description}</p>
                     </div>
 
-                    {job.notes.length > 0 && (
-                      <div className="mb-4">
-                        <h4 className="font-semibold mb-2 flex items-center gap-2">
-                          <MessageSquare className="h-4 w-4" />
-                          Latest Notes
-                        </h4>
-                        <div className="bg-gray-50 p-3 rounded-md">
-                          <p className="text-sm">{job.notes[job.notes.length - 1]}</p>
-                          {job.notes.length > 1 && (
-                            <p className="text-xs text-gray-500 mt-1">+{job.notes.length - 1} more notes</p>
-                          )}
+                    {/* {job.notes.length > 0 && (
+                        <div className="mb-4">
+                          <h4 className="font-semibold mb-2 flex items-center gap-2">
+                            <MessageSquare className="h-4 w-4" />
+                            Latest Notes
+                          </h4>
+                          <div className="bg-gray-50 p-3 rounded-md">
+                            <p className="text-sm">{job.notes[job.notes.length - 1]}</p>
+                            {job.notes.length > 1 && (
+                              <p className="text-xs text-gray-500 mt-1">+{job.notes.length - 1} more notes</p>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )} */}
 
-                    {job.attachments.length > 0 && (
-                      <div className="mb-4">
-                        <h4 className="font-semibold mb-2 flex items-center gap-2">
-                          <FileImage className="h-4 w-4" />
-                          Attachments
-                        </h4>
-                        <div className="flex gap-2">
-                          {job.attachments.map((attachment, index) => (
-                            <Badge key={index} variant="secondary" className="text-xs">
-                              {attachment}
-                            </Badge>
-                          ))}
+                    {/* {job.attachments.length > 0 && (
+                        <div className="mb-4">
+                          <h4 className="font-semibold mb-2 flex items-center gap-2">
+                            <FileImage className="h-4 w-4" />
+                            Attachments
+                          </h4>
+                          <div className="flex gap-2">
+                            {job.attachments.map((attachment, index) => (
+                              <Badge key={index} variant="secondary" className="text-xs">
+                                {attachment}
+                              </Badge>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )} */}
 
                     <div className="flex justify-between items-center">
                       <div className="flex gap-2">
@@ -519,7 +526,7 @@ export default function JobsPage() {
                 <Card key={status}>
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-medium capitalize">
-                      {status}
+                      {/* {status.replace("-", " ")} */}
                       <Badge className="ml-2" variant="secondary">
                         {filteredJobs.filter((job) => job.status === status).length}
                       </Badge>
@@ -539,7 +546,7 @@ export default function JobsPage() {
                             </div>
                             <p className="text-xs text-gray-600 line-clamp-2">{job.description}</p>
                             <div className="flex items-center justify-between text-xs text-gray-500">
-                              <span>{job.vehiclesc?.registration_number}</span>
+                              <span>{job.vehiclesc[0].registration_number}</span>
                               {job.estimatedCost && <span>R {job.estimatedCost}</span>}
                             </div>
                           </div>

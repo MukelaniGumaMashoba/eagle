@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
+import { addDriversToTable, createDriver } from '@/lib/action/driver'
 
 export default function Drivers() {
     const [drivers, setDrivers] = useState<Driver[]>([])
@@ -23,6 +24,27 @@ export default function Drivers() {
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
     const supabase = createClient()
+
+
+    const handleDeleteDriver = async (driverId: number) => {
+        try {
+            const { error } = await supabase
+                .from('drivers')
+                .delete()
+                .eq('id', driverId)
+
+            if (error) {
+                console.error('Error deleting driver:', error)
+                toast.error('Failed to delete driver')
+            } else {
+                toast.success('Driver deleted successfully')
+                fetchDrivers()
+            }
+        } catch (error) {
+            console.error('Error:', error)
+            toast.error('Failed to delete driver')
+        }
+    }
 
     // Form state
     const [formData, setFormData] = useState({
@@ -42,7 +64,8 @@ export default function Drivers() {
         front_of_driver_pic: '',
         rear_of_driver_pic: '',
         professional_driving_permit: false,
-        pdp_expiry_date: ''
+        pdp_expiry_date: '',
+        created_by: ''
     })
 
     useEffect(() => {
@@ -93,11 +116,22 @@ export default function Drivers() {
         e.preventDefault()
         setIsSubmitting(true)
 
+        const { data: user, error: userError } = await supabase.auth.getUser()
+        const user_id = user.user?.id;
+
+        const { data, error } = await createDriver(formData as unknown as Driver)
+
+        if (error) {
+            toast.error('Failed to create driver');
+        }
+
+        if (data) {
+            toast.success('Driver created successfully')
+        }
+
+
         try {
-            const { data, error } = await supabase
-                .from('drivers')
-                .insert([formData])
-                .select()
+            const { data, error } = await addDriversToTable(formData as unknown as Driver)
 
             if (error) {
                 console.error('Error adding driver:', error)
@@ -122,9 +156,10 @@ export default function Drivers() {
                     front_of_driver_pic: '',
                     rear_of_driver_pic: '',
                     professional_driving_permit: false,
-                    pdp_expiry_date: ''
+                    pdp_expiry_date: '',
+                    created_by: user_id || ''
                 })
-                fetchDrivers() // Refresh the list
+                fetchDrivers()
             }
         } catch (error) {
             console.error('Error:', error)
@@ -683,19 +718,20 @@ type Driver = {
     first_name: string
     surname: string
     id_or_passport_number: string
-    id_or_passport_document?: string
-    email_address?: string
-    cell_number?: string
+    id_or_passport_document: string
+    email_address: string
+    cell_number: string
     sa_issued: boolean
-    work_permit_upload?: string
-    license_number?: string
-    license_expiry_date?: string
-    license_code?: string
-    driver_restriction_code?: string
-    vehicle_restriction_code?: string
-    front_of_driver_pic?: string
-    rear_of_driver_pic?: string
+    work_permit_upload: string
+    license_number: string
+    license_expiry_date: string
+    license_code: string
+    driver_restriction_code: string
+    vehicle_restriction_code: string
+    front_of_driver_pic: string
+    rear_of_driver_pic: string
     professional_driving_permit: boolean
-    pdp_expiry_date?: string
-    created_at?: string
+    pdp_expiry_date: string
+    created_at: string
+    created_by: string
 }
