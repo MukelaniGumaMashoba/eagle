@@ -93,7 +93,7 @@ export default function TechniciansPage() {
           *,
           job_allocation:job_assignments!job_assignments_technician_id_fkey(*)
         `)
-        .eq('availability', 'available')
+        // .eq('availability', 'available')
       if (error) {
         console.error('Error fetching technicians:', error)
       } else {

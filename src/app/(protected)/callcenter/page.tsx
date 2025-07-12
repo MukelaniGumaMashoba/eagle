@@ -21,17 +21,17 @@ import { createClient } from "@/lib/supabase/client"
 interface Breakdown {
   id: string
   order_no: string
-  driverName: string
-  driverPhone: string
-  vehicleReg: string
+  driver_name: string
+  driver_phone: string
+  registration: string
   location: string
   coordinates: { lat: number; lng: number }
-  description: string
+  issue: string
   status: "pending" | "dispatched" | "in-progress" | "completed" | "cancelled"
   priority: "low" | "medium" | "high" | "emergency"
-  createdAt: string
-  assignedTech?: string
-  estimatedTime?: string
+  created_at: string
+  assigned_tech?: string
+  estimated_time?: string
 }
 
 interface Technician {
@@ -39,7 +39,7 @@ interface Technician {
   name: string
   phone: string
   location: string
-  status: boolean
+  availability: string
   specialties: string[]
 }
 
@@ -72,63 +72,63 @@ export default function CallCenterPage() {
     getBreakdowns()
 
     // Mock data - in real app, fetch from API
-    setBreakdowns([
-      {
-        id: "1",
-        order_no: "OR.128651312",
-        driverName: "John Smith",
-        driverPhone: "+27 82 123 4567",
-        vehicleReg: "ABC 123 GP",
-        location: "N1 Highway, Johannesburg",
-        coordinates: { lat: -26.2041, lng: 28.0473 },
-        description: "Engine overheating, steam coming from radiator",
-        status: "pending",
-        priority: "high",
-        createdAt: "2024-01-15 14:30",
-      },
-      {
-        id: "2",
-        order_no: "OR.128651313",
-        driverName: "Sarah Johnson",
-        driverPhone: "+27 83 987 6543",
-        vehicleReg: "XYZ 789 GP",
-        location: "M1 Highway, Sandton",
-        coordinates: { lat: -26.1076, lng: 28.0567 },
-        description: "Flat tire, no spare available",
-        status: "dispatched",
-        priority: "medium",
-        createdAt: "2024-01-15 15:45",
-        assignedTech: "Mike Wilson",
-        estimatedTime: "45 minutes",
-      },
-    ])
+    // setBreakdowns([
+    //   {
+    //     id: "1",
+    //     order_no: "OR.128651312",
+    //     driverName: "John Smith",
+    //     driverPhone: "+27 82 123 4567",
+    //     vehicleReg: "ABC 123 GP",
+    //     location: "N1 Highway, Johannesburg",
+    //     coordinates: { lat: -26.2041, lng: 28.0473 },
+    //     description: "Engine overheating, steam coming from radiator",
+    //     status: "pending",
+    //     priority: "high",
+    //     createdAt: "2024-01-15 14:30",
+    //   },
+    //   {
+    //     id: "2",
+    //     order_no: "OR.128651313",
+    //     driverName: "Sarah Johnson",
+    //     driverPhone: "+27 83 987 6543",
+    //     vehicleReg: "XYZ 789 GP",
+    //     location: "M1 Highway, Sandton",
+    //     coordinates: { lat: -26.1076, lng: 28.0567 },
+    //     description: "Flat tire, no spare available",
+    //     status: "dispatched",
+    //     priority: "medium",
+    //     createdAt: "2024-01-15 15:45",
+    //     assignedTech: "Mike Wilson",
+    //     estimatedTime: "45 minutes",
+    //   },
+    // ])
 
-    setTechnicians([
-      {
-        id: "1",
-        name: "Mike Wilson",
-        phone: "+27 84 111 2222",
-        location: "Sandton",
-        status: false,
-        specialties: ["Engine Repair", "Tire Service"],
-      },
-      {
-        id: "2",
-        name: "David Brown",
-        phone: "+27 85 333 4444",
-        location: "Johannesburg CBD",
-        status: true,
-        specialties: ["Electrical", "Battery Service"],
-      },
-      {
-        id: "3",
-        name: "Lisa Davis",
-        phone: "+27 86 555 6666",
-        location: "Randburg",
-        status: true,
-        specialties: ["Towing", "Recovery"],
-      },
-    ])
+    // setTechnicians([
+    //   {
+    //     id: "1",
+    //     name: "Mike Wilson",
+    //     phone: "+27 84 111 2222",
+    //     location: "Sandton",
+    //     status: false,
+    //     specialties: ["Engine Repair", "Tire Service"],
+    //   },
+    //   {
+    //     id: "2",
+    //     name: "David Brown",
+    //     phone: "+27 85 333 4444",
+    //     location: "Johannesburg CBD",
+    //     status: true,
+    //     specialties: ["Electrical", "Battery Service"],
+    //   },
+    //   {
+    //     id: "3",
+    //     name: "Lisa Davis",
+    //     phone: "+27 86 555 6666",
+    //     location: "Randburg",
+    //     status: true,
+    //     specialties: ["Towing", "Recovery"],
+    //   },
+    // ])
   }, [])
 
   const getStatusColor = (status: string) => {
@@ -182,14 +182,12 @@ export default function CallCenterPage() {
   const filteredBreakdowns = breakdowns.filter(
     (breakdown) =>
       breakdown.order_no ||
-      breakdown.driverName ||
-      breakdown.vehicleReg,
+      breakdown.driver_name ||
+      breakdown.registration,
   )
 
   return (
     <>
-
-
       <div className="flex-1 space-y-4 p-4 pt-6">
         <div className="flex items-center justify-between">
           <h2 className="text-3xl font-bold tracking-tight">Breakdown Management</h2>
@@ -208,8 +206,8 @@ export default function CallCenterPage() {
 
         <Tabs defaultValue="active" className="space-y-4">
           <TabsList>
-            <TabsTrigger value="active">Active Breakdowns</TabsTrigger>
-            <TabsTrigger value="technicians">Available Technicians</TabsTrigger>
+            <TabsTrigger value="active">Breakdowns</TabsTrigger>
+            <TabsTrigger value="technicians">Technicians</TabsTrigger>
             <TabsTrigger value="map">Map View</TabsTrigger>
           </TabsList>
 
@@ -233,7 +231,7 @@ export default function CallCenterPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         <Clock className="h-4 w-4 text-gray-500" />
-                        <span className="text-sm text-gray-500">{breakdown.createdAt}</span>
+                        <span className="text-sm text-gray-500">{breakdown.created_at}</span>
                       </div>
                     </div>
                   </CardHeader>
@@ -242,13 +240,13 @@ export default function CallCenterPage() {
                       <div>
                         <h4 className="font-semibold mb-2">Driver Information</h4>
                         <p className="text-sm">
-                          <strong>Name:</strong> {breakdown.driverName}
+                          <strong>Name:</strong> {breakdown.driver_name}
                         </p>
                         <p className="text-sm">
-                          <strong>Phone:</strong> {breakdown.driverPhone}
+                          <strong>Phone:</strong> {breakdown.driver_phone}
                         </p>
                         <p className="text-sm">
-                          <strong>Vehicle:</strong> {breakdown.vehicleReg}
+                          <strong>Vehicle:</strong> {breakdown.registration}
                         </p>
                       </div>
                       <div>
@@ -260,14 +258,14 @@ export default function CallCenterPage() {
                       </div>
                       <div>
                         <h4 className="font-semibold mb-2">Issue Description</h4>
-                        <p className="text-sm text-gray-600">{breakdown.description}</p>
-                        {breakdown.assignedTech && (
+                        <p className="text-sm text-gray-600">{breakdown.issue}</p>
+                        {breakdown.assigned_tech && (
                           <div className="mt-2">
                             <p className="text-sm">
-                              <strong>Assigned:</strong> {breakdown.assignedTech}
+                              <strong>Assigned:</strong> {breakdown.assigned_tech}
                             </p>
                             <p className="text-sm">
-                              <strong>ETA:</strong> {breakdown.estimatedTime}
+                              <strong>ETA:</strong> {breakdown.estimated_time}
                             </p>
                           </div>
                         )}
@@ -294,7 +292,7 @@ export default function CallCenterPage() {
                             </DialogHeader>
                             <div className="space-y-4">
                               {technicians
-                                .filter((t) => t.status)
+                                .filter((t) => t.availability)
                                 .map((tech) => (
                                   <Card
                                     key={tech.id}
@@ -338,8 +336,8 @@ export default function CallCenterPage() {
                   <CardHeader>
                     <div className="flex justify-between items-start">
                       <CardTitle className="text-lg">{tech.name}</CardTitle>
-                      <Badge className={tech.status ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
-                        {tech.status ? "Available" : "Busy"}
+                      <Badge className={tech.availability === "available" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
+                        {tech.availability}
                       </Badge>
                     </div>
                   </CardHeader>
