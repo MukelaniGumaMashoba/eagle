@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
-import { addDriversToTable, createDriver } from '@/lib/action/driver'
+import { addDriversToTable } from '@/lib/action/driver'
 
 export default function Drivers() {
     const [drivers, setDrivers] = useState<Driver[]>([])
@@ -115,20 +115,8 @@ export default function Drivers() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsSubmitting(true)
-
         const { data: user, error: userError } = await supabase.auth.getUser()
         const user_id = user.user?.id;
-
-        const { data, error } = await createDriver(formData as unknown as Driver)
-
-        if (error) {
-            toast.error('Failed to create driver');
-        }
-
-        if (data) {
-            toast.success('Driver created successfully')
-        }
-
 
         try {
             const { data, error } = await addDriversToTable(formData as unknown as Driver)

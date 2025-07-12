@@ -93,6 +93,8 @@ export default function JobsPage() {
       const { data: jobs, error } = await supabase
         .from('job_assignments')
         .select('*, drivers!drivers_job_allocated_fkey(*), vehiclesc(*)')
+        .neq('status', 'completed')
+        .neq('status', 'cancelled')
       if (error) {
         console.error(error)
       } else {
@@ -276,100 +278,125 @@ export default function JobsPage() {
 
           <TabsContent value="list" className="space-y-4">
             <div className="grid gap-4">
-              {filteredJobs.map((job) => (
-                <Card key={job.id} className="hover:shadow-md transition-shadow">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-2">
-                          <FileText className="h-5 w-5 text-blue-500" />
-                          <CardTitle className="text-lg">{job.job_id}</CardTitle>
+              {
+                filteredJobs.length > 0 ? (
+                  filteredJobs.map((job) => (
+                    <Card key={job.id} className="hover:shadow-md transition-shadow">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2">
+                              <FileText className="h-5 w-5 text-blue-500" />
+                              <CardTitle className="text-lg">{job.job_id}</CardTitle>
+                            </div>
+                            <Badge className={getPriorityColor(job.priority)}>{job.priority}</Badge>
+                            <Badge className={getStatusColor(job.status)}>
+                              {job.status}
+                            </Badge>
+                            {job.clientType === "external" && <Badge variant="outline">External</Badge>}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-4 w-4 text-gray-500" />
+                            <span className="text-sm text-gray-500">
+                              {new Date(job.created_at).toLocaleDateString()}{" "}
+                              {new Date(job.created_at).toLocaleTimeString()}
+                            </span>
+                          </div>
                         </div>
-                        <Badge className={getPriorityColor(job.priority)}>{job.priority}</Badge>
-                        <Badge className={getStatusColor(job.status)}>
-                          {job.status}
-                        </Badge>
-                        {job.clientType === "external" && <Badge variant="outline">External</Badge>}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-gray-500" />
-                        <span className="text-sm text-gray-500">
-                          {new Date(job.created_at).toLocaleDateString()}{" "}
-                          {new Date(job.created_at).toLocaleTimeString()}
-                        </span>
-                      </div>
-                    </div>
-                    <CardDescription className="text-base font-medium">{job.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                      <div>
-                        <h4 className="font-semibold mb-2 flex items-center gap-2">
-                          <User className="h-4 w-4" />
-                          Driver Information
-                        </h4>
-                        <p className="text-sm">
-                          <strong>Name:</strong> {job.drivers[0].first_name} {job.drivers[0].surname}
-                        </p>
-                        <p className="text-sm">
-                          <strong>Phone:</strong> {job.drivers[0].cell_number}
-                        </p>
-                        {job.clientName && (
-                          <p className="text-sm">
-                            <strong>Client:</strong> {job.clientName}
-                          </p>
-                        )}
-                      </div>
-                      <div>
-                        <h4 className="font-semibold mb-2 flex items-center gap-2">
-                          <Truck className="h-4 w-4" />
-                          Vehicle Details
-                        </h4>
-                        <p className="text-sm">
-                          <strong>Reg:</strong> {job.vehiclesc[0].registration_number}
-                        </p>
-                        <p className="text-sm">
-                          <strong>Make:</strong> {job.vehiclesc[0].make}
-                        </p>
-                        <p className="text-sm">
-                          <strong>Model:</strong> {job.vehiclesc[0].model}
-                        </p>
-                      </div>
-                      <div>
-                        <h4 className="font-semibold mb-2 flex items-center gap-2">
-                          <MapPin className="h-4 w-4" />
-                          Location & Technician
-                        </h4>
-                        <p className="text-sm text-gray-600">{job.location}</p>
-                        {job.technician_id && (
-                          <>
-                            <p className="text-sm">
-                              <strong>Tech:</strong> {job.technician_id}
-                            </p>
-                            {Array.isArray(job.technician_id) && job.technician_id.length > 0 && (
+                        <CardDescription className="text-base font-medium">{job.description}</CardDescription>
+                      </CardHeader>
+
+
+                      <CardContent>
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                          {job.drivers && job.drivers.length > 0 ? (
+                            <div>
+                              <h4 className="font-semibold mb-2 flex items-center gap-2">
+                                <User className="h-4 w-4" />
+                                Driver Information
+                              </h4>
                               <p className="text-sm">
-                                <strong>Phone:</strong> {job.technician_id[0].name}
+                                <strong>Name:</strong> {job.drivers[0].first_name} {job.drivers[0].surname}
+                              </p>
+                              <p className="text-sm">
+                                <strong>Phone:</strong> {job.drivers[0].cell_number}
+                              </p>
+                              {job.clientName && (
+                                <p className="text-sm">
+                                  <strong>Client:</strong> {job.clientName}
+                                </p>
+                              )}
+                            </div>
+                          ) : (
+                            <div>
+                              <h4 className="font-semibold mb-2 flex items-center gap-2">
+                                <User className="h-4 w-4" />
+                                Driver Information
+                              </h4>
+                            </div>
+                          )}
+                          {
+                            job.vehiclesc && job.vehiclesc.length > 0 ? (
+                              <div>
+                                <h4 className="font-semibold mb-2 flex items-center gap-2">
+                                  <Truck className="h-4 w-4" />
+                                  Vehicle Details
+                                </h4>
+                                <p className="text-sm">
+                                  <strong>Reg:</strong> {job.vehiclesc[0].registration_number || "No vehicle allocated"}
+                                </p>
+                                <p className="text-sm">
+                                  <strong>Make:</strong> {job.vehiclesc[0].make || "No vehicle allocated"}
+                                </p>
+                                <p className="text-sm">
+                                  <strong>Model:</strong> {job.vehiclesc[0].model || "No vehicle allocated"}
+                                </p>
+                              </div>
+                            ) : (
+                              <div>
+                                <h4 className="font-semibold mb-2 flex items-center gap-2">
+                                  <Truck className="h-4 w-4" />
+                                  Vehicle Details
+                                </h4>
+                              </div>
+                            )}
+
+
+                          <div>
+                            <h4 className="font-semibold mb-2 flex items-center gap-2">
+                              <MapPin className="h-4 w-4" />
+                              Location & Technician
+                            </h4>
+                            <p className="text-sm text-gray-600">{job.location}</p>
+                            {job.technician_id && (
+                              <>
+                                <p className="text-sm">
+                                  <strong>Tech:</strong> {job.technician_id}
+                                </p>
+                                {Array.isArray(job.technician_id) && job.technician_id.length > 0 && (
+                                  <p className="text-sm">
+                                    <strong>Phone:</strong> {job.technician_id[0].name}
+                                  </p>
+                                )}
+                              </>
+                            )}
+                          </div>
+                          <div>
+                            <h4 className="font-semibold mb-2 flex items-center gap-2">
+                              <DollarSign className="h-4 w-4" />
+                              Cost & Time
+                            </h4>
+                            {job.estimatedCost && (
+                              <p className="text-sm">
+                                <strong>Est. Cost:</strong> R {job.estimatedCost.toFixed(2)}
                               </p>
                             )}
-                          </>
-                        )}
-                      </div>
-                      <div>
-                        <h4 className="font-semibold mb-2 flex items-center gap-2">
-                          <DollarSign className="h-4 w-4" />
-                          Cost & Time
-                        </h4>
-                        {job.estimatedCost && (
-                          <p className="text-sm">
-                            <strong>Est. Cost:</strong> R {job.estimatedCost.toFixed(2)}
-                          </p>
-                        )}
-                        {job.actualCost && (
-                          <p className="text-sm">
-                            <strong>Actual:</strong> R {job.actualCost.toFixed(2)}
-                          </p>
-                        )}
-                        {/* {job.estimatedTime && (
+                            {job.actualCost && (
+                              <p className="text-sm">
+                                <strong>Actual:</strong> R {job.actualCost.toFixed(2)}
+                              </p>
+                            )}
+                            {/* {job.estimatedTime && (
                               <p className="text-sm">
                                 <strong>Est. Time:</strong> {job.estimatedTime}
                               </p>
@@ -379,14 +406,14 @@ export default function JobsPage() {
                                 <strong>Completed:</strong> {job.completionTime}
                               </p>
                             )} */}
-                      </div>
-                    </div>
+                          </div>
+                        </div>
 
-                    <div className="mb-4">
-                      <p className="text-sm text-gray-600">{job.description}</p>
-                    </div>
+                        <div className="mb-4">
+                          <p className="text-sm text-gray-600">{job.description}</p>
+                        </div>
 
-                    {/* {job.notes.length > 0 && (
+                        {/* {job.notes.length > 0 && (
                         <div className="mb-4">
                           <h4 className="font-semibold mb-2 flex items-center gap-2">
                             <MessageSquare className="h-4 w-4" />
@@ -401,7 +428,7 @@ export default function JobsPage() {
                         </div>
                       )} */}
 
-                    {/* {job.attachments.length > 0 && (
+                        {/* {job.attachments.length > 0 && (
                         <div className="mb-4">
                           <h4 className="font-semibold mb-2 flex items-center gap-2">
                             <FileImage className="h-4 w-4" />
@@ -417,106 +444,111 @@ export default function JobsPage() {
                         </div>
                       )} */}
 
-                    <div className="flex justify-between items-center">
-                      <div className="flex gap-2">
-                        <Link href={`/jobs/${job.id}`}>
-                          <Button variant="outline" size="sm">
-                            <Eye className="h-4 w-4 mr-2" />
-                            View Details
-                          </Button>
-                        </Link>
-                        {canUpdateStatus && (
-                          <Dialog open={isUpdateDialogOpen} onOpenChange={setIsUpdateDialogOpen}>
-                            <DialogTrigger asChild>
-                              <Button size="sm" onClick={() => setSelectedJob(job)}>
-                                <Edit className="h-4 w-4 mr-2" />
-                                Update Status
+                        <div className="flex justify-between items-center">
+                          <div className="flex gap-2">
+                            <Link href={`/jobs/${job.id}`}>
+                              <Button variant="outline" size="sm">
+                                <Eye className="h-4 w-4 mr-2" />
+                                View Details
                               </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                              <DialogHeader>
-                                <DialogTitle>Update Job Status</DialogTitle>
-                                <DialogDescription>
-                                  Update the status for job {selectedJob?.job_id}
-                                </DialogDescription>
-                              </DialogHeader>
-                              <div className="space-y-4">
-                                <div>
-                                  <Label htmlFor="status">New Status</Label>
-                                  <Select value={newStatus} onValueChange={setNewStatus}>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Select status" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="assigned">Assigned</SelectItem>
-                                      <SelectItem value="in-progress">In Progress</SelectItem>
-                                      <SelectItem value="awaiting-approval">Awaiting Approval</SelectItem>
-                                      {canApproveJobs && (
-                                        <>
-                                          <SelectItem value="approved">Approved</SelectItem>
-                                          <SelectItem value="completed">Completed</SelectItem>
-                                        </>
-                                      )}
-                                      <SelectItem value="cancelled">Cancelled</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                                <div>
-                                  <Label htmlFor="notes">Add Note</Label>
-                                  <Textarea
-                                    id="notes"
-                                    placeholder="Add a note about this status update..."
-                                    className="mt-1"
-                                    value={updateNotes}
-                                    onChange={(e) => setUpdateNotes(e.target.value)}
-                                  />
-                                </div>
-                                <div className="flex gap-2">
-                                  <Button
-                                    onClick={() =>
-                                      handleUpdateJobStatus(selectedJob?.id || 0, newStatus, updateNotes)
-                                    }
-                                    className="flex-1"
-                                    disabled={!newStatus}
-                                  >
+                            </Link>
+                            {canUpdateStatus && (
+                              <Dialog open={isUpdateDialogOpen} onOpenChange={setIsUpdateDialogOpen}>
+                                <DialogTrigger asChild>
+                                  <Button size="sm" onClick={() => setSelectedJob(job)}>
+                                    <Edit className="h-4 w-4 mr-2" />
                                     Update Status
                                   </Button>
-                                  <Button variant="outline" onClick={() => setIsUpdateDialogOpen(false)}>
-                                    Cancel
-                                  </Button>
-                                </div>
-                              </div>
-                            </DialogContent>
-                          </Dialog>
-                        )}
-                      </div>
+                                </DialogTrigger>
+                                <DialogContent>
+                                  <DialogHeader>
+                                    <DialogTitle>Update Job Status</DialogTitle>
+                                    <DialogDescription>
+                                      Update the status for job {selectedJob?.job_id}
+                                    </DialogDescription>
+                                  </DialogHeader>
+                                  <div className="space-y-4">
+                                    <div>
+                                      <Label htmlFor="status">New Status</Label>
+                                      <Select value={newStatus} onValueChange={setNewStatus}>
+                                        <SelectTrigger>
+                                          <SelectValue placeholder="Select status" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="assigned">Assigned</SelectItem>
+                                          <SelectItem value="in-progress">In Progress</SelectItem>
+                                          <SelectItem value="awaiting-approval">Awaiting Approval</SelectItem>
+                                          {canApproveJobs && (
+                                            <>
+                                              <SelectItem value="approved">Approved</SelectItem>
+                                              <SelectItem value="completed">Completed</SelectItem>
+                                            </>
+                                          )}
+                                          <SelectItem value="cancelled">Cancelled</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
+                                    <div>
+                                      <Label htmlFor="notes">Add Note</Label>
+                                      <Textarea
+                                        id="notes"
+                                        placeholder="Add a note about this status update..."
+                                        className="mt-1"
+                                        value={updateNotes}
+                                        onChange={(e) => setUpdateNotes(e.target.value)}
+                                      />
+                                    </div>
+                                    <div className="flex gap-2">
+                                      <Button
+                                        onClick={() =>
+                                          handleUpdateJobStatus(selectedJob?.id || 0, newStatus, updateNotes)
+                                        }
+                                        className="flex-1"
+                                        disabled={!newStatus}
+                                      >
+                                        Update Status
+                                      </Button>
+                                      <Button variant="outline" onClick={() => setIsUpdateDialogOpen(false)}>
+                                        Cancel
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </DialogContent>
+                              </Dialog>
+                            )}
+                          </div>
 
-                      {job.status === "awaiting-approval" && canApproveJobs && (
-                        <div className="flex gap-2">
-                          <Button
-                            onClick={() => handleUpdateJobStatus(job.id, "approved", "Job approved by fleet manager")}
-                            className="bg-green-600 hover:bg-green-700"
-                            size="sm"
-                          >
-                            <CheckCircle className="h-4 w-4 mr-2" />
-                            Approve
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            onClick={() =>
-                              handleUpdateJobStatus(job.id, "cancelled", "Job rejected by fleet manager")
-                            }
-                            size="sm"
-                          >
-                            <XCircle className="h-4 w-4 mr-2" />
-                            Reject
-                          </Button>
+                          {job.status === "awaiting-approval" && canApproveJobs && (
+                            <div className="flex gap-2">
+                              <Button
+                                onClick={() => handleUpdateJobStatus(job.id, "approved", "Job approved by fleet manager")}
+                                className="bg-green-600 hover:bg-green-700"
+                                size="sm"
+                              >
+                                <CheckCircle className="h-4 w-4 mr-2" />
+                                Approve
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                onClick={() =>
+                                  handleUpdateJobStatus(job.id, "cancelled", "Job rejected by fleet manager")
+                                }
+                                size="sm"
+                              >
+                                <XCircle className="h-4 w-4 mr-2" />
+                                Reject
+                              </Button>
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                      </CardContent>
+                    </Card>
+                  ))
+                ) : (
+                  <div className="flex justify-center items-center h-full">
+                    <p className="text-gray-500">No jobs found</p>
+                  </div>
+                )}
             </div>
           </TabsContent>
 
@@ -526,7 +558,7 @@ export default function JobsPage() {
                 <Card key={status}>
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-medium capitalize">
-                      {/* {status.replace("-", " ")} */}
+                      {status}
                       <Badge className="ml-2" variant="secondary">
                         {filteredJobs.filter((job) => job.status === status).length}
                       </Badge>
@@ -546,7 +578,6 @@ export default function JobsPage() {
                             </div>
                             <p className="text-xs text-gray-600 line-clamp-2">{job.description}</p>
                             <div className="flex items-center justify-between text-xs text-gray-500">
-                              <span>{job.vehiclesc[0].registration_number}</span>
                               {job.estimatedCost && <span>R {job.estimatedCost}</span>}
                             </div>
                           </div>

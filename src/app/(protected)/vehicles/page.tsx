@@ -100,9 +100,6 @@ export default function Vehicles() {
 
   const onSubmit = async (data: VehicleFormValues) => {
     await handleAddVehicle(data)
-    form.reset()
-    setIsAddingVehicle(false)
-    router.push('/vehicles')
   }
 
 
@@ -115,6 +112,9 @@ export default function Vehicles() {
     } else {
       console.log(vehicle)
       toast.success('Vehicle added successfully')
+      form.reset()
+      setIsAddingVehicle(false)
+      router.refresh()
     }
   }
 

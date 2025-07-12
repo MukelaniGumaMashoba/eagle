@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import {
   Dialog,
   DialogContent,
@@ -35,6 +36,7 @@ import {
 import { toast } from "sonner"
 import { createClient } from "@/lib/supabase/client"
 import { assignJob } from "@/lib/action/assign"
+import { addTechnician } from "@/lib/action/assign"
 
 interface Technician {
   id: number
@@ -50,7 +52,7 @@ interface Technician {
     mechanical: number
     hydraulic: number
     diagnostic: number
-  }[]
+  }
   rating: number
   // completedJobs: number
   // responseTime: string
@@ -82,6 +84,32 @@ export default function TechniciansPage() {
   const [selectedJob, setSelectedJob] = useState<JobAssignment | null>(null)
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false)
   const [isAddTechnicianOpen, setIsAddTechnicianOpen] = useState(false)
+  
+  // Form state for adding technician
+  const [formData, setFormData] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    location: "",
+    coordinates: { lat: 0, lng: 0 },
+    specialties: [] as string[],
+    skillLevels: {
+      electrical: 0,
+      mechanical: 0,
+      hydraulic: 0,
+      diagnostic: 0,
+    },
+    rating: 0,
+    joinDate: new Date().toISOString().split('T')[0],
+    certifications: [] as string[],
+    vehicleType: "",
+    equipmentLevel: "basic" as "basic" | "advanced" | "specialist",
+    availability: "available" as "available" | "busy" | "off-duty" | "emergency"
+  })
+  
+  const [newSpecialty, setNewSpecialty] = useState("")
+  const [newCertification, setNewCertification] = useState("")
+  
   const supabase = createClient()
 
   const refreshData = async () => {
@@ -108,7 +136,8 @@ export default function TechniciansPage() {
       const { data: jobs, error } = await supabase
         .from('job_assignments')
         .select('*')
-        .is('technician_id', null)
+        .eq('status', 'pending')
+        // .is('technician_id', null)
       if (error) {
         console.error('Error fetching available jobs:', error)
       } else {
@@ -186,6 +215,93 @@ export default function TechniciansPage() {
     }
   }
 
+  const handleAddTechnician = async () => {
+    try {
+      const result = await addTechnician({
+        id: null,
+        name: formData.name,
+        phone: formData.phone,
+        email: formData.email,
+        location: formData.location,
+        coordinates: formData.coordinates,
+        availability: formData.availability,
+        specialties: formData.specialties,
+        skillLevels: formData.skillLevels,
+        rating: formData.rating,
+        joinDate: formData.joinDate,
+        certifications: formData.certifications,
+        vehicleType: formData.vehicleType,
+        equipmentLevel: formData.equipmentLevel,
+      })
+
+      if (result.success) {
+        toast.success("Technician added successfully!")
+        setIsAddTechnicianOpen(false)
+        // Reset form
+        setFormData({
+          name: "",
+          phone: "",
+          email: "",
+          location: "",
+          coordinates: { lat: 0, lng: 0 },
+          specialties: [],
+          skillLevels: {
+            electrical: 0,
+            mechanical: 0,
+            hydraulic: 0,
+            diagnostic: 0,
+          },
+          rating: 0,
+          joinDate: new Date().toISOString().split('T')[0],
+          certifications: [],
+          vehicleType: "",
+          equipmentLevel: "basic",
+          availability: "available"
+        })
+        refreshData()
+      } else {
+        toast.error("Failed to add technician: " + result.error)
+      }
+    } catch (error) {
+      console.error('Error adding technician:', error)
+      toast.error("Failed to add technician")
+    }
+  }
+
+  const addSpecialty = () => {
+    if (newSpecialty.trim() && !formData.specialties.includes(newSpecialty.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        specialties: [...prev.specialties, newSpecialty.trim()]
+      }))
+      setNewSpecialty("")
+    }
+  }
+
+  const removeSpecialty = (specialty: string) => {
+    setFormData(prev => ({
+      ...prev,
+      specialties: prev.specialties.filter(s => s !== specialty)
+    }))
+  }
+
+  const addCertification = () => {
+    if (newCertification.trim() && !formData.certifications.includes(newCertification.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        certifications: [...prev.certifications, newCertification.trim()]
+      }))
+      setNewCertification("")
+    }
+  }
+
+  const removeCertification = (certification: string) => {
+    setFormData(prev => ({
+      ...prev,
+      certifications: prev.certifications.filter(c => c !== certification)
+    }))
+  }
+
   const filteredTechnicians = technicians.filter((tech) => {
     const matchesSearch =
       tech.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -231,32 +347,296 @@ export default function TechniciansPage() {
                   Add Technician
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl">
+              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Add New Technician</DialogTitle>
                   <DialogDescription>Enter technician details to add them to the system</DialogDescription>
                 </DialogHeader>
-                <div className="grid grid-cols-2 gap-4">
+                
+                <div className="space-y-6">
+                  {/* Basic Information */}
                   <div>
-                    <Label htmlFor="name">Full Name</Label>
-                    <Input id="name" placeholder="Enter full name" />
+                    <h3 className="text-lg font-semibold mb-4">Basic Information</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="name">Full Name *</Label>
+                        <Input 
+                          id="name" 
+                          placeholder="Enter full name" 
+                          value={formData.name}
+                          onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="phone">Phone Number *</Label>
+                        <Input 
+                          id="phone" 
+                          placeholder="+27 XX XXX XXXX" 
+                          value={formData.phone}
+                          onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="email">Email *</Label>
+                        <Input 
+                          id="email" 
+                          type="email" 
+                          placeholder="email@company.com" 
+                          value={formData.email}
+                          onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="location">Base Location *</Label>
+                        <Input 
+                          id="location" 
+                          placeholder="City/Area" 
+                          value={formData.location}
+                          onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="joinDate">Join Date *</Label>
+                        <Input 
+                          id="joinDate" 
+                          type="date" 
+                          value={formData.joinDate}
+                          onChange={(e) => setFormData(prev => ({ ...prev, joinDate: e.target.value }))}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="availability">Availability</Label>
+                        <Select 
+                          value={formData.availability} 
+                          onValueChange={(value: "available" | "busy" | "off-duty" | "emergency") => 
+                            setFormData(prev => ({ ...prev, availability: value }))
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="available">Available</SelectItem>
+                            <SelectItem value="busy">Busy</SelectItem>
+                            <SelectItem value="off-duty">Off Duty</SelectItem>
+                            <SelectItem value="emergency">Emergency</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
                   </div>
+
+                  {/* Vehicle and Equipment */}
                   <div>
-                    <Label htmlFor="phone">Phone Number</Label>
-                    <Input id="phone" placeholder="+27 XX XXX XXXX" />
+                    <h3 className="text-lg font-semibold mb-4">Vehicle & Equipment</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="vehicleType">Vehicle Type *</Label>
+                        <Input 
+                          id="vehicleType" 
+                          placeholder="e.g., Light Truck, Heavy Truck, Van" 
+                          value={formData.vehicleType}
+                          onChange={(e) => setFormData(prev => ({ ...prev, vehicleType: e.target.value }))}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="equipmentLevel">Equipment Level</Label>
+                        <Select 
+                          value={formData.equipmentLevel} 
+                          onValueChange={(value: "basic" | "advanced" | "specialist") => 
+                            setFormData(prev => ({ ...prev, equipmentLevel: value }))
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="basic">Basic</SelectItem>
+                            <SelectItem value="advanced">Advanced</SelectItem>
+                            <SelectItem value="specialist">Specialist</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
                   </div>
+
+                  {/* Specialties */}
                   <div>
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" placeholder="email@company.com" />
+                    <h3 className="text-lg font-semibold mb-4">Specialties</h3>
+                    <div className="space-y-3">
+                      <div className="flex gap-2">
+                        <Input 
+                          placeholder="Add specialty (e.g., electrical, mechanical, hydraulic)" 
+                          value={newSpecialty}
+                          onChange={(e) => setNewSpecialty(e.target.value)}
+                          onKeyPress={(e) => e.key === 'Enter' && addSpecialty()}
+                        />
+                        <Button onClick={addSpecialty} type="button">Add</Button>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {formData.specialties.map((specialty, index) => (
+                          <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                            {specialty}
+                            <button 
+                              onClick={() => removeSpecialty(specialty)}
+                              className="ml-1 text-red-500 hover:text-red-700"
+                            >
+                              ×
+                            </button>
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
                   </div>
+
+                  {/* Certifications */}
                   <div>
-                    <Label htmlFor="location">Base Location</Label>
-                    <Input id="location" placeholder="City/Area" />
+                    <h3 className="text-lg font-semibold mb-4">Certifications</h3>
+                    <div className="space-y-3">
+                      <div className="flex gap-2">
+                        <Input 
+                          placeholder="Add certification" 
+                          value={newCertification}
+                          onChange={(e) => setNewCertification(e.target.value)}
+                          onKeyPress={(e) => e.key === 'Enter' && addCertification()}
+                        />
+                        <Button onClick={addCertification} type="button">Add</Button>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {formData.certifications.map((certification, index) => (
+                          <Badge key={index} variant="outline" className="flex items-center gap-1">
+                            {certification}
+                            <button 
+                              onClick={() => removeCertification(certification)}
+                              className="ml-1 text-red-500 hover:text-red-700"
+                            >
+                              ×
+                            </button>
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Skill Levels */}
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">Skill Levels (0-100%)</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="electrical">Electrical</Label>
+                        <Input 
+                          id="electrical" 
+                          type="number" 
+                          min="0" 
+                          max="100" 
+                          value={formData.skillLevels.electrical}
+                          onChange={(e) => setFormData(prev => ({ 
+                            ...prev, 
+                            skillLevels: { ...prev.skillLevels, electrical: parseInt(e.target.value) || 0 }
+                          }))}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="mechanical">Mechanical</Label>
+                        <Input 
+                          id="mechanical" 
+                          type="number" 
+                          min="0" 
+                          max="100" 
+                          value={formData.skillLevels.mechanical}
+                          onChange={(e) => setFormData(prev => ({ 
+                            ...prev, 
+                            skillLevels: { ...prev.skillLevels, mechanical: parseInt(e.target.value) || 0 }
+                          }))}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="hydraulic">Hydraulic</Label>
+                        <Input 
+                          id="hydraulic" 
+                          type="number" 
+                          min="0" 
+                          max="100" 
+                          value={formData.skillLevels.hydraulic}
+                          onChange={(e) => setFormData(prev => ({ 
+                            ...prev, 
+                            skillLevels: { ...prev.skillLevels, hydraulic: parseInt(e.target.value) || 0 }
+                          }))}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="diagnostic">Diagnostic</Label>
+                        <Input 
+                          id="diagnostic" 
+                          type="number" 
+                          min="0" 
+                          max="100" 
+                          value={formData.skillLevels.diagnostic}
+                          onChange={(e) => setFormData(prev => ({ 
+                            ...prev, 
+                            skillLevels: { ...prev.skillLevels, diagnostic: parseInt(e.target.value) || 0 }
+                          }))}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Rating */}
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">Rating</h3>
+                    <div>
+                      <Label htmlFor="rating">Rating (0-5)</Label>
+                      <Input 
+                        id="rating" 
+                        type="number" 
+                        min="0" 
+                        max="5" 
+                        step="0.01"
+                        value={formData.rating}
+                        onChange={(e) => setFormData(prev => ({ 
+                          ...prev, 
+                          rating: parseFloat(e.target.value) || 0 
+                        }))}
+                      />
+                    </div>
                   </div>
                 </div>
-                <div className="flex gap-2 mt-4">
-                  <Button className="flex-1">Add Technician</Button>
-                  <Button variant="outline" onClick={() => setIsAddTechnicianOpen(false)}>
+
+                <div className="flex gap-2 mt-6">
+                  <Button 
+                    className="flex-1" 
+                    onClick={handleAddTechnician}
+                    disabled={!formData.name || !formData.phone || !formData.email || !formData.location || !formData.vehicleType}
+                  >
+                    Add Technician
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setIsAddTechnicianOpen(false)
+                      // Reset form
+                      setFormData({
+                        name: "",
+                        phone: "",
+                        email: "",
+                        location: "",
+                        coordinates: { lat: 0, lng: 0 },
+                        specialties: [],
+                        skillLevels: {
+                          electrical: 0,
+                          mechanical: 0,
+                          hydraulic: 0,
+                          diagnostic: 0,
+                        },
+                        rating: 0,
+                        joinDate: new Date().toISOString().split('T')[0],
+                        certifications: [],
+                        vehicleType: "",
+                        equipmentLevel: "basic",
+                        availability: "available"
+                      })
+                    }}
+                  >
                     Cancel
                   </Button>
                 </div>

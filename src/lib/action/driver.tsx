@@ -82,6 +82,5 @@ export async function addDriversToTable(driver: Driver) {
         console.error('Error adding driver to table:', error);
         return { error: error.message };
     }
-
     return { data, error };
 }

@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server"
 
 
 interface Technician {
-    id: number
+    id: number | null
     name: string
     phone: string
     email: string
@@ -17,7 +17,7 @@ interface Technician {
         mechanical: number
         hydraulic: number
         diagnostic: number
-    }[]
+    }
     rating: number
     // completedJobs: number
     // responseTime: string
@@ -118,4 +118,34 @@ export async function assignTechnicianToJob({
         job: jobUpdateData[0],
         technician: technicianUpdateData[0],
     }
+}
+
+
+export async function addTechnician(technician: Technician) {
+    const supabase = await createClient()
+
+    const { data, error } = await supabase
+        .from('technicians')
+        .insert({
+            name: technician.name,
+            phone: technician.phone,
+            email: technician.email,
+            location: technician.location,
+            coordinates: technician.coordinates,
+            availability: technician.availability,
+            specialties: technician.specialties,
+            skill_levels: technician.skillLevels,
+            rating: technician.rating,
+            join_date: technician.joinDate,
+            certifications: technician.certifications,
+            vehicle_type: technician.vehicleType,
+            equipment_level: technician.equipmentLevel,
+        })
+        .select()
+
+    if (error) {
+        console.error('Failed to add technician:', error)
+        return { success: false, error: error.message }
+    }
+    return { success: true, technician: data[0] }
 }
