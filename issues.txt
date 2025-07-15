@@ -1,9 +1,17 @@
-1. Dont adding viheclec fkey when job is created.
 2. When creating a driver it auto check the user role and change to driver.
 3. No location for mobile
 4. Technician is not added in authitication just in table only
-5. Need to change the RSL for Job Assignment to USING (created_by = auth.uid())
-6. 
+5. Need to change the RSL for tables Updates for all tables to USING (created_by = auth.uid())
+6. Havent been able to request breakdown and dispatch it functionality
+7. Doesnt add technicians as yet and add them to db
+8. Error so when new job created the old one is left with nothing as in the prev v id and driver id so i want to store it in both old and new
+
+
+Mobile App
+1. No auth check for roles if driver or technicians
+2. Not updating jobs them accordingly
+3. Location services not working
+4. Cant request the breakdown and add pictures
 
 
 

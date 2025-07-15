@@ -1,20 +1,18 @@
 "use client"
 
-import React, { FormEvent, Suspense, useState } from "react"
+import React, { useState } from "react"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { signup } from "@/lib/action/auth"
-import { useSearchParams } from "next/navigation"
 import { Phone, Truck, DollarSign, User } from "lucide-react"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export default function SignupPage() {
-  const searchParams = useSearchParams()
-  const message = searchParams.get("message")
   const [isLoading, setIsLoading] = useState(false)
   const [role, setRole] = useState("")
+  const [message, setMessage] = useState("")
 
   const roles = [
     { value: "call centre", label: "Call Centre", icon: Phone },
@@ -132,9 +130,6 @@ export default function SignupPage() {
             {isLoading ? "Creating account..." : "Create account"}
           </Button>
         </CardFooter>
-        <Suspense fallback={<div>Loading...</div>}>
-          {message && <div className="text-red-500 text-center">{message}</div>}
-        </Suspense>
       </form>
 
     </>
