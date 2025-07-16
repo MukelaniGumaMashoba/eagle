@@ -15,7 +15,9 @@ interface ProtectedLayoutProps {
 const roleNavigation = {
   'fleet manager': [
     { name: 'Dashboard', href: '/dashboard', Icon: <ChartBar /> },
-    { name: 'Jobs', href: '/jobs', Icon: <Briefcase /> },
+    { name: 'Jobs', href: '/jobFMan', Icon: <Briefcase /> },
+    { name: 'Drivers', href: '/drivers', Icon: <Users /> },
+    { name: 'Vehicles', href: '/vehicles', Icon: <Car /> },
     { name: 'Manage', href: '/fleetManager', Icon: <Users /> },
     { name: 'C-Center', href: '/ccenter', Icon: <Building2 /> },
     { name: 'Profile', href: '/profile', Icon: <Settings2Icon /> },
@@ -33,9 +35,9 @@ const roleNavigation = {
   ],
   'customer': [
     { name: 'Dashboard', href: '/dashboard', Icon: <ChartBar /> },
-    { name: 'Drivers', href: '/drivers', Icon: <Users /> },
-    { name: 'Vehicles', href: '/vehicles', Icon: <Car /> },
-    { name: 'Qoutation', href: '/customer', Icon: <PlusSquare /> },
+    // { name: 'Drivers', href: '/drivers', Icon: <Users /> },
+    // { name: 'Vehicles', href: '/vehicles', Icon: <Car /> },
+    // { name: 'Qoutation', href: '/customer', Icon: <PlusSquare /> },
     { name: 'Profile', href: '/profile', Icon: <Settings2Icon /> },
     { name: 'System Settings', href: '/customer/systemSettings', Icon: <Settings /> },
   ],
