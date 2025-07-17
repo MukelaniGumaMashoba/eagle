@@ -369,7 +369,7 @@ export default function Dashboard() {
                 <CardContent>
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm">Avg Response Time</span>
+                      <span className="text-sm">Avg breakdown Time</span>
                       <span className="text-sm font-semibold">18 minutes</span>
                     </div>
                     <div className="flex justify-between items-center">
