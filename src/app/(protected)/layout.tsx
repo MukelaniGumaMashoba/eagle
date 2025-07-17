@@ -105,7 +105,7 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b">
-            <h1 className="text-xl font-bold text-gray-900">Eagle Eye</h1>
+            <h1 className="text-xl font-bold text-gray-900">Breakdown Brigade</h1>
             <Button
               variant="ghost"
               size="sm"
