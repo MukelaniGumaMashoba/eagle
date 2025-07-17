@@ -264,7 +264,7 @@ export default function Dashboard() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Available Technicians</CardTitle>
+              <CardTitle className="text-sm font-medium">Available Breakdown</CardTitle>
               <Users className="h-4 w-4 text-green-500" />
             </CardHeader>
             <CardContent>
@@ -373,12 +373,12 @@ export default function Dashboard() {
                       <span className="text-sm font-semibold">18 minutes</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm">Resolution Rate</span>
+                      <span className="text-sm">Repair Time</span>
                       <span className="text-sm font-semibold">94%</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      {/* <span className="text-sm">Customer Satisfaction</span> */}
-                      {/* <span className="text-sm font-semibold">4.7/5</span> */}
+                      <span className="text-sm">Number of Tows</span> 
+                      <span className="text-sm font-semibold">15</span>
                     </div>
                     <div className="flex justify-between items-center">
                       {/* <span className="text-sm">Jobs This Month</span> */}
