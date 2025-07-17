@@ -362,35 +362,6 @@ export default function Dashboard() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <MapPin className="h-5 w-5" />
-                    System Status
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">System Health</span>
-                      <Badge className="bg-green-100 text-green-800">Operational</Badge>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Database Status</span>
-                      <Badge className="bg-green-100 text-green-800">Connected</Badge>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">API Services</span>
-                      <Badge className="bg-green-100 text-green-800">Running</Badge>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Notifications</span>
-                      <Badge className="bg-blue-100 text-blue-800">Active</Badge>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
                     <Clock className="h-5 w-5" />
                     Performance Metrics
                   </CardTitle>
@@ -406,11 +377,11 @@ export default function Dashboard() {
                       <span className="text-sm font-semibold">94%</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm">Customer Satisfaction</span>
-                      <span className="text-sm font-semibold">4.7/5</span>
+                      {/* <span className="text-sm">Customer Satisfaction</span> */}
+                      {/* <span className="text-sm font-semibold">4.7/5</span> */}
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm">Jobs This Month</span>
+                      {/* <span className="text-sm">Jobs This Month</span> */}
                       {/* <span className="text-sm font-semibold">{stats.completedJobs}</span> */}
                     </div>
                   </div>

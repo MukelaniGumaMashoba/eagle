@@ -22,3 +22,14 @@ Mobile App
 
 Done Task
 1. Record to dbs the status which is assigned
+
+
+
+Dashboard remove monthly breakdown instead of available
+monthly revenue to breakdown cost on the monthly
+avg breakdown time (time take to repair vehicle)
+number of tows, Change the system to have a tow if not being able(status is most important) 
+System status must be removed
+remove customer safisfaction, jobs this month removed
+
+
