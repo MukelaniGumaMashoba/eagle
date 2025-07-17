@@ -373,8 +373,8 @@ export default function Dashboard() {
                       <span className="text-sm font-semibold">18 minutes</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm">Repair Time</span>
-                      <span className="text-sm font-semibold">94%</span>
+                      <span className="text-sm">Avg Repair Time</span>
+                      <span className="text-sm font-semibold">20 minutes</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm">Number of Tows</span> 
