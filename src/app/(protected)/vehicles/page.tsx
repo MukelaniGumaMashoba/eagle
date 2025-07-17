@@ -209,49 +209,6 @@ export default function Vehicles() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Vehicle List */}
-      {vehicles.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Fleet Overview</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {vehicles.map((vehicle, index) => (
-                <Card key={index} className="hover:shadow-md transition-shadow">
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        {getVehicleTypeIcon(vehicle.vehicle_type)}
-                        <span className="font-medium text-gray-900">
-                          {vehicle.make} {vehicle.model}
-                        </span>
-                      </div>
-                      {getPriorityBadge(vehicle.vehicle_priority)}
-                    </div>
-                    <div className="space-y-2 text-sm">
-                      <p className="text-gray-600">
-                        <span className="font-medium">Reg:</span> {vehicle.registration_number}
-                      </p>
-                      <p className="text-gray-600">
-                        <span className="font-medium">Year:</span> {vehicle.manufactured_year}
-                      </p>
-                      <p className="text-gray-600">
-                        <span className="font-medium">Fuel:</span> {vehicle.fuel_type}
-                      </p>
-                      <p className="text-gray-600">
-                        <span className="font-medium">Color:</span> {vehicle.colour}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Add Vehicle Form */}
       {isAddingVehicle && (
         <Card>
@@ -621,6 +578,50 @@ export default function Vehicles() {
           </CardContent>
         </Card>
       )}
+
+      {/* Vehicle List */}
+      {vehicles.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Fleet Overview</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {vehicles.map((vehicle, index) => (
+                <Card key={index} className="hover:shadow-md transition-shadow">
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        {getVehicleTypeIcon(vehicle.vehicle_type)}
+                        <span className="font-medium text-gray-900">
+                          {vehicle.make} {vehicle.model}
+                        </span>
+                      </div>
+                      {getPriorityBadge(vehicle.vehicle_priority)}
+                    </div>
+                    <div className="space-y-2 text-sm">
+                      <p className="text-gray-600">
+                        <span className="font-medium">Reg:</span> {vehicle.registration_number}
+                      </p>
+                      <p className="text-gray-600">
+                        <span className="font-medium">Year:</span> {vehicle.manufactured_year}
+                      </p>
+                      <p className="text-gray-600">
+                        <span className="font-medium">Fuel:</span> {vehicle.fuel_type}
+                      </p>
+                      <p className="text-gray-600">
+                        <span className="font-medium">Color:</span> {vehicle.colour}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+
     </div>
   )
 }

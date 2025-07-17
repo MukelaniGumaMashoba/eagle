@@ -27,6 +27,19 @@ function getAllowedPaths(role: string): string[] {
 }
 
 export async function middleware(req: NextRequest) {
+
+  //Thsi is new section If the user is accessing the /logout page, clear cookies and redirect
+  if (req.nextUrl.pathname === '/logout') {
+    const response = NextResponse.redirect(new URL('/login', req.url))
+    // List all cookies you want to clear
+    response.cookies.delete('access_token')
+    response.cookies.delete('refresh_token')
+    // Add more cookies here if needed
+    return response
+  }
+
+
+
   const path = req.nextUrl.pathname
   // Check for Supabase session cookies
   const accessToken = req.cookies.get('access_token')?.value
