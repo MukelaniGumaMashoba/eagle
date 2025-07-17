@@ -75,8 +75,8 @@ export default function FleetManagerPage() {
                 vin: "WDB9634321L123456",
                 driverId: "1",
                 status: "active",
-                lastService: "2024-01-01",
-                nextService: "2024-04-01",
+                lastService: "2025-01-01",
+                nextService: "2025-04-01",
             },
             {
                 id: "2",
@@ -88,7 +88,7 @@ export default function FleetManagerPage() {
                 driverId: "2",
                 status: "maintenance",
                 lastService: "2023-12-15",
-                nextService: "2024-03-15",
+                nextService: "2025-03-15",
             },
         ])
 
@@ -124,7 +124,7 @@ export default function FleetManagerPage() {
                 description: "Engine overheating repair",
                 quotationAmount: 2500.0,
                 status: "pending",
-                submittedAt: "2024-01-15 16:30",
+                submittedAt: "2025-01-15 16:30",
                 costCenter: "Maintenance Dept",
             },
         ])

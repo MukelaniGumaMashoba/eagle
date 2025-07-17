@@ -136,7 +136,7 @@ export default function ExternalClientsPage() {
         paymentTerms: "30 days",
         creditLimit: 100000,
         registrationDate: "2022-03-15",
-        lastJobDate: "2024-01-15",
+        lastJobDate: "2025-01-15",
         preferredServices: ["Breakdown Recovery", "Maintenance", "Emergency Response"],
         contractType: "premium",
         accountManager: "Sarah Wilson",
@@ -160,7 +160,7 @@ export default function ExternalClientsPage() {
         paymentTerms: "15 days",
         creditLimit: 50000,
         registrationDate: "2023-01-20",
-        lastJobDate: "2024-01-10",
+        lastJobDate: "2025-01-10",
         preferredServices: ["Tire Service", "Battery Replacement", "Towing"],
         contractType: "standard",
         accountManager: "Mike Johnson",
@@ -184,7 +184,7 @@ export default function ExternalClientsPage() {
         certifications: ["ASE Certified", "Heavy Vehicle Specialist"],
         equipmentTypes: ["Mobile Workshop", "Diagnostic Equipment"],
         contractStatus: "active",
-        lastActive: "2024-01-16T10:30:00Z",
+        lastActive: "2025-01-16T10:30:00Z",
       },
       {
         id: "2",
@@ -202,7 +202,7 @@ export default function ExternalClientsPage() {
         certifications: ["Recovery Specialist", "Crane Operator"],
         equipmentTypes: ["Recovery Truck", "Flatbed Trailer"],
         contractStatus: "active",
-        lastActive: "2024-01-16T09:15:00Z",
+        lastActive: "2025-01-16T09:15:00Z",
       },
     ])
 
@@ -230,7 +230,7 @@ export default function ExternalClientsPage() {
         responseTime: "18 min avg",
         availability: "24/7",
         status: "active",
-        lastUsed: "2024-01-15T16:30:00Z",
+        lastUsed: "2025-01-15T16:30:00Z",
       },
       {
         id: "2",
@@ -255,7 +255,7 @@ export default function ExternalClientsPage() {
         responseTime: "22 min avg",
         availability: "24/7",
         status: "active",
-        lastUsed: "2024-01-14T14:20:00Z",
+        lastUsed: "2025-01-14T14:20:00Z",
       },
     ])
   }, [])

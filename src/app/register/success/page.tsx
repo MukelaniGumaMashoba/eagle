@@ -26,7 +26,7 @@ export default function SuccessPage() {
       // Generate temporary credentials
       setCredentials({
         username: data.adminEmail,
-        tempPassword: "FleetPro2024!",
+        tempPassword: "EagleEye2025!",
         loginUrl: `${window.location.origin}/login`,
       })
     }
@@ -73,7 +73,7 @@ export default function SuccessPage() {
       {/* Success Header */}
       <div className="text-center mb-12">
         <CheckCircle className="h-20 w-20 text-green-600 mx-auto mb-6" />
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">Welcome to FleetPro!</h1>
+        <h1 className="text-4xl font-bold text-gray-900 mb-4">Welcome to EagleEye!</h1>
         <p className="text-xl text-gray-600 mb-6">
           Your fleet management system has been successfully set up and is ready to use.
         </p>
@@ -223,19 +223,19 @@ export default function SuccessPage() {
               <Phone className="h-8 w-8 text-blue-600 mx-auto mb-2" />
               <h4 className="font-medium">Phone Support</h4>
               <p className="text-sm text-gray-600 mb-2">24/7 technical support</p>
-              <p className="font-semibold">1-800-FLEETPRO</p>
+              <p className="font-semibold">1-800-EagleEye</p>
             </div>
             <div className="text-center">
               <Mail className="h-8 w-8 text-blue-600 mx-auto mb-2" />
               <h4 className="font-medium">Email Support</h4>
               <p className="text-sm text-gray-600 mb-2">Get help via email</p>
-              <p className="font-semibold">support@fleetpro.com</p>
+              <p className="font-semibold">support@EagleEye.com</p>
             </div>
             <div className="text-center">
               <Book className="h-8 w-8 text-blue-600 mx-auto mb-2" />
               <h4 className="font-medium">Documentation</h4>
               <p className="text-sm text-gray-600 mb-2">Comprehensive guides</p>
-              <p className="font-semibold">docs.fleetpro.com</p>
+              <p className="font-semibold">docs.EagleEye.com</p>
             </div>
           </div>
         </CardContent>

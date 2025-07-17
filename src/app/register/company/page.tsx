@@ -195,12 +195,14 @@ export default function CompanySetupPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="state">State/Province *</Label>
+                <Label htmlFor="country">Country *</Label>
                 <Input
                   id="state"
                   required
-                  value={formData.state}
-                  onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                  placeholder="South Africa"
+                  value={"South Africa"}
+                  // onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                  readOnly
                 />
               </div>
             </div>
@@ -216,7 +218,7 @@ export default function CompanySetupPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="country">Country *</Label>
+              <Label htmlFor="state">State/Province *</Label>
                 <Select
                   value={formData.country}
                   onValueChange={(value) => setFormData({ ...formData, country: value })}
@@ -225,10 +227,10 @@ export default function CompanySetupPage() {
                     <SelectValue placeholder="Select country" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="us">United States</SelectItem>
-                    <SelectItem value="ca">Canada</SelectItem>
-                    <SelectItem value="uk">United Kingdom</SelectItem>
-                    <SelectItem value="au">Australia</SelectItem>
+                    <SelectItem value="Durban">Durban</SelectItem>
+                    <SelectItem value="ca">Cape Town</SelectItem>
+                    <SelectItem value="lmp">Limpopo</SelectItem>
+                    <SelectItem value="au">Eastern Cape</SelectItem>
                     <SelectItem value="other">Other</SelectItem>
                   </SelectContent>
                 </Select>
@@ -365,9 +367,9 @@ export default function CompanySetupPage() {
               <Label htmlFor="adminRole">Role/Title</Label>
               <Input
                 id="adminRole"
-                value={formData.adminRole}
-                onChange={(e) => setFormData({ ...formData, adminRole: e.target.value })}
-                placeholder="Fleet Manager, Operations Director, etc."
+                placeholder= "Fleet Manager"
+                value={"Fleet Manger"}
+                // onChange={(e) => setFormData({ ...formData, adminRole: e.target.value })}
               />
             </div>
           </div>

@@ -54,7 +54,7 @@ export default function CustomerPage() {
         technicianPhone: "+27 84 111 2222",
         quotationAmount: 2500.0,
         quotationStatus: "pending",
-        createdAt: "2024-01-15 14:30",
+        createdAt: "2025-01-15 14:30",
       },
       {
         id: "2",
@@ -66,8 +66,8 @@ export default function CustomerPage() {
         technicianName: "David Brown",
         quotationAmount: 800.0,
         quotationStatus: "approved",
-        createdAt: "2024-01-14 10:30",
-        completedAt: "2024-01-14 12:15",
+        createdAt: "2025-01-14 10:30",
+        completedAt: "2025-01-14 12:15",
       },
     ])
   }, [])

@@ -15,7 +15,7 @@ export default function RegisterLayout({
           <div className="flex justify-between h-16">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <h1 className="text-2xl font-bold text-blue-600">FleetPro</h1>
+                <h1 className="text-2xl font-bold text-blue-600">EagleEye</h1>
               </div>
             </div>
             <div className="flex items-center space-x-4">

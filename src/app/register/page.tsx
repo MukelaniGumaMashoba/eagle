@@ -126,7 +126,7 @@ export default function RegisterPage() {
 
       {/* Features Grid */}
       <div className="mb-16">
-        <h2 className="text-3xl font-bold text-center mb-12">Why Choose FleetPro?</h2>
+        <h2 className="text-3xl font-bold text-center mb-12">Why Choose EagleEye Breakdown?</h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {features.map((feature, index) => (
             <Card key={index} className="border-0 shadow-lg">
@@ -145,7 +145,7 @@ export default function RegisterPage() {
       </div>
 
       {/* Pricing Section */}
-      <div className="mb-16">
+      {/* <div className="mb-16">
         <h2 className="text-3xl font-bold text-center mb-12">Choose Your Plan</h2>
         <div className="grid md:grid-cols-3 gap-8">
           {pricingPlans.map((plan, index) => (
@@ -181,7 +181,7 @@ export default function RegisterPage() {
             </Card>
           ))}
         </div>
-      </div>
+      </div> */}
 
       {/* Contact Form */}
       <div id="contact-form" className="max-w-2xl mx-auto">
@@ -270,7 +270,7 @@ export default function RegisterPage() {
 
       {/* Footer */}
       <footer className="mt-16 text-center text-gray-500">
-        <p>&copy; 2024 FleetPro. All rights reserved.</p>
+        <p>&copy; 2025 EagleEye Breakdown. All rights reserved.</p>
       </footer>
     </div>
   )

@@ -60,7 +60,7 @@ export default function CostCenterPage() {
         partsCost: 1700.0,
         totalCost: 2500.0,
         status: "sent",
-        createdAt: "2024-01-15 16:00",
+        createdAt: "2025-01-15 16:00",
       },
       {
         id: "2",
@@ -72,8 +72,8 @@ export default function CostCenterPage() {
         partsCost: 1200.0,
         totalCost: 1500.0,
         status: "approved",
-        createdAt: "2024-01-14 10:30",
-        approvedAt: "2024-01-14 14:15",
+        createdAt: "2025-01-14 10:30",
+        approvedAt: "2025-01-14 14:15",
       },
     ])
 

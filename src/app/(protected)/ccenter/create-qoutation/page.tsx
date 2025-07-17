@@ -85,7 +85,7 @@ export default function CreateQuotationPage() {
                 driverName: "John Smith",
                 vehicleReg: "ABC 123 GP",
                 location: "N1 Highway, Johannesburg",
-                reportDate: "2024-01-15 16:30",
+                reportDate: "2025-01-15 16:30",
                 diagnosis:
                     "Engine overheating due to faulty radiator. Coolant leak detected at lower radiator hose connection. Thermostat appears to be functioning correctly. Water pump shows signs of wear but still operational.",
                 recommendedActions: [
@@ -110,7 +110,7 @@ export default function CreateQuotationPage() {
                 driverName: "Sarah Johnson",
                 vehicleReg: "XYZ 789 GP",
                 location: "M1 Highway, Sandton",
-                reportDate: "2024-01-15 14:15",
+                reportDate: "2025-01-15 14:15",
                 diagnosis:
                     "Multiple tire punctures on rear axle. Tires are beyond repair. Brake pads showing 20% wear remaining. Brake discs have minor scoring but within acceptable limits.",
                 recommendedActions: [
@@ -133,7 +133,7 @@ export default function CreateQuotationPage() {
                 orderNo: "OR.128651312",
                 requirement: "Use only OEM radiator parts for this critical vehicle",
                 priority: "high",
-                deadline: "2024-01-16",
+                deadline: "2025-01-16",
                 notes: "This vehicle is essential for daily operations. Quality over cost.",
                 status: "open",
             },

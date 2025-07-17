@@ -8,7 +8,7 @@ const roles = [
   },
   {
     name: 'fleet manager',
-    path: ['/fleetManager','jobFMan', '/dashboard', '/drivers', '/vehicles', '/technician', '/ccenter', '/profile', '/logs', '/login', '/signup', '/', '/logout'],
+    path: ['/fleetManager','/jobFMan', '/dashboard', '/drivers', '/vehicles', '/technician', '/ccenter', '/profile', '/logs', '/login', '/signup', '/', '/logout'],
   },
   {
     name: 'customer',
@@ -20,7 +20,7 @@ const roles = [
   },
 ]
 
-const publicRoutes = ['/login', '/signup', '/', '/logout', 'register']
+const publicRoutes = ['/login', '/signup', '/', '/logout', '/register', '/register/company', '/register/onboarding', '/register/success']
 
 function getAllowedPaths(role: string): string[] {
   return roles.find(r => r.name === role)?.path || []
