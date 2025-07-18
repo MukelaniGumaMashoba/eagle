@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ArrowLeft, Building2, MapPin, Users, Truck } from "lucide-react"
+import { registerCompanyWithAdmin } from "@/lib/action/company"
 
 export default function CompanySetupPage() {
   const router = useRouter()
@@ -63,12 +64,47 @@ export default function CompanySetupPage() {
     }
   }, [])
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (step < 4) {
       setStep(step + 1)
     } else {
-      // Save all data and proceed to onboarding
-      localStorage.setItem("companySetupData", JSON.stringify(formData))
+      const result = await registerCompanyWithAdmin({
+        company_name: formData.companyName,
+        company_contact: formData.contactName,
+        company_email: formData.email,
+        company_phone: formData.phone,
+        company_contactname: formData.contactName,
+        company_size: parseInt(formData.companySize) || 0,
+        company_infor: "",
+        company_industry: formData.industry,
+        company_website: formData.website,
+        company_tax_id: formData.taxId,
+        company_no_vehicles: parseInt(formData.fleetSize) || 0,
+        company_v_type: formData.vehicleTypes,
+        company_regions: formData.operatingRegions,
+        company_fms: formData.currentSystem,
+      }, {
+        firstName: formData.adminFirstName,
+        lastName: formData.adminLastName,
+        email: formData.adminEmail,
+        phone: formData.adminPhone,
+        role: formData.adminRole || "fleet manager",
+      })
+      if (result.error) {
+        alert("Failed to register company: " + result.error)
+        return
+      }
+      if (result.admin) {
+        alert(`Admin user created!\nEmail: ${result.admin.email}\nTemporary password: ${result.admin.tempPassword}`)
+      } else {
+        alert("Company registered, but admin credentials could not be retrieved.")
+      }
+      // Store company and admin data for onboarding
+      localStorage.setItem("companySetupData", JSON.stringify({
+        ...formData,
+        adminCredentials: result.admin,
+        companyId: (result.data as any)?.[0]?.id,
+      }))
       router.push("/register/onboarding")
     }
   }
@@ -201,7 +237,7 @@ export default function CompanySetupPage() {
                   required
                   placeholder="South Africa"
                   value={"South Africa"}
-                  // onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, state: e.target.value })}
                   readOnly
                 />
               </div>
@@ -218,7 +254,7 @@ export default function CompanySetupPage() {
                 />
               </div>
               <div>
-              <Label htmlFor="state">State/Province *</Label>
+                <Label htmlFor="state">State/Province *</Label>
                 <Select
                   value={formData.country}
                   onValueChange={(value) => setFormData({ ...formData, country: value })}
@@ -367,9 +403,9 @@ export default function CompanySetupPage() {
               <Label htmlFor="adminRole">Role/Title</Label>
               <Input
                 id="adminRole"
-                placeholder= "Fleet Manager"
-                value={"Fleet Manger"}
-                // onChange={(e) => setFormData({ ...formData, adminRole: e.target.value })}
+                placeholder="Fleet Manager"
+                value={"fleet manager"}
+                onChange={(e) => setFormData({ ...formData, adminRole: e.target.value })}
               />
             </div>
           </div>

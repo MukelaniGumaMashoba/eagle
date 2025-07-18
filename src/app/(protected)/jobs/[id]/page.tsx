@@ -63,7 +63,7 @@ interface Job {
     attachments: string[]
 }
 
-export default function JobDetailPage() {
+export default function FleetJobDetailPage() {
     const params = useParams()
     const [job, setJob] = useState<Job | null>(null)
     const [userRole, setUserRole] = useState<string>("")
@@ -176,7 +176,6 @@ export default function JobDetailPage() {
             const { error } = await supabase
                 .from('job_assignments')
                 .update({
-                    status: newStatus,
                     updated_at: new Date().toISOString()
                 })
                 .eq('id', job.id)
@@ -211,7 +210,7 @@ export default function JobDetailPage() {
     return (
         <>
 
-            <Link href="/jobs">
+            <Link href="/jobFMan">
                 <Button variant="ghost" size="sm">
                     <ArrowLeft className="h-4 w-4 mr-2" />
                     Back to Jobs
@@ -391,28 +390,28 @@ export default function JobDetailPage() {
                         {canUpdateStatus && (
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>Update Job Status</CardTitle>
+                                    <CardTitle>Job Status</CardTitle>
                                     <CardDescription>Change the current status of this job</CardDescription>
                                 </CardHeader>
                                 <CardContent>
                                     <div className="flex gap-2 flex-wrap">
                                         <Button
                                             variant={job.status === "assigned" ? "default" : "outline"}
-                                            onClick={() => handleStatusUpdate("assigned")}
+                                            // onClick={() => handleStatusUpdate("assigned")}
                                             size="sm"
                                         >
                                             Assigned
                                         </Button>
                                         <Button
                                             variant={job.status === "in-progress" ? "default" : "outline"}
-                                            onClick={() => handleStatusUpdate("in-progress")}
+                                            // onClick={() => handleStatusUpdate("in-progress")}
                                             size="sm"
                                         >
                                             In Progress
                                         </Button>
                                         <Button
                                             variant={job.status === "awaiting-approval" ? "default" : "outline"}
-                                            onClick={() => handleStatusUpdate("awaiting-approval")}
+                                            // onClick={() => handleStatusUpdate("awaiting-approval")}
                                             size="sm"
                                         >
                                             Awaiting Approval
@@ -421,14 +420,14 @@ export default function JobDetailPage() {
                                             <>
                                                 <Button
                                                     variant={job.status === "approved" ? "default" : "outline"}
-                                                    onClick={() => handleStatusUpdate("approved")}
+                                                    // onClick={() => handleStatusUpdate("approved")}
                                                     size="sm"
                                                 >
                                                     Approved
                                                 </Button>
                                                 <Button
                                                     variant={job.status === "completed" ? "default" : "outline"}
-                                                    onClick={() => handleStatusUpdate("completed")}
+                                                    // onClick={() => handleStatusUpdate("completed")}
                                                     size="sm"
                                                 >
                                                     Completed
@@ -437,7 +436,7 @@ export default function JobDetailPage() {
                                         )}
                                         <Button
                                             variant={job.status === "cancelled" ? "destructive" : "outline"}
-                                            onClick={() => handleStatusUpdate("cancelled")}
+                                            // onClick={() => handleStatusUpdate("cancelled")}
                                             size="sm"
                                         >
                                             Cancelled

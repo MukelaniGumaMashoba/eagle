@@ -9,8 +9,10 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { MapPin, Plus} from "lucide-react"
+import { MapPin, Plus } from "lucide-react"
 import { toast } from "sonner"
+import { Label } from "@radix-ui/react-label"
+import UpdatePswrd from "@/components/updatePwrd"
 
 interface User {
     id: string
@@ -185,7 +187,7 @@ export default function SettingsPage() {
                     <h2 className="text-3xl font-bold tracking-tight">Settings & Administration</h2>
                 </div>
 
-                <Tabs defaultValue="users" className="space-y-4">
+                <Tabs defaultValue="system" className="space-y-4">
                     <TabsList>
                         <TabsTrigger value="system">System Settings</TabsTrigger>
                         <TabsTrigger value="locations">Locations</TabsTrigger>
@@ -238,9 +240,14 @@ export default function SettingsPage() {
                                                 </div>
                                             </div>
                                         ))}
+
                                     </CardContent>
                                 </Card>
                             ))}
+                        </div>
+                        <div className="border-2 p-3 rounded-2xl">
+                            <h1 className="font-bold">Change Password</h1>
+                            <UpdatePswrd />
                         </div>
                     </TabsContent>
 

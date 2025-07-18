@@ -31,6 +31,7 @@ import {
   Edit,
   MessageSquare,
   FileImage,
+  Download,
 } from "lucide-react"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
@@ -70,7 +71,7 @@ interface Job {
   attachments: string[]
 }
 
-export default function JobsPage() {
+export default function FleetJobsPage() {
   const [jobs, setJobs] = useState<Job[]>([])
   const [filteredJobs, setFilteredJobs] = useState<Job[]>([])
   const [userRole, setUserRole] = useState<string>("")
@@ -104,6 +105,9 @@ export default function JobsPage() {
     }
     getJobs()
     setFilteredJobs(jobs)
+
+
+
   }, [])
 
   useEffect(() => {
@@ -396,16 +400,17 @@ export default function JobsPage() {
                                 <strong>Actual:</strong> R {job.actualCost.toFixed(2)}
                               </p>
                             )}
-                            {/* {job.estimatedTime && (
-                              <p className="text-sm">
-                                <strong>Est. Time:</strong> {job.estimatedTime}
-                              </p>
-                            )}
-                            {job.completionTime && (
-                              <p className="text-sm">
-                                <strong>Completed:</strong> {job.completionTime}
-                              </p>
-                            )} */}
+                            {/* {job.estimatedTime && ( */}
+                            <p className="text-sm">
+                              <strong>Est. Time:</strong> {new Date().toLocaleTimeString()}
+                            </p>
+                            {/* )} */}
+                            {/* {job.completionTime && ( */}
+                            <p className="text-sm">
+                              <strong>Completed:</strong> {new Date().toLocaleTimeString()}
+                            </p>
+                            {/* )} */}
+
                           </div>
                         </div>
 
@@ -413,36 +418,91 @@ export default function JobsPage() {
                           <p className="text-sm text-gray-600">{job.description}</p>
                         </div>
 
-                        {/* {job.notes.length > 0 && (
-                        <div className="mb-4">
-                          <h4 className="font-semibold mb-2 flex items-center gap-2">
-                            <MessageSquare className="h-4 w-4" />
-                            Latest Notes
-                          </h4>
-                          <div className="bg-gray-50 p-3 rounded-md">
-                            <p className="text-sm">{job.notes[job.notes.length - 1]}</p>
-                            {job.notes.length > 1 && (
-                              <p className="text-xs text-gray-500 mt-1">+{job.notes.length - 1} more notes</p>
-                            )}
+                        {job.notes && job.notes.length > 0 && (
+                          <div className="mb-4">
+                            <h4 className="font-semibold mb-2 flex items-center gap-2">
+                              <MessageSquare className="h-4 w-4" />
+                              Latest Notes
+                            </h4>
+                            <div className="bg-gray-50 p-3 rounded-md">
+                              <p className="text-sm">{job.notes[job.notes.length - 1]}</p>
+                              {job.notes.length > 1 && (
+                                <p className="text-xs text-gray-500 mt-1">+{job.notes.length - 1} more notes</p>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      )} */}
+                        )}
 
-                        {/* {job.attachments.length > 0 && (
-                        <div className="mb-4">
-                          <h4 className="font-semibold mb-2 flex items-center gap-2">
-                            <FileImage className="h-4 w-4" />
-                            Attachments
-                          </h4>
-                          <div className="flex gap-2">
-                            {job.attachments.map((attachment, index) => (
-                              <Badge key={index} variant="secondary" className="text-xs">
-                                {attachment}
-                              </Badge>
-                            ))}
+                        {/* {job.attachments && job.attachments.length > 0 && (
+                          <div className="mb-4">
+                            <h4 className="font-semibold mb-2 flex items-center gap-2">
+                              <FileImage className="h-4 w-4" />
+                              Attachments
+                            </h4>
+                            <div className="flex gap-2 flex-wrap">
+                              {job.attachments.map((attachment, index) => {
+                                // const { data } = supabase.storage.from('images').getPublicUrl(attachment);
+                                // const url = data?.publicUrl;
+                                const attachments = job.attachments as unknown as string[];
+                                const url = attachments[index] as string;
+                                console.log(url)
+                                return (
+                                  <div key={index} className="flex flex-col items-center gap-1">
+                                    {url && (
+                                      <img
+                                        src={url}
+                                        alt={`Attachment ${index}`}
+                                        className="h-20 w-20 object-cover rounded"
+                                      />
+                                    )}
+                                    <a href={url} target="_blank" rel="noopener noreferrer">
+                                      <Button variant="outline" size="icon">
+                                        <Download className="h-4 w-4" />
+                                      </Button>
+                                    </a>
+                                  </div>
+                                );
+                              })}
+                            </div>
                           </div>
-                        </div>
-                      )} */}
+                        )} */}
+
+                        {
+                          job.attachments &&
+                          Array.isArray(job.attachments) &&
+                          job.attachments.length > 0 && (
+                            <div className="mb-4">
+                              <h4 className="font-semibold mb-2 flex items-center gap-2">
+                                <FileImage className="h-4 w-4" />
+                                Result Images
+                              </h4>
+                              <div className="flex gap-2 flex-wrap">
+                                {job.attachments.map((imagePath, index) => (
+                                  <div key={index} className="flex flex-col items-center gap-2">
+                                    {/* Don't attempt to render local file URIs directly */}
+                                    {imagePath.startsWith("file:///") ? (
+                                      <Badge variant="secondary" className="text-xs text-red-500">
+                                        Local image — not viewable in browser
+                                      </Badge>
+                                    ) : (
+                                      <img
+                                        src={imagePath}
+                                        alt={`Result ${index}`}
+                                        className="h-20 w-20 object-cover rounded border"
+                                      />
+                                    )}
+                                    <a href={imagePath} target="_blank" rel="noopener noreferrer">
+                                      <Button variant="outline" size="icon">
+                                        <Download className="h-4 w-4" />
+                                      </Button>
+                                    </a>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )
+                        }
+
 
                         <div className="flex justify-between items-center">
                           <div className="flex gap-2">
@@ -452,70 +512,6 @@ export default function JobsPage() {
                                 View Details
                               </Button>
                             </Link>
-                            {canUpdateStatus && (
-                              <Dialog open={isUpdateDialogOpen} onOpenChange={setIsUpdateDialogOpen}>
-                                <DialogTrigger asChild>
-                                  <Button size="sm" onClick={() => setSelectedJob(job)}>
-                                    <Edit className="h-4 w-4 mr-2" />
-                                    Update Status
-                                  </Button>
-                                </DialogTrigger>
-                                <DialogContent>
-                                  <DialogHeader>
-                                    <DialogTitle>Update Job Status</DialogTitle>
-                                    <DialogDescription>
-                                      Update the status for job {selectedJob?.job_id}
-                                    </DialogDescription>
-                                  </DialogHeader>
-                                  <div className="space-y-4">
-                                    <div>
-                                      <Label htmlFor="status">New Status</Label>
-                                      <Select value={newStatus} onValueChange={setNewStatus}>
-                                        <SelectTrigger>
-                                          <SelectValue placeholder="Select status" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                          <SelectItem value="assigned">Assigned</SelectItem>
-                                          <SelectItem value="in-progress">In Progress</SelectItem>
-                                          <SelectItem value="awaiting-approval">Awaiting Approval</SelectItem>
-                                          {canApproveJobs && (
-                                            <>
-                                              <SelectItem value="approved">Approved</SelectItem>
-                                              <SelectItem value="completed">Completed</SelectItem>
-                                            </>
-                                          )}
-                                          <SelectItem value="cancelled">Cancelled</SelectItem>
-                                        </SelectContent>
-                                      </Select>
-                                    </div>
-                                    <div>
-                                      <Label htmlFor="notes">Add Note</Label>
-                                      <Textarea
-                                        id="notes"
-                                        placeholder="Add a note about this status update..."
-                                        className="mt-1"
-                                        value={updateNotes}
-                                        onChange={(e) => setUpdateNotes(e.target.value)}
-                                      />
-                                    </div>
-                                    <div className="flex gap-2">
-                                      <Button
-                                        onClick={() =>
-                                          handleUpdateJobStatus(selectedJob?.id || 0, newStatus, updateNotes)
-                                        }
-                                        className="flex-1"
-                                        disabled={!newStatus}
-                                      >
-                                        Update Status
-                                      </Button>
-                                      <Button variant="outline" onClick={() => setIsUpdateDialogOpen(false)}>
-                                        Cancel
-                                      </Button>
-                                    </div>
-                                  </div>
-                                </DialogContent>
-                              </Dialog>
-                            )}
                           </div>
 
                           {job.status === "awaiting-approval" && canApproveJobs && (

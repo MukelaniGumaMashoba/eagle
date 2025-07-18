@@ -247,8 +247,8 @@ export default function SettingsPage() {
                     <TabsList>
                         <TabsTrigger value="users">User Management</TabsTrigger>
                         <TabsTrigger value="roles">Roles & Permissions</TabsTrigger>
-                        <TabsTrigger value="system">System Settings</TabsTrigger>
-                        <TabsTrigger value="locations">Locations</TabsTrigger>
+                        {/* <TabsTrigger value="system">System Settings</TabsTrigger>
+                        <TabsTrigger value="locations">Locations</TabsTrigger> */}
                     </TabsList>
 
                     <TabsContent value="users" className="space-y-4">
@@ -276,6 +276,10 @@ export default function SettingsPage() {
                                         <div>
                                             <Label htmlFor="email">Email Address</Label>
                                             <Input id="email" name="email" type="email" required />
+                                        </div>
+                                        <div>
+                                            <Label htmlFor="call center">Call Center/Cost Center</Label>
+                                            <Input id="cost center" name="cost center" />
                                         </div>
                                         <div>
                                             <Label htmlFor="role">Role</Label>
@@ -393,7 +397,7 @@ export default function SettingsPage() {
                         </div>
                     </TabsContent>
 
-                    <TabsContent value="system" className="space-y-4">
+                    {/* <TabsContent value="system" className="space-y-4">
                         <h3 className="text-lg font-semibold">System Configuration</h3>
                         <div className="space-y-6">
                             {groupedSettings && Object.entries(groupedSettings).map(([category, categorySettings]) => (
@@ -463,7 +467,7 @@ export default function SettingsPage() {
                                 </div>
                             </CardContent>
                         </Card>
-                    </TabsContent>
+                    </TabsContent> */}
                 </Tabs>
             </div>
         </>

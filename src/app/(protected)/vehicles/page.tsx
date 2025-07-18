@@ -14,6 +14,7 @@ import * as z from 'zod'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 
 const vehicleFormSchema = z.object({
@@ -52,6 +53,45 @@ export default function Vehicles() {
   const [isAddingVehicle, setIsAddingVehicle] = useState(false)
   const router = useRouter()
   const supabase = createClient()
+  const [search, setSearch] = useState('')
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+
+  const handleUploadFile = () => {
+    if (!selectedFile) return;
+    // TODO: Implement upload logic here
+    toast.info(`Uploading: ${selectedFile.name}`)
+  }
+
+  // Filter vehicles based on search
+  const filteredVehicles = vehicles.filter(vehicle => {
+    const searchLower = search.toLowerCase();
+    return (
+      vehicle.make.toLowerCase().includes(searchLower) ||
+      vehicle.model.toLowerCase().includes(searchLower) ||
+      vehicle.registration_number.toLowerCase().includes(searchLower) ||
+      vehicle.vehicle_type.toLowerCase().includes(searchLower)
+    )
+  })
+
+  // Row background color by type
+  const getRowBg = (type: string) => {
+    switch (type) {
+      case 'vehicle':
+        return 'bg-blue-50';
+      case 'trailer':
+        return 'bg-purple-50';
+      case 'truck':
+        return 'bg-yellow-50';
+      case 'commercial':
+        return 'bg-green-50';
+      case 'tanker':
+        return 'bg-orange-50';
+      case 'specialized':
+        return 'bg-pink-50';
+      default:
+        return '';
+    }
+  }
 
   useEffect(() => {
     const fetchVehicles = async () => {
@@ -215,6 +255,29 @@ export default function Vehicles() {
           <CardHeader>
             <CardTitle>Add New Vehicle</CardTitle>
           </CardHeader>
+          <CardContent>
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 mb-6 flex flex-col items-center bg-gray-50">
+              <div className="flex flex-col items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                <p className="text-lg font-semibold text-gray-700">Upload Vehicles</p>
+                <p className="text-sm text-gray-500 mb-2">Upload new vehicles using a CSV or spreadsheet file</p>
+              </div>
+              <input
+                id="vehicle-upload"
+                type="file"
+                accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+                className="border-2 p-2 rounded-4xl"
+                onChange={e => setSelectedFile(e.target.files?.[0] || null)}
+              />
+              {selectedFile && (
+                <span className="mt-2 text-sm text-gray-600">Selected: {selectedFile.name}</span>
+              )}
+              <Button className="mt-4 bg-blue-600 hover:bg-blue-700 text-white" type="button" disabled={!selectedFile} onClick={handleUploadFile}>
+                Upload File
+              </Button>
+            </div>
+          </CardContent>
+
           <CardContent>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -584,39 +647,45 @@ export default function Vehicles() {
         <Card>
           <CardHeader>
             <CardTitle>Fleet Overview</CardTitle>
+            <div className="mt-2">
+              <Input
+                placeholder="Search by make, model, registration, or type..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="max-w-sm"
+              />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {vehicles.map((vehicle, index) => (
-                <Card key={index} className="hover:shadow-md transition-shadow">
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        {getVehicleTypeIcon(vehicle.vehicle_type)}
-                        <span className="font-medium text-gray-900">
-                          {vehicle.make} {vehicle.model}
-                        </span>
-                      </div>
-                      {getPriorityBadge(vehicle.vehicle_priority)}
-                    </div>
-                    <div className="space-y-2 text-sm">
-                      <p className="text-gray-600">
-                        <span className="font-medium">Reg:</span> {vehicle.registration_number}
-                      </p>
-                      <p className="text-gray-600">
-                        <span className="font-medium">Year:</span> {vehicle.manufactured_year}
-                      </p>
-                      <p className="text-gray-600">
-                        <span className="font-medium">Fuel:</span> {vehicle.fuel_type}
-                      </p>
-                      <p className="text-gray-600">
-                        <span className="font-medium">Color:</span> {vehicle.colour}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Make & Model</TableHead>
+                  <TableHead>Registration</TableHead>
+                  <TableHead>Year</TableHead>
+                  <TableHead>Fuel</TableHead>
+                  <TableHead>Color</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Priority</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredVehicles.map((vehicle, index) => (
+                  <TableRow key={index} className={getRowBg(vehicle.vehicle_type)}>
+                    <TableCell className="flex items-center gap-2">
+                      {getVehicleTypeIcon(vehicle.vehicle_type)}
+                      <span>{vehicle.make} {vehicle.model}</span>
+                    </TableCell>
+                    <TableCell>{vehicle.registration_number}</TableCell>
+                    <TableCell>{vehicle.manufactured_year}</TableCell>
+                    <TableCell>{vehicle.fuel_type}</TableCell>
+                    <TableCell>{vehicle.colour}</TableCell>
+                    <TableCell className="capitalize">{vehicle.vehicle_type}</TableCell>
+                    <TableCell>{getPriorityBadge(vehicle.vehicle_priority)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
       )}

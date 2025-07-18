@@ -79,10 +79,21 @@ export default function OnboardingPage() {
 
         <CardContent className="space-y-6">
           {companyData && (
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <h3 className="font-semibold text-blue-900">Company: {companyData.companyName}</h3>
-              <p className="text-blue-700">Fleet Size: {companyData.fleetSize} vehicles</p>
-              <p className="text-blue-700">Industry: {companyData.industry}</p>
+            <div className="bg-blue-50 p-4 rounded-lg mb-6">
+              <h3 className="font-semibold text-blue-900 mb-2">Company Setup Complete</h3>
+              <div className="space-y-1 text-sm">
+                <p className="text-blue-700"><strong>Company:</strong> {companyData.companyName}</p>
+                <p className="text-blue-700"><strong>Fleet Size:</strong> {companyData.fleetSize} vehicles</p>
+                <p className="text-blue-700"><strong>Industry:</strong> {companyData.industry}</p>
+                {companyData.adminCredentials && (
+                  <div className="mt-3 p-3 bg-green-50 rounded border border-green-200">
+                    <p className="text-green-800 font-medium mb-1">Admin Account Created:</p>
+                    <p className="text-green-700"><strong>Email:</strong> {companyData.adminCredentials.email}</p>
+                    <p className="text-green-700"><strong>Temporary Password:</strong> {companyData.adminCredentials.tempPassword}</p>
+                    <p className="text-green-600 text-xs mt-1">Please save these credentials. You can change the password after first login.</p>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 

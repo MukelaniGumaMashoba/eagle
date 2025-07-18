@@ -62,16 +62,18 @@ export async function signup(formData: FormData) {
     redirect("/signup?message=User ID missing");
   }
 
-  await supabase.from("profiles").insert([
+  const { error: insertroo } = await supabase.from("profiles").insert([
     {
       id: userId,
       full_name: fullName,
-      role: role,
+      role,
       phone_number: phone,
       email: data.email,
     },
   ]);
 
+  console.log("User ID:", userId);
+  console.log("Metadata:", data.options.data);
 
   if (error) {
     redirect("/signup?message=" + error.message);
@@ -199,3 +201,5 @@ export async function getUserId() {
   console.log("The data is", data.user?.id)
   return data.user.id;
 }
+
+

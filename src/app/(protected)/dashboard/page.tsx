@@ -50,197 +50,169 @@ interface QuickAction {
 export default function Dashboard() {
   const [userRole, setUserRole] = useState<string>("")
   const [userEmail, setUserEmail] = useState<string>("")
-  // const [stats, setStats] = useState<DashboardStats>({
-  //   activeBreakdowns: 0,
-  //   pendingApprovals: 0,
-  //   availableTechnicians: 0,
-  //   totalVehicles: 0,
-  //   monthlyRevenue: 0,
-  //   completedJobs: 0,
-  // })
-  // const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([])
-  // const router = useRouter()
+  const [stats, setStats] = useState<DashboardStats>({
+    activeBreakdowns: 0,
+    pendingApprovals: 0,
+    availableTechnicians: 0,
+    totalVehicles: 0,
+    monthlyRevenue: 0,
+    completedJobs: 0,
+  })
+  const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([])
+  const router = useRouter()
 
-  // useEffect(() => {
-  //   // Get user info from localStorage
-  //   const role = localStorage.getItem("userRole") || ""
-  //   const email = localStorage.getItem("userEmail") || ""
+  useEffect(() => {
+    // Get user info from localStorage
 
-  //   if (!role) {
-  //     router.push("/")
-  //     return
-  //   }
 
-  //   setUserRole(role)
-  //   setUserEmail(email)
 
   //   // Mock data - in real app, fetch from API based on user role
-  //   setStats({
-  //     activeBreakdowns: 12,
-  //     pendingApprovals: 5,
-  //     availableTechnicians: 8,
-  //     totalVehicles: 45,
-  //     monthlyRevenue: 125000,
-  //     completedJobs: 89,
-  //   })
+    setStats({
+      activeBreakdowns: 12,
+      pendingApprovals: 5,
+      availableTechnicians: 8,
+      totalVehicles: 45,
+      monthlyRevenue: 125000,
+      completedJobs: 89,
+    })
 
-  //   setRecentActivity([
-  //     {
-  //       id: "1",
-  //       type: "breakdown",
-  //       title: "New Breakdown Reported",
-  //       description: "Vehicle ABC 123 GP - Engine overheating on N1 Highway",
-  //       timestamp: "5 minutes ago",
-  //       status: "urgent",
-  //     },
-  //     {
-  //       id: "2",
-  //       type: "approval",
-  //       title: "Quotation Approved",
-  //       description: "R2,500 repair work for Order OR.128651312",
-  //       timestamp: "15 minutes ago",
-  //       status: "approved",
-  //     },
-  //     {
-  //       id: "3",
-  //       type: "completion",
-  //       title: "Job Completed",
-  //       description: "Tire replacement for XYZ 789 GP completed successfully",
-  //       timestamp: "1 hour ago",
-  //       status: "completed",
-  //     },
-  //     {
-  //       id: "4",
-  //       type: "quotation",
-  //       title: "New Quotation Created",
-  //       description: "Cost center created quotation for brake repair",
-  //       timestamp: "2 hours ago",
-  //       status: "pending",
-  //     },
-  //   ])
-  // }, [router])
+    setRecentActivity([
+      {
+        id: "1",
+        type: "breakdown",
+        title: "New Breakdown Reported",
+        description: "Vehicle ABC 123 GP - Engine overheating on N1 Highway",
+        timestamp: "5 minutes ago",
+        status: "urgent",
+      },
+      {
+        id: "2",
+        type: "approval",
+        title: "Quotation Approved",
+        description: "R2,500 repair work for Order OR.128651312",
+        timestamp: "15 minutes ago",
+        status: "approved",
+      },
+    ])
+  }, [router])
 
-  // const getQuickActions = (): QuickAction[] => {
-  //   const baseActions = [
-  //     {
-  //       title: "View All Breakdowns",
-  //       description: "See active and pending breakdown requests",
-  //       icon: AlertTriangle,
-  //       action: "/callcenter",
-  //       color: "bg-red-50 text-red-600 hover:bg-red-100",
-  //     },
-  //     {
-  //       title: "Fleet Management",
-  //       description: "Manage vehicles and drivers",
-  //       icon: Truck,
-  //       action: "/fleetManager",
-  //       color: "bg-blue-50 text-blue-600 hover:bg-blue-100",
-  //     },
-  //     {
-  //       title: "Create Quotation",
-  //       description: "Generate cost estimates for repairs",
-  //       icon: DollarSign,
-  //         action: "/ccenter/create-quotation",
-  //       color: "bg-green-50 text-green-600 hover:bg-green-100",
-  //     },
-  //     {
-  //       title: "System Settings",
-  //       description: "Configure system and user settings",
-  //       icon: User,
-  //       action: "/settings",
-  //       color: "bg-purple-50 text-purple-600 hover:bg-purple-100",
-  //     },
-  //   ]
+  const getQuickActions = (): QuickAction[] => {
+    const baseActions = [
+      {
+        title: "View All Breakdowns",
+        description: "See active and pending breakdown requests",
+        icon: AlertTriangle,
+        action: "/callcenter",
+        color: "bg-red-50 text-red-600 hover:bg-red-100",
+      },
+      {
+        title: "Fleet Management",
+        description: "Manage vehicles and drivers",
+        icon: Truck,
+        action: "/fleetManager",
+        color: "bg-blue-50 text-blue-600 hover:bg-blue-100",
+      },
+      {
+        title: "Create Quotation",
+        description: "Generate cost estimates for repairs",
+        icon: DollarSign,
+          action: "/ccenter/create-quotation",
+        color: "bg-green-50 text-green-600 hover:bg-green-100",
+      },
+      {
+        title: "System Settings",
+        description: "Configure system and user settings",
+        icon: User,
+        action: "/settings",
+        color: "bg-purple-50 text-purple-600 hover:bg-purple-100",
+      },
+    ]
 
-  //   // Filter actions based on user role
-  //   switch (userRole) {
-  //     case "call-center":
-  //       return baseActions.filter(
-  //         (action) => action.action.includes("call-center") || action.action.includes("settings"),
-  //       )
-  //     case "fleet-manager":
-  //       return baseActions.filter(
-  //         (action) =>
-  //           action.action.includes("fleet-manager") ||
-  //           action.action.includes("call-center") ||
-  //           action.action.includes("settings"),
-  //       )
-  //     case "cost-center":
-  //       return baseActions.filter(
-  //         (action) => action.action.includes("cost-center") || action.action.includes("settings"),
-  //       )
-  //     case "customer":
-  //       return [
-  //         {
-  //           title: "Request Breakdown Service",
-  //           description: "Report a vehicle breakdown",
-  //           icon: Phone,
-  //           action: "/customer",
-  //           color: "bg-orange-50 text-orange-600 hover:bg-orange-100",
-  //         },
-  //         {
-  //           title: "My Requests",
-  //           description: "View your breakdown history",
-  //           icon: FileText,
-  //           action: "/customer",
-  //           color: "bg-blue-50 text-blue-600 hover:bg-blue-100",
-  //         },
-  //       ]
-  //     default:
-  //       return baseActions
-  //   }
-  // }
+    // Filter actions based on user role
+    switch (userRole) {
+      case "call-center":
+        return baseActions.filter(
+          (action) => action.action.includes("call-center") || action.action.includes("settings"),
+        )
+      case "fleet-manager":
+        return baseActions.filter(
+          (action) =>
+            action.action.includes("fleet-manager") ||
+            action.action.includes("call-center") ||
+            action.action.includes("settings"),
+        )
+      case "cost-center":
+        return baseActions.filter(
+          (action) => action.action.includes("cost-center") || action.action.includes("settings"),
+        )
+      case "customer":
+        return [
+          {
+            title: "Request Breakdown Service",
+            description: "Report a vehicle breakdown",
+            icon: Phone,
+            action: "/customer",
+            color: "bg-orange-50 text-orange-600 hover:bg-orange-100",
+          },
+          {
+            title: "My Requests",
+            description: "View your breakdown history",
+            icon: FileText,
+            action: "/customer",
+            color: "bg-blue-50 text-blue-600 hover:bg-blue-100",
+          },
+        ]
+      default:
+        return baseActions
+    }
+  }
 
-  // const getActivityIcon = (type: string) => {
-  //   switch (type) {
-  //     case "breakdown":
-  //       return <AlertTriangle className="h-4 w-4 text-red-500" />
-  //     case "approval":
-  //       return <CheckCircle className="h-4 w-4 text-green-500" />
-  //     case "completion":
-  //       return <CheckCircle className="h-4 w-4 text-blue-500" />
-  //     case "quotation":
-  //       return <DollarSign className="h-4 w-4 text-yellow-500" />
-  //     default:
-  //       return <Clock className="h-4 w-4 text-gray-500" />
-  //   }
-  // }
+  const getActivityIcon = (type: string) => {
+    switch (type) {
+      case "breakdown":
+        return <AlertTriangle className="h-4 w-4 text-red-500" />
+      case "approval":
+        return <CheckCircle className="h-4 w-4 text-green-500" />
+      case "completion":
+        return <CheckCircle className="h-4 w-4 text-blue-500" />
+      case "quotation":
+        return <DollarSign className="h-4 w-4 text-yellow-500" />
+      default:
+        return <Clock className="h-4 w-4 text-gray-500" />
+    }
+  }
 
-  // const getStatusBadge = (status: string) => {
-  //   switch (status) {
-  //     case "urgent":
-  //       return <Badge className="bg-red-100 text-red-800">Urgent</Badge>
-  //     case "approved":
-  //       return <Badge className="bg-green-100 text-green-800">Approved</Badge>
-  //     case "completed":
-  //       return <Badge className="bg-blue-100 text-blue-800">Completed</Badge>
-  //     case "pending":
-  //       return <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>
-  //     default:
-  //       return <Badge className="bg-gray-100 text-gray-800">{status}</Badge>
-  //   }
-  // }
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "urgent":
+        return <Badge className="bg-red-100 text-red-800">Urgent</Badge>
+      case "approved":
+        return <Badge className="bg-green-100 text-green-800">Approved</Badge>
+      case "completed":
+        return <Badge className="bg-blue-100 text-blue-800">Completed</Badge>
+      case "pending":
+        return <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>
+      default:
+        return <Badge className="bg-gray-100 text-gray-800">{status}</Badge>
+    }
+  }
 
-  // const getRoleDisplayName = (role: string) => {
-  //   switch (role) {
-  //     case "call-center":
-  //       return "Call Center Operator"
-  //     case "fleet-manager":
-  //       return "Fleet Manager"
-  //     case "cost-center":
-  //       return "Cost Center Manager"
-  //     case "customer":
-  //       return "Customer"
-  //     case "admin":
-  //       return "Administrator"
-  //     default:
-  //       return "User"
-  //   }
-  // }
-
-  // if (!userRole) {
-  //   return <div>Loading...</div>
-  // }
+  const getRoleDisplayName = (role: string) => {
+    switch (role) {
+      case "call-center":
+        return "Call Center Operator"
+      case "fleet-manager":
+        return "Fleet Manager"
+      case "cost-center":
+        return "Cost Center Manager"
+      case "customer":
+        return "Customer"
+      case "admin":
+        return "Administrator"
+      default:
+        return "User"
+    }
+  }
 
   return (
     <>
@@ -258,17 +230,17 @@ export default function Dashboard() {
               <AlertTriangle className="h-4 w-4 text-red-500" />
             </CardHeader>
             <CardContent>
-              {/* <div className="text-2xl font-bold text-red-600">{stats.activeBreakdowns}</div> */}
+              <div className="text-2xl font-bold text-red-600">{stats.activeBreakdowns}</div>
               <p className="text-xs text-muted-foreground">+2 from yesterday</p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Available Breakdown</CardTitle>
+              <CardTitle className="text-sm font-medium">Number of Breakdowns</CardTitle>
               <Users className="h-4 w-4 text-green-500" />
             </CardHeader>
             <CardContent>
-              {/* <div className="text-2xl font-bold text-green-600">{stats.availableTechnicians}</div> */}
+              <div className="text-2xl font-bold text-green-600">{stats.availableTechnicians}</div>
               <p className="text-xs text-muted-foreground">Out of 12 total</p>
             </CardContent>
           </Card>
@@ -278,18 +250,18 @@ export default function Dashboard() {
               <Truck className="h-4 w-4 text-blue-500" />
             </CardHeader>
             <CardContent>
-              {/* <div className="text-2xl font-bold text-blue-600">{stats.totalVehicles}</div> */}
+              <div className="text-2xl font-bold text-blue-600">{stats.totalVehicles}</div>
               <p className="text-xs text-muted-foreground">42 active, 3 maintenance</p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Monthly Revenue</CardTitle>
+              <CardTitle className="text-sm font-medium">Total Breakdowns</CardTitle>
               <TrendingUp className="h-4 w-4 text-purple-500" />
             </CardHeader>
             <CardContent>
-              {/* <div className="text-2xl font-bold text-purple-600">R{stats.monthlyRevenue.toLocaleString()}</div> */}
-              <p className="text-xs text-muted-foreground">+12% from last month</p>
+              <div className="text-2xl font-bold text-purple-600">R{stats.monthlyRevenue.toLocaleString()}</div>
+              <p className="text-xs text-muted-foreground">+12% for the month</p>
             </CardContent>
           </Card>
         </div>
@@ -301,7 +273,7 @@ export default function Dashboard() {
               <CardTitle>Quick Actions</CardTitle>
               <CardDescription>Common tasks for your role</CardDescription>
             </CardHeader>
-            {/* <CardContent>
+            <CardContent>
               <div className="grid gap-4 md:grid-cols-2">
                 {getQuickActions().map((action, index) => (
                   <Button
@@ -320,7 +292,7 @@ export default function Dashboard() {
                   </Button>
                 ))}
               </div>
-            </CardContent> */}
+            </CardContent>
           </Card>
 
           {/* Recent Activity */}
@@ -330,7 +302,7 @@ export default function Dashboard() {
               <CardDescription>Latest system updates and notifications</CardDescription>
             </CardHeader>
             <CardContent>
-              {/* <div className="space-y-4">
+              <div className="space-y-4">
                 {recentActivity.map((activity) => (
                   <div key={activity.id} className="flex items-start gap-3 p-3 rounded-lg bg-gray-50">
                     {getActivityIcon(activity.type)}
@@ -344,7 +316,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                 ))}
-              </div> */}
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -353,7 +325,7 @@ export default function Dashboard() {
         <Tabs defaultValue="overview" className="space-y-4">
           <TabsList>
             <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="pending">Pending Tasks</TabsTrigger>
+            <TabsTrigger value="pending">Pending Breakdowns</TabsTrigger>
             <TabsTrigger value="reports">Quick Reports</TabsTrigger>
           </TabsList>
 
@@ -381,8 +353,8 @@ export default function Dashboard() {
                       <span className="text-sm font-semibold">15</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      {/* <span className="text-sm">Jobs This Month</span> */}
-                      {/* <span className="text-sm font-semibold">{stats.completedJobs}</span> */}
+                      <span className="text-sm">Jobs This Month</span>
+                      <span className="text-sm font-semibold">{stats.completedJobs}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -398,10 +370,14 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {userRole === "fleet-manager" && (
+                  {userRole === "fleet manager" && (
                     <div className="flex items-center justify-between p-3 border rounded-lg">
                       <div>
-                        <p className="font-medium">5 Quotations Awaiting Approval</p>
+                        <p className="font-medium">Awaiting Towing</p>
+                        <p className="text-sm text-gray-600">Total value: R12,500</p>
+                      </div>
+                      <div>
+                        <p className="font-medium">Awaiting Towing</p>
                         <p className="text-sm text-gray-600">Total value: R12,500</p>
                       </div>
                       <Button size="sm">
@@ -409,7 +385,7 @@ export default function Dashboard() {
                       </Button>
                     </div>
                   )}
-                  {userRole === "call-center" && (
+                  {userRole === "call center" && (
                     <div className="flex items-center justify-between p-3 border rounded-lg">
                       <div>
                         <p className="font-medium">3 Unassigned Breakdowns</p>
@@ -420,7 +396,7 @@ export default function Dashboard() {
                       </Button>
                     </div>
                   )}
-                  {userRole === "cost-center" && (
+                  {userRole === "cost center" && (
                     <div className="flex items-center justify-between p-3 border rounded-lg">
                       <div>
                         <p className="font-medium">2 Technician Reports Pending</p>
@@ -451,7 +427,8 @@ export default function Dashboard() {
             <div className="grid gap-4 md:grid-cols-3">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Daily Summary</CardTitle>
+                  <CardTitle className="text-lg">Daily Number of
+                    <br/> Breakdowns Logged</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">24</div>
