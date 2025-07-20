@@ -87,7 +87,7 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-row w-full">
+    <div className="bg-gray-50 w-full">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div
@@ -96,11 +96,15 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar: this is sticky/fixed and does NOT move */}
       <div className={`
-        fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0
+        fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg
+        transform transition-transform duration-300 ease-in-out
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+        lg:translate-x-0
+        h-screen
       `}>
+        {/* Header, nav, footer go here */}
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b">
@@ -155,8 +159,8 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
         </div>
       </div>
 
-      {/* Main content */}
-      <div className="w-full">
+      {/* Main content: this scrolls */}
+      <div className="ml-64 h-screen overflow-y-auto">
         {/* Top bar */}
         <div className="sticky top-0 z-30 bg-white border-b shadow-sm">
           <div className="flex items-center justify-between px-4 py-3">

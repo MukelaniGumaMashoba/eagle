@@ -40,7 +40,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
           </div>
 
           {/* Navigation between auth pages */}
-          <div className="mt-6 text-center">
+          {/* <div className="mt-6 text-center">
             {isLogin ? (
               <p className="text-gray-600">
                 Don't have an account?{' '}
@@ -62,7 +62,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
                 </Link>
               </p>
             ) : null}
-          </div>
+          </div> */}
 
           {/* Footer */}
           <div className="mt-8 text-center">

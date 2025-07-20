@@ -85,7 +85,7 @@ export default function Drivers() {
                 toast.error('Failed to fetch drivers')
                 setDrivers([])
             } else {
-                setDrivers(data || [])
+                setDrivers(data as Driver[] ?? [])
             }
         } catch (error) {
             console.error('Error:', error)
