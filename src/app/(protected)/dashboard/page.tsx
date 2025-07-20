@@ -130,20 +130,20 @@ export default function Dashboard() {
 
     // Filter actions based on user role
     switch (userRole) {
-      case "call-center":
+      case "call center":
         return baseActions.filter(
-          (action) => action.action.includes("call-center") || action.action.includes("settings"),
+          (action) => action.action.includes("call center") || action.action.includes("settings"),
         )
-      case "fleet-manager":
+      case "fleet manager":
         return baseActions.filter(
           (action) =>
-            action.action.includes("fleet-manager") ||
-            action.action.includes("call-center") ||
+            action.action.includes("fleet manager") ||
+            action.action.includes("call center") ||
             action.action.includes("settings"),
         )
-      case "cost-center":
+      case "cost center":
         return baseActions.filter(
-          (action) => action.action.includes("cost-center") || action.action.includes("settings"),
+          (action) => action.action.includes("cost center") || action.action.includes("settings"),
         )
       case "customer":
         return [
@@ -199,11 +199,11 @@ export default function Dashboard() {
 
   const getRoleDisplayName = (role: string) => {
     switch (role) {
-      case "call-center":
+      case "call center":
         return "Call Center Operator"
-      case "fleet-manager":
+      case "fleet manager":
         return "Fleet Manager"
-      case "cost-center":
+      case "cost center":
         return "Cost Center Manager"
       case "customer":
         return "Customer"
@@ -325,7 +325,7 @@ export default function Dashboard() {
         <Tabs defaultValue="overview" className="space-y-4">
           <TabsList>
             <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="pending">Pending Breakdowns</TabsTrigger>
+            <TabsTrigger value="pending">Pending Jobs</TabsTrigger>
             <TabsTrigger value="reports">Quick Reports</TabsTrigger>
           </TabsList>
 

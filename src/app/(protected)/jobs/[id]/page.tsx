@@ -204,13 +204,13 @@ export default function FleetJobDetailPage() {
         return <div>Job not found</div>
     }
 
-    const canApproveJobs = userRole === "fleet-manager"
-    const canUpdateStatus = userRole === "call-center" || userRole === "fleet-manager"
+    const canApproveJobs = userRole === "fleet manager"
+    const canUpdateStatus = userRole === "call center" || userRole === "fleet manager"
 
     return (
         <>
 
-            <Link href="/jobFMan">
+            <Link href="/jobs">
                 <Button variant="ghost" size="sm">
                     <ArrowLeft className="h-4 w-4 mr-2" />
                     Back to Jobs

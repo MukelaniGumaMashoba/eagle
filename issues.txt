@@ -25,11 +25,10 @@ Done Task
 
 
 
-Dashboard remove monthly breakdown instead of available
-monthly revenue to breakdown cost on the monthly
-avg breakdown time (time take to repair vehicle)
-number of tows, Change the system to have a tow if not being able(status is most important) 
-System status must be removed
-remove customer safisfaction, jobs this month removed
+Quick Q: 
 
+Should i be reg admin of company or fleet manager and they have prev to add users to their system or how 
 
+internal workshop mech, no we need to tow 
+
+when tow send 

@@ -35,9 +35,9 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import { createClient } from "@/lib/supabase/client"
+import { Database } from "@/lib/supabase/database.types"
 
 interface BreakdownVehicle {
-
   created_at: string
   emergency_type: string | null
   image_urls: string | null
@@ -45,7 +45,7 @@ interface BreakdownVehicle {
   location: string
   order_no: string
   phone: string
-  id: number | null
+  id?: number
   registration: string
   make: string
   model: string
@@ -77,6 +77,9 @@ interface BreakdownVehicle {
   }>
 }
 
+type IBreakdownVehicle = Database["public"]["Tables"]["breakdowns"]["Insert"] & {};
+
+
 interface ExternalRequest {
   id: string
   clientName: string
@@ -99,7 +102,7 @@ interface ExternalRequest {
 }
 
 export default function VehiclesPage() {
-  const [vehicles, setVehicles] = useState<BreakdownVehicle[]>([])
+  const [vehicles, setVehicles] = useState<IBreakdownVehicle[]>([])
   const [externalRequests, setExternalRequests] = useState<ExternalRequest[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
@@ -282,7 +285,6 @@ export default function VehiclesPage() {
       location: formData.get("location") as string,
       order_no: formData.get("order_no") as string,
       phone: formData.get("phone") as string,
-      id: null,
       registration: formData.get("registration") as string,
       make: formData.get("make") as string,
       model: formData.get("model") as string,
@@ -337,7 +339,6 @@ export default function VehiclesPage() {
           location: request.location,
           order_no: "Unknown",
           phone: request.phone,
-          id: null,
           registration: request.vehicleDetails.registration,
           make: request.vehicleDetails.make,
           model: request.vehicleDetails.model,
@@ -561,7 +562,7 @@ export default function VehiclesPage() {
             <TabsTrigger value="active">Active Breakdowns</TabsTrigger>
             {/* <TabsTrigger value="history">Service History</TabsTrigger> */}
             <TabsTrigger value="external">
-              External Requests ({externalRequests.filter((r) => r.status === "pending").length})
+              Contract Partners ({externalRequests.filter((r) => r.status === "pending").length})
             </TabsTrigger>
           </TabsList>
 
@@ -576,15 +577,15 @@ export default function VehiclesPage() {
                           <Truck className="h-5 w-5 text-blue-500" />
                           <CardTitle className="text-lg">{vehicle.registration}</CardTitle>
                         </div>
-                        <Badge className={getPriorityColor(vehicle.priority)}>{vehicle.priority}</Badge>
-                        <Badge className={getStatusColor(vehicle.status)}>
+                        <Badge className={getPriorityColor(vehicle.priority!)}>{vehicle.priority}</Badge>
+                        <Badge className={getStatusColor(vehicle.status!)}>
                           {vehicle.status}
                         </Badge>
                         {vehicle.client_type === "external" && <Badge variant="outline">External</Badge>}
                       </div>
                       <div className="flex items-center gap-2">
                         <Clock className="h-4 w-4 text-gray-500" />
-                        <span className="text-sm text-gray-500">{new Date(vehicle.reported_at).toLocaleString()}</span>
+                        <span className="text-sm text-gray-500">{new Date(vehicle.reported_at!).toLocaleString()}</span>
                       </div>
                     </div>
                     <CardDescription className="text-base">
@@ -677,12 +678,12 @@ export default function VehiclesPage() {
                           View Location
                         </Button>
                       </div>
-                      <div className="flex gap-2">
+                      {/* <div className="flex gap-2">
                         <Button size="sm">
                           <FileText className="h-4 w-4 mr-2" />
                           View Details
                         </Button>
-                      </div>
+                      </div> */}
                     </div>
                   </CardContent>
                 </Card>
@@ -732,7 +733,7 @@ export default function VehiclesPage() {
           <TabsContent value="external" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>External Service Requests</CardTitle>
+                <CardTitle>External Partner</CardTitle>
                 <CardDescription>Requests from external clients for breakdown services</CardDescription>
               </CardHeader>
               <CardContent>

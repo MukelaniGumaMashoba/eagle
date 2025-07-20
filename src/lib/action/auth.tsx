@@ -28,12 +28,17 @@ export async function login(formData: FormData) {
 }
 
 export async function signup(formData: FormData) {
-  const supabase = await createClient();
-
   const role = formData.get("role") as string;
   const fullName = formData.get("name") as string;
   const phone = formData.get("phone") as string;
-
+  if (
+    role !== "fleet manager" &&
+    role !== "customer" &&
+    role !== "call centre" &&
+    role !== "cost centre"
+  ) {
+    redirect(`/signup?message=Role not found`);
+  }
   const data = {
     email: formData.get("email") as string,
     password: formData.get("password") as string,
@@ -45,39 +50,28 @@ export async function signup(formData: FormData) {
       },
     },
   };
-
-  const { error } = await supabase.auth.signUp(data);
-  if (
-    role !== "fleet manager" &&
-    role !== "customer" &&
-    role !== "call centre" &&
-    role !== "cost centre"
-  ) {
-    redirect(`/signup?message=Role not found`);
-  }
-  const userId = (await getUser()).user.id;
-  console.log("The id," + userId);
-  if (!userId) {
-    alert("User ID not available after signup");
-    redirect("/signup?message=User ID missing");
+  const supabase = await createClient();
+  const { error, data: signs } = await supabase.auth.signUp(data);
+  if (error) {
+    redirect("/signup?message=" + error.message);
   }
 
-  const { error: insertroo } = await supabase.from("profiles").insert([
+  const { error: inserterror, data: profile } = await supabase.from("profiles").insert(
     {
-      id: userId,
+      id: signs.session?.user.id,
       full_name: fullName,
       role,
       phone_number: phone,
       email: data.email,
     },
-  ]);
+  );
 
-  console.log("User ID:", userId);
-  console.log("Metadata:", data.options.data);
-
-  if (error) {
-    redirect("/signup?message=" + error.message);
+  if (inserterror) {
+    console.log("error : " + inserterror?.message);
   }
+
+  console.log("User ID:", profile);
+  console.log("Metadata:", data.options.data);
 
 
   revalidatePath("/", "layout");

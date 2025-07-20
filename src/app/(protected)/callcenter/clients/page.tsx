@@ -3,6 +3,7 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
+import { createClient } from "@/lib/supabase/client"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -34,75 +35,7 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 
-interface ExternalClient {
-  id: string
-  companyName: string
-  contactPerson: string
-  phone: string
-  email: string
-  address: string
-  city: string
-  province: string
-  postalCode: string
-  clientType: "corporate" | "sme" | "individual"
-  status: "active" | "inactive" | "pending"
-  rating: number
-  totalJobs: number
-  totalRevenue: number
-  averageJobValue: number
-  paymentTerms: string
-  creditLimit: number
-  registrationDate: string
-  lastJobDate?: string
-  preferredServices: string[]
-  contractType: "standard" | "premium" | "custom"
-  accountManager: string
-}
-
-interface Subcontractor {
-  id: string
-  companyName: string
-  contactPerson: string
-  phone: string
-  email: string
-  specialties: string[]
-  serviceAreas: string[]
-  rating: number
-  completedJobs: number
-  responseTime: string
-  hourlyRate: number
-  availability: "available" | "busy" | "unavailable"
-  certifications: string[]
-  equipmentTypes: string[]
-  contractStatus: "active" | "pending" | "suspended"
-  lastActive: string
-}
-
-interface TowingCompany {
-  id: string
-  companyName: string
-  contactPerson: string
-  phone: string
-  emergencyPhone: string
-  email: string
-  serviceAreas: string[]
-  vehicleTypes: string[]
-  capacity: {
-    lightVehicles: number
-    heavyVehicles: number
-    specializedEquipment: number
-  }
-  rates: {
-    perKm: number
-    baseRate: number
-    emergencyRate: number
-  }
-  rating: number
-  responseTime: string
-  availability: "24/7" | "business-hours" | "on-call"
-  status: "active" | "inactive"
-  lastUsed?: string
-}
+import { addExternalClient, addSubcontractor, addTowingCompany, ExternalClient, Subcontractor, TowingCompany } from "@/lib/action/addClient";
 
 export default function ExternalClientsPage() {
   const [clients, setClients] = useState<ExternalClient[]>([])
@@ -113,151 +46,32 @@ export default function ExternalClientsPage() {
   const [isAddClientOpen, setIsAddClientOpen] = useState(false)
   const [isAddSubcontractorOpen, setIsAddSubcontractorOpen] = useState(false)
   const [isAddTowingOpen, setIsAddTowingOpen] = useState(false)
+  const [loading, setLoading] = useState(false)
+
+  // Fetch all clients from Supabase and split by type
+  const fetchClients = async () => {
+    setLoading(true)
+    const supabase = createClient()
+    const { data, error } = await supabase.from("client").select("*")
+    if (error) {
+      toast.error("Failed to fetch clients: " + error.message)
+      setLoading(false)
+      return
+    }
+    // Split by type
+    // @ts-ignore
+    setClients((data || []).filter((c: any) => c.client_type === "external"))
+
+    // @ts-expect-error
+    setSubcontractors((data || []).filter((c: any) => c.client_type === "subcontractor"))
+
+    // @ts-ignore
+    setTowingCompanies((data || []).filter((c: any) => c.client_type === "towing"))
+    setLoading(false)
+  }
 
   useEffect(() => {
-    // Mock data - in real app, fetch from API
-    setClients([
-      {
-        id: "1",
-        companyName: "ABC Logistics",
-        contactPerson: "John Smith",
-        phone: "+27 11 123 4567",
-        email: "john@abclogistics.co.za",
-        address: "123 Industrial Street",
-        city: "Johannesburg",
-        province: "Gauteng",
-        postalCode: "2000",
-        clientType: "corporate",
-        status: "active",
-        rating: 4.8,
-        totalJobs: 156,
-        totalRevenue: 450000,
-        averageJobValue: 2885,
-        paymentTerms: "30 days",
-        creditLimit: 100000,
-        registrationDate: "2022-03-15",
-        lastJobDate: "2025-01-15",
-        preferredServices: ["Breakdown Recovery", "Maintenance", "Emergency Response"],
-        contractType: "premium",
-        accountManager: "Sarah Wilson",
-      },
-      {
-        id: "2",
-        companyName: "Quick Delivery Services",
-        contactPerson: "Maria Santos",
-        phone: "+27 21 987 6543",
-        email: "maria@quickdelivery.co.za",
-        address: "456 Commerce Road",
-        city: "Cape Town",
-        province: "Western Cape",
-        postalCode: "8000",
-        clientType: "sme",
-        status: "active",
-        rating: 4.5,
-        totalJobs: 89,
-        totalRevenue: 180000,
-        averageJobValue: 2022,
-        paymentTerms: "15 days",
-        creditLimit: 50000,
-        registrationDate: "2023-01-20",
-        lastJobDate: "2025-01-10",
-        preferredServices: ["Tire Service", "Battery Replacement", "Towing"],
-        contractType: "standard",
-        accountManager: "Mike Johnson",
-      },
-    ])
-
-    setSubcontractors([
-      {
-        id: "1",
-        companyName: "Elite Mobile Mechanics",
-        contactPerson: "David Brown",
-        phone: "+27 82 555 1234",
-        email: "david@elitemechanics.co.za",
-        specialties: ["Engine Repair", "Electrical Systems", "Hydraulics"],
-        serviceAreas: ["Johannesburg", "Pretoria", "Sandton"],
-        rating: 4.9,
-        completedJobs: 234,
-        responseTime: "15 min avg",
-        hourlyRate: 450,
-        availability: "available",
-        certifications: ["ASE Certified", "Heavy Vehicle Specialist"],
-        equipmentTypes: ["Mobile Workshop", "Diagnostic Equipment"],
-        contractStatus: "active",
-        lastActive: "2025-01-16T10:30:00Z",
-      },
-      {
-        id: "2",
-        companyName: "Rapid Recovery Services",
-        contactPerson: "Lisa Davis",
-        phone: "+27 84 777 9999",
-        email: "lisa@rapidrecovery.co.za",
-        specialties: ["Towing", "Recovery", "Accident Response"],
-        serviceAreas: ["Cape Town", "Stellenbosch", "Paarl"],
-        rating: 4.7,
-        completedJobs: 189,
-        responseTime: "12 min avg",
-        hourlyRate: 380,
-        availability: "busy",
-        certifications: ["Recovery Specialist", "Crane Operator"],
-        equipmentTypes: ["Recovery Truck", "Flatbed Trailer"],
-        contractStatus: "active",
-        lastActive: "2025-01-16T09:15:00Z",
-      },
-    ])
-
-    setTowingCompanies([
-      {
-        id: "1",
-        companyName: "24/7 Towing Solutions",
-        contactPerson: "Peter Wilson",
-        phone: "+27 11 555 0000",
-        emergencyPhone: "+27 82 911 0000",
-        email: "dispatch@247towing.co.za",
-        serviceAreas: ["Johannesburg", "Sandton", "Randburg", "Midrand"],
-        vehicleTypes: ["Light Vehicles", "Heavy Trucks", "Motorcycles"],
-        capacity: {
-          lightVehicles: 8,
-          heavyVehicles: 4,
-          specializedEquipment: 2,
-        },
-        rates: {
-          perKm: 15,
-          baseRate: 350,
-          emergencyRate: 500,
-        },
-        rating: 4.6,
-        responseTime: "18 min avg",
-        availability: "24/7",
-        status: "active",
-        lastUsed: "2025-01-15T16:30:00Z",
-      },
-      {
-        id: "2",
-        companyName: "Highway Heroes Towing",
-        contactPerson: "James Miller",
-        phone: "+27 21 444 5555",
-        emergencyPhone: "+27 83 911 5555",
-        email: "ops@highwayheroes.co.za",
-        serviceAreas: ["Cape Town", "N1 Highway", "N2 Highway"],
-        vehicleTypes: ["All Vehicle Types", "Construction Equipment"],
-        capacity: {
-          lightVehicles: 6,
-          heavyVehicles: 8,
-          specializedEquipment: 4,
-        },
-        rates: {
-          perKm: 18,
-          baseRate: 400,
-          emergencyRate: 600,
-        },
-        rating: 4.8,
-        responseTime: "22 min avg",
-        availability: "24/7",
-        status: "active",
-        lastUsed: "2025-01-14T14:20:00Z",
-      },
-    ])
+    fetchClients()
   }, [])
 
   const getStatusColor = (status: string) => {
@@ -279,48 +93,128 @@ export default function ExternalClientsPage() {
     }
   }
 
-  const handleAddClient = (e: React.FormEvent) => {
-    e.preventDefault()
-    const formData = new FormData(e.target as HTMLFormElement)
-
-    const newClient: ExternalClient = {
-      id: Date.now().toString(),
-      companyName: formData.get("companyName") as string,
-      contactPerson: formData.get("contactPerson") as string,
+  const handleAddClient = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const formData = new FormData(e.target as HTMLFormElement);
+    const clientData = {
+      company_name: formData.get("company_name") as string,
+      contact_person: formData.get("contact_person") as string,
       phone: formData.get("phone") as string,
       email: formData.get("email") as string,
       address: formData.get("address") as string,
       city: formData.get("city") as string,
       province: formData.get("province") as string,
-      postalCode: formData.get("postalCode") as string,
-      clientType: formData.get("clientType") as ExternalClient["clientType"],
-      status: "pending",
+      postal_code: formData.get("postal_code") as string,
+      clienttype: formData.get("clienttype") as string,
+      status: 'pending',
       rating: 0,
-      totalJobs: 0,
-      totalRevenue: 0,
-      averageJobValue: 0,
-      paymentTerms: formData.get("paymentTerms") as string,
-      creditLimit: Number.parseInt(formData.get("creditLimit") as string),
-      registrationDate: new Date().toISOString(),
-      preferredServices: [],
-      contractType: "standard",
-      accountManager: "Unassigned",
+      total_jobs: 0,
+      total_revenue: 0,
+      average_job_value: 0,
+      payment_terms: formData.get("payment_terms") as string,
+      credit_limit: Number(formData.get("credit_limit")),
+      registration_date: undefined,
+      last_job_date: undefined,
+      preferred_services: formData.get("preferred_services") ? (formData.get("preferred_services") as string).split(',').map(s => s.trim()).filter(Boolean) : [],
+      contract_type: 'standard',
+      accountmanager: 'Unassigned',
+      specialties: formData.get("specialties") ? (formData.get("specialties") as string).split(',').map(s => s.trim()).filter(Boolean) : [],
+      service_areas: formData.get("service_areas") ? (formData.get("service_areas") as string).split(',').map(s => s.trim()).filter(Boolean) : [],
+      availability: true,
+      client_type: 'external',
+      vehicle_types: formData.get("vehicle_types") ? (formData.get("vehicle_types") as string).split(',').map(s => s.trim()).filter(Boolean) : [],
+    };
+    const { data, error } = await addExternalClient(clientData);
+    if (error) {
+      toast.error(`Failed to add client: ${error.message}`);
+    } else {
+      toast.success(`${clientData.company_name} has been added to the system`);
+      await fetchClients();
     }
+    setIsAddClientOpen(false);
+  };
 
-    setClients((prev) => [...prev, newClient])
-    setIsAddClientOpen(false)
-    toast.success(`${newClient.companyName} has been added to the system`)
-  }
+  const handleAddSubcontractor = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const formData = new FormData(e.target as HTMLFormElement);
+    const subData = {
+      company_name: formData.get("company_name") as string,
+      contact_person: formData.get("contact_person") as string,
+      phone: formData.get("phone") as string,
+      email: formData.get("email") as string,
+      specialties: formData.get("specialties") ? (formData.get("specialties") as string).split(',').map(s => s.trim()).filter(Boolean) : [],
+      service_areas: formData.get("service_areas") ? (formData.get("service_areas") as string).split(',').map(s => s.trim()).filter(Boolean) : [],
+      rating: 0,
+      completed_jobs: 0,
+      response_time: 0,
+      hourly_rate: Number(formData.get("hourly_rate")),
+      availability: true,
+      certifications: formData.get("certifications") ? (formData.get("certifications") as string).split(',').map(s => s.trim()).filter(Boolean) : [],
+      equipment_types: formData.get("equipment_types") ? (formData.get("equipment_types") as string).split(',').map(s => s.trim()).filter(Boolean) : [],
+      contract_status: 'active' as 'active',
+      last_active: undefined,
+      contract_type: 'standard',
+      accountmanager: 'Unassigned',
+      client_type: 'subcontractor',
+    } satisfies Subcontractor;
+    const { data, error } = await addSubcontractor(subData);
+    if (error) {
+      toast.error(`Failed to add subcontractor: ${error.message}`);
+    } else {
+      toast.success(`${subData.company_name} has been added as a subcontractor`);
+      await fetchClients();
+    }
+    setIsAddSubcontractorOpen(false);
+  };
+
+  const handleAddTowingCompany = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const formData = new FormData(e.target as HTMLFormElement);
+    const towData = {
+      company_name: formData.get("company_name") as string,
+      contact_person: formData.get("contact_person") as string,
+      phone: formData.get("phone") as string,
+      emergency_phone: formData.get("emergency_phone") as string,
+      email: formData.get("email") as string,
+      service_areas: formData.get("service_areas") ? (formData.get("service_areas") as string).split(',').map(s => s.trim()).filter(Boolean) : [],
+      vehicle_types: formData.get("vehicle_types") ? (formData.get("vehicle_types") as string).split(',').map(s => s.trim()).filter(Boolean) : [],
+      capacity: {
+        lightVehicles: Number(formData.get("light_vehicles")) || 0,
+        heavyVehicles: Number(formData.get("heavy_vehicles")) || 0,
+        specializedEquipment: Number(formData.get("specialized_equipment")) || 0,
+      },
+      rates: {
+        perKm: Number(formData.get("per_km")) || 0,
+        baseRate: Number(formData.get("base_rate")) || 0,
+        emergencyRate: Number(formData.get("emergency_rate")) || 0,
+      },
+      rating: 0,
+      response_time: 0,
+      availability: true,
+      status: 'active' as 'active',
+      last_used: undefined,
+      contract_type: 'standard',
+      accountmanager: 'Unassigned',
+      client_type: 'towing',
+    } satisfies TowingCompany;
+    const { data, error } = await addTowingCompany(towData);
+    if (error) {
+      toast.error(`Failed to add towing company: ${error.message}`);
+      console.log("error : " + error.message);
+    } else {
+      toast.success(`${towData.company_name} has been added as a towing company`);
+      await fetchClients();
+    }
+    setIsAddTowingOpen(false);
+  };
 
   const filteredClients = clients.filter((client) => {
     const matchesSearch =
-      client.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      client.contactPerson.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      client.email.toLowerCase().includes(searchTerm.toLowerCase())
-
-    const matchesStatus = statusFilter === "all" || client.status === statusFilter
-
-    return matchesSearch && matchesStatus
+      (client.company_name?.toLowerCase().includes(searchTerm.toLowerCase()) || "") ||
+      (client.contact_person?.toLowerCase().includes(searchTerm.toLowerCase()) || "") ||
+      (client.email?.toLowerCase().includes(searchTerm.toLowerCase()) || "");
+    const matchesStatus = statusFilter === "all" || client.status === statusFilter;
+    return matchesSearch && matchesStatus;
   })
 
   return (
@@ -378,12 +272,12 @@ export default function ExternalClientsPage() {
                   <form onSubmit={handleAddClient} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="companyName">Company Name</Label>
-                        <Input id="companyName" name="companyName" required />
+                        <Label htmlFor="company_name">Company Name</Label>
+                        <Input id="company_name" name="company_name" required />
                       </div>
                       <div>
-                        <Label htmlFor="contactPerson">Contact Person</Label>
-                        <Input id="contactPerson" name="contactPerson" required />
+                        <Label htmlFor="contact_person">Contact Person</Label>
+                        <Input id="contact_person" name="contact_person" required />
                       </div>
                       <div>
                         <Label htmlFor="phone">Phone Number</Label>
@@ -394,8 +288,8 @@ export default function ExternalClientsPage() {
                         <Input id="email" name="email" type="email" required />
                       </div>
                       <div>
-                        <Label htmlFor="clientType">Client Type</Label>
-                        <Select name="clientType" required>
+                        <Label htmlFor="clienttype">Client Type</Label>
+                        <Select name="clienttype" required>
                           <SelectTrigger>
                             <SelectValue placeholder="Select type" />
                           </SelectTrigger>
@@ -407,8 +301,8 @@ export default function ExternalClientsPage() {
                         </Select>
                       </div>
                       <div>
-                        <Label htmlFor="paymentTerms">Payment Terms</Label>
-                        <Select name="paymentTerms" required>
+                        <Label htmlFor="payment_terms">Payment Terms</Label>
+                        <Select name="payment_terms" required>
                           <SelectTrigger>
                             <SelectValue placeholder="Select terms" />
                           </SelectTrigger>
@@ -435,13 +329,13 @@ export default function ExternalClientsPage() {
                         <Input id="province" name="province" required />
                       </div>
                       <div>
-                        <Label htmlFor="postalCode">Postal Code</Label>
-                        <Input id="postalCode" name="postalCode" required />
+                        <Label htmlFor="postal_code">Postal Code</Label>
+                        <Input id="postal_code" name="postal_code" required />
                       </div>
                     </div>
                     <div>
-                      <Label htmlFor="creditLimit">Credit Limit (R)</Label>
-                      <Input id="creditLimit" name="creditLimit" type="number" required />
+                      <Label htmlFor="credit_limit">Credit Limit (R)</Label>
+                      <Input id="credit_limit" name="credit_limit" type="number" required />
                     </div>
                     <div className="flex gap-2">
                       <Button type="submit" className="flex-1">
@@ -457,129 +351,135 @@ export default function ExternalClientsPage() {
             </div>
 
             <div className="grid gap-4">
-              {filteredClients.map((client) => (
-                <Card key={client.id} className="hover:shadow-md transition-shadow">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                          <Building className="h-6 w-6 text-blue-600" />
+              {loading ? (
+                <p>Loading clients...</p>
+              ) : filteredClients.length === 0 ? (
+                <p>No clients found matching your criteria.</p>
+              ) : (
+                filteredClients.map((client) => (
+                  <Card key={client.id} className="hover:shadow-md transition-shadow">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                            <Building className="h-6 w-6 text-blue-600" />
+                          </div>
+                          <div>
+                            <CardTitle className="text-lg">{client.company_name}</CardTitle>
+                            <p className="text-sm text-gray-600">{client.contact_person}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge className={getStatusColor((client.status ?? "pending") as string)}>{(client.status ?? "pending").toUpperCase()}</Badge>
+                          <Badge variant="outline">{(client.client_type ?? "").toUpperCase()}</Badge>
+                          <div className="flex items-center gap-1">
+                            <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                            <span className="text-sm">{client.rating}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                        <div>
+                          <h4 className="font-semibold mb-2">Contact Information</h4>
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <Phone className="h-4 w-4 text-gray-500" />
+                              <span className="text-sm">{client.phone}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Mail className="h-4 w-4 text-gray-500" />
+                              <span className="text-sm">{client.email}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <MapPin className="h-4 w-4 text-gray-500" />
+                              <span className="text-sm">
+                                {client.city}, {client.province}
+                              </span>
+                            </div>
+                          </div>
                         </div>
                         <div>
-                          <CardTitle className="text-lg">{client.companyName}</CardTitle>
-                          <p className="text-sm text-gray-600">{client.contactPerson}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge className={getStatusColor(client.status)}>{client.status.toUpperCase()}</Badge>
-                        <Badge variant="outline">{client.clientType.toUpperCase()}</Badge>
-                        <div className="flex items-center gap-1">
-                          <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                          <span className="text-sm">{client.rating}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                      <div>
-                        <h4 className="font-semibold mb-2">Contact Information</h4>
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <Phone className="h-4 w-4 text-gray-500" />
-                            <span className="text-sm">{client.phone}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Mail className="h-4 w-4 text-gray-500" />
-                            <span className="text-sm">{client.email}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <MapPin className="h-4 w-4 text-gray-500" />
-                            <span className="text-sm">
-                              {client.city}, {client.province}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <div>
-                        <h4 className="font-semibold mb-2">Business Metrics</h4>
-                        <div className="space-y-1">
-                          <p className="text-sm">
-                            <strong>Total Jobs:</strong> {client.totalJobs}
-                          </p>
-                          <p className="text-sm">
-                            <strong>Revenue:</strong> R {client.totalRevenue.toLocaleString()}
-                          </p>
-                          <p className="text-sm">
-                            <strong>Avg Job:</strong> R {client.averageJobValue.toLocaleString()}
-                          </p>
-                        </div>
-                      </div>
-                      <div>
-                        <h4 className="font-semibold mb-2">Account Details</h4>
-                        <div className="space-y-1">
-                          <p className="text-sm">
-                            <strong>Payment:</strong> {client.paymentTerms}
-                          </p>
-                          <p className="text-sm">
-                            <strong>Credit Limit:</strong> R {client.creditLimit.toLocaleString()}
-                          </p>
-                          <p className="text-sm">
-                            <strong>Manager:</strong> {client.accountManager}
-                          </p>
-                        </div>
-                      </div>
-                      <div>
-                        <h4 className="font-semibold mb-2">Service History</h4>
-                        <div className="space-y-1">
-                          <p className="text-sm">
-                            <strong>Member Since:</strong> {new Date(client.registrationDate).toLocaleDateString()}
-                          </p>
-                          {client.lastJobDate && (
+                          <h4 className="font-semibold mb-2">Business Metrics</h4>
+                          <div className="space-y-1">
                             <p className="text-sm">
-                              <strong>Last Job:</strong> {new Date(client.lastJobDate).toLocaleDateString()}
+                              <strong>Total Jobs:</strong> {client.total_jobs ?? 0}
                             </p>
-                          )}
-                          <p className="text-sm">
-                            <strong>Contract:</strong> {client.contractType}
-                          </p>
+                            <p className="text-sm">
+                              <strong>Revenue:</strong> R {(client.total_revenue ?? 0).toLocaleString()}
+                            </p>
+                            <p className="text-sm">
+                              <strong>Avg Job:</strong> R {(client.average_job_value ?? 0).toLocaleString()}
+                            </p>
+                          </div>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold mb-2">Account Details</h4>
+                          <div className="space-y-1">
+                            <p className="text-sm">
+                              <strong>Payment:</strong> {client.payment_terms ?? ""}
+                            </p>
+                            <p className="text-sm">
+                              <strong>Credit Limit:</strong> R {(client.credit_limit ?? 0).toLocaleString()}
+                            </p>
+                            <p className="text-sm">
+                              <strong>Manager:</strong> {client.accountmanager ?? "Unassigned"}
+                            </p>
+                          </div>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold mb-2">Service History</h4>
+                          <div className="space-y-1">
+                            <p className="text-sm">
+                              <strong>Member Since:</strong> {client.registration_date ? new Date(client.registration_date).toLocaleDateString() : "N/A"}
+                            </p>
+                            {client.last_job_date && (
+                              <p className="text-sm">
+                                <strong>Last Job:</strong> {client.last_job_date ? new Date(client.last_job_date).toLocaleDateString() : "N/A"}
+                              </p>
+                            )}
+                            <p className="text-sm">
+                              <strong>Contract:</strong> {client.contract_type ?? "standard"}
+                            </p>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    {client.preferredServices.length > 0 && (
-                      <div className="mb-4">
-                        <h4 className="font-semibold mb-2">Preferred Services</h4>
-                        <div className="flex flex-wrap gap-1">
-                          {client.preferredServices.map((service) => (
-                            <Badge key={service} variant="secondary" className="text-xs">
-                              {service}
-                            </Badge>
-                          ))}
+                      {Array.isArray(client.preferred_services) && client.preferred_services.length > 0 && (
+                        <div className="mb-4">
+                          <h4 className="font-semibold mb-2">Preferred Services</h4>
+                          <div className="flex flex-wrap gap-1">
+                            {client.preferred_services.map((service) => (
+                              <Badge key={service} variant="secondary" className="text-xs">
+                                {service}
+                              </Badge>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
 
-                    <div className="flex justify-between items-center">
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm">
-                          <Phone className="h-4 w-4 mr-2" />
-                          Call
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          <Mail className="h-4 w-4 mr-2" />
-                          Email
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          <FileText className="h-4 w-4 mr-2" />
-                          View History
-                        </Button>
+                      <div className="flex justify-between items-center">
+                        <div className="flex gap-2">
+                          <Button variant="outline" size="sm">
+                            <Phone className="h-4 w-4 mr-2" />
+                            Call
+                          </Button>
+                          <Button variant="outline" size="sm">
+                            <Mail className="h-4 w-4 mr-2" />
+                            Email
+                          </Button>
+                          <Button variant="outline" size="sm">
+                            <FileText className="h-4 w-4 mr-2" />
+                            View History
+                          </Button>
+                        </div>
+                        <Button size="sm">Edit Client</Button>
                       </div>
-                      <Button size="sm">Edit Client</Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                ))
+              )}
             </div>
           </TabsContent>
 
@@ -598,111 +498,135 @@ export default function ExternalClientsPage() {
                     <DialogTitle>Add New Subcontractor</DialogTitle>
                     <DialogDescription>Enter subcontractor details</DialogDescription>
                   </DialogHeader>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="subCompanyName">Company Name</Label>
-                      <Input id="subCompanyName" required />
+                  <form onSubmit={handleAddSubcontractor} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="company_name">Company Name</Label>
+                        <Input id="company_name" name="company_name" required />
+                      </div>
+                      <div>
+                        <Label htmlFor="contact_person">Contact Person</Label>
+                        <Input id="contact_person" name="contact_person" required />
+                      </div>
+                      <div>
+                        <Label htmlFor="phone">Phone Number</Label>
+                        <Input id="phone" name="phone" type="tel" required />
+                      </div>
+                      <div>
+                        <Label htmlFor="email">Email Address</Label>
+                        <Input id="email" name="email" type="email" required />
+                      </div>
+                      <div>
+                        <Label htmlFor="hourly_rate">Hourly Rate (R)</Label>
+                        <Input id="hourly_rate" name="hourly_rate" type="number" required />
+                      </div>
+                      <div>
+                        <Label htmlFor="specialties">Specialties (comma separated)</Label>
+                        <Input id="specialties" name="specialties" placeholder="e.g. electrical,mechanical" />
+                      </div>
+                      <div>
+                        <Label htmlFor="service_areas">Service Areas (comma separated)</Label>
+                        <Input id="service_areas" name="service_areas" placeholder="e.g. Cape Town,Durban" />
+                      </div>
+                      <div>
+                        <Label htmlFor="certifications">Certifications (comma separated)</Label>
+                        <Input id="certifications" name="certifications" placeholder="e.g. ISO,SAQA" />
+                      </div>
+                      <div>
+                        <Label htmlFor="equipment_types">Equipment Types (comma separated)</Label>
+                        <Input id="equipment_types" name="equipment_types" placeholder="e.g. crane,flatbed" />
+                      </div>
                     </div>
-                    <div>
-                      <Label htmlFor="subContactPerson">Contact Person</Label>
-                      <Input id="subContactPerson" required />
+                    <div className="flex gap-2 mt-4">
+                      <Button type="submit" className="flex-1">Add Subcontractor</Button>
+                      <Button type="button" variant="outline" onClick={() => setIsAddSubcontractorOpen(false)}>
+                        Cancel
+                      </Button>
                     </div>
-                    <div>
-                      <Label htmlFor="subPhone">Phone Number</Label>
-                      <Input id="subPhone" type="tel" required />
-                    </div>
-                    <div>
-                      <Label htmlFor="subEmail">Email Address</Label>
-                      <Input id="subEmail" type="email" required />
-                    </div>
-                    <div>
-                      <Label htmlFor="hourlyRate">Hourly Rate (R)</Label>
-                      <Input id="hourlyRate" type="number" required />
-                    </div>
-                  </div>
-                  <div className="flex gap-2 mt-4">
-                    <Button className="flex-1">Add Subcontractor</Button>
-                    <Button variant="outline" onClick={() => setIsAddSubcontractorOpen(false)}>
-                      Cancel
-                    </Button>
-                  </div>
+                  </form>
                 </DialogContent>
               </Dialog>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
-              {subcontractors.map((sub) => (
-                <Card key={sub.id} className="hover:shadow-md transition-shadow">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle className="text-lg">{sub.companyName}</CardTitle>
-                        <p className="text-sm text-gray-600">{sub.contactPerson}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge className={getStatusColor(sub.availability)}>{sub.availability.toUpperCase()}</Badge>
-                        <div className="flex items-center gap-1">
-                          <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                          <span className="text-sm">{sub.rating}</span>
+              {loading ? (
+                <p>Loading subcontractors...</p>
+              ) : subcontractors.length === 0 ? (
+                <p>No subcontractors found.</p>
+              ) : (
+                subcontractors.map((sub) => (
+                  <Card key={sub.id} className="hover:shadow-md transition-shadow">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <CardTitle className="text-lg">{sub.company_name}</CardTitle>
+                          <p className="text-sm text-gray-600">{sub.contact_person}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge className={getStatusColor(sub.availability ? 'available' : 'unavailable')}>
+                            {(sub.availability ? 'AVAILABLE' : 'UNAVAILABLE')}
+                          </Badge>
+                          <div className="flex items-center gap-1">
+                            <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                            <span className="text-sm">{sub.rating}</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <h4 className="font-semibold mb-2">Contact</h4>
-                        <p className="text-sm">{sub.phone}</p>
-                        <p className="text-sm">{sub.email}</p>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <h4 className="font-semibold mb-2">Contact</h4>
+                          <p className="text-sm">{sub.phone}</p>
+                          <p className="text-sm">{sub.email}</p>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold mb-2">Performance</h4>
+                          <p className="text-sm">
+                            <strong>Jobs:</strong> {sub.completed_jobs}
+                          </p>
+                          <p className="text-sm">
+                            <strong>Response:</strong> {sub.response_time}
+                          </p>
+                          <p className="text-sm">
+                            <strong>Rate:</strong> R {sub.hourly_rate}/hr
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <h4 className="font-semibold mb-2">Performance</h4>
-                        <p className="text-sm">
-                          <strong>Jobs:</strong> {sub.completedJobs}
-                        </p>
-                        <p className="text-sm">
-                          <strong>Response:</strong> {sub.responseTime}
-                        </p>
-                        <p className="text-sm">
-                          <strong>Rate:</strong> R {sub.hourlyRate}/hr
-                        </p>
-                      </div>
-                    </div>
 
-                    <div>
-                      <h4 className="font-semibold mb-2">Specialties</h4>
-                      <div className="flex flex-wrap gap-1">
-                        {sub.specialties.map((specialty) => (
-                          <Badge key={specialty} variant="secondary" className="text-xs">
-                            {specialty}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
+                      {Array.isArray(sub.specialties) && sub.specialties.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {sub.specialties.map((specialty) => (
+                            <Badge key={specialty} variant="secondary" className="text-xs">
+                              {specialty}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
 
-                    <div>
-                      <h4 className="font-semibold mb-2">Service Areas</h4>
-                      <div className="flex flex-wrap gap-1">
-                        {sub.serviceAreas.map((area) => (
-                          <Badge key={area} variant="outline" className="text-xs">
-                            {area}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
+                      {Array.isArray(sub.service_areas) && sub.service_areas.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {sub.service_areas.map((area) => (
+                            <Badge key={area} variant="outline" className="text-xs">
+                              {area}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
 
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm" className="flex-1 bg-transparent">
-                        <Phone className="h-4 w-4 mr-2" />
-                        Contact
-                      </Button>
-                      <Button size="sm" className="flex-1">
-                        Assign Job
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" className="flex-1 bg-transparent">
+                          <Phone className="h-4 w-4 mr-2" />
+                          Contact
+                        </Button>
+                        <Button size="sm" className="flex-1">
+                          Assign Job
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
             </div>
           </TabsContent>
 
@@ -721,159 +645,201 @@ export default function ExternalClientsPage() {
                     <DialogTitle>Add New Towing Company</DialogTitle>
                     <DialogDescription>Enter towing company details</DialogDescription>
                   </DialogHeader>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="towCompanyName">Company Name</Label>
-                      <Input id="towCompanyName" required />
+                  <form onSubmit={handleAddTowingCompany} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="company_name">Company Name</Label>
+                        <Input id="company_name" name="company_name" required />
+                      </div>
+                      <div>
+                        <Label htmlFor="contact_person">Contact Person</Label>
+                        <Input id="contact_person" name="contact_person" required />
+                      </div>
+                      <div>
+                        <Label htmlFor="phone">Phone Number</Label>
+                        <Input id="phone" name="phone" type="tel" required />
+                      </div>
+                      <div>
+                        <Label htmlFor="emergency_phone">Emergency Phone</Label>
+                        <Input id="emergency_phone" name="emergency_phone" type="tel" required />
+                      </div>
+                      <div>
+                        <Label htmlFor="email">Email Address</Label>
+                        <Input id="email" name="email" type="email" required />
+                      </div>
+                      <div>
+                        <Label htmlFor="base_rate">Base Rate (R)</Label>
+                        <Input id="base_rate" name="base_rate" type="number" required />
+                      </div>
+                      <div>
+                        <Label htmlFor="per_km">Per KM Rate (R)</Label>
+                        <Input id="per_km" name="per_km" type="number" required />
+                      </div>
+                      <div>
+                        <Label htmlFor="emergency_rate">Emergency Rate (R)</Label>
+                        <Input id="emergency_rate" name="emergency_rate" type="number" required />
+                      </div>
+                      <div>
+                        <Label htmlFor="light_vehicles">Light Vehicles Capacity</Label>
+                        <Input id="light_vehicles" name="light_vehicles" type="number" required />
+                      </div>
+                      <div>
+                        <Label htmlFor="heavy_vehicles">Heavy Vehicles Capacity</Label>
+                        <Input id="heavy_vehicles" name="heavy_vehicles" type="number" required />
+                      </div>
+                      <div>
+                        <Label htmlFor="specialized_equipment">Specialized Equipment Capacity</Label>
+                        <Input id="specialized_equipment" name="specialized_equipment" type="number" required />
+                      </div>
+                      <div>
+                        <Label htmlFor="service_areas">Service Areas (comma separated)</Label>
+                        <Input id="service_areas" name="service_areas" placeholder="e.g. Cape Town,Durban" />
+                      </div>
+                      <div>
+                        <Label htmlFor="vehicle_types">Vehicle Types (comma separated)</Label>
+                        <Input id="vehicle_types" name="vehicle_types" placeholder="e.g. flatbed,crane" />
+                      </div>
                     </div>
-                    <div>
-                      <Label htmlFor="towContactPerson">Contact Person</Label>
-                      <Input id="towContactPerson" required />
+                    <div className="flex gap-2 mt-4">
+                      <Button type="submit" className="flex-1">Add Towing Company</Button>
+                      <Button type="button" variant="outline" onClick={() => setIsAddTowingOpen(false)}>
+                        Cancel
+                      </Button>
                     </div>
-                    <div>
-                      <Label htmlFor="towPhone">Phone Number</Label>
-                      <Input id="towPhone" type="tel" required />
-                    </div>
-                    <div>
-                      <Label htmlFor="towEmergencyPhone">Emergency Phone</Label>
-                      <Input id="towEmergencyPhone" type="tel" required />
-                    </div>
-                    <div>
-                      <Label htmlFor="towEmail">Email Address</Label>
-                      <Input id="towEmail" type="email" required />
-                    </div>
-                    <div>
-                      <Label htmlFor="baseRate">Base Rate (R)</Label>
-                      <Input id="baseRate" type="number" required />
-                    </div>
-                  </div>
-                  <div className="flex gap-2 mt-4">
-                    <Button className="flex-1">Add Towing Company</Button>
-                    <Button variant="outline" onClick={() => setIsAddTowingOpen(false)}>
-                      Cancel
-                    </Button>
-                  </div>
+                  </form>
                 </DialogContent>
               </Dialog>
             </div>
 
             <div className="grid gap-4">
-              {towingCompanies.map((company) => (
-                <Card key={company.id} className="hover:shadow-md transition-shadow">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle className="text-lg">{company.companyName}</CardTitle>
-                        <p className="text-sm text-gray-600">{company.contactPerson}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge className={getStatusColor(company.status)}>{company.status.toUpperCase()}</Badge>
-                        <Badge variant="outline">{company.availability}</Badge>
-                        <div className="flex items-center gap-1">
-                          <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                          <span className="text-sm">{company.rating}</span>
+              {loading ? (
+                <p>Loading towing companies...</p>
+              ) : towingCompanies.length === 0 ? (
+                <p>No towing companies found.</p>
+              ) : (
+                towingCompanies.map((company) => (
+                  <Card key={company.id} className="hover:shadow-md transition-shadow">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <CardTitle className="text-lg">{company.company_name}</CardTitle>
+                          <p className="text-sm text-gray-600">{company.contact_person}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge className={getStatusColor(company.status ? String(company.status) : 'inactive')}>
+                            {(company.status ? String(company.status).toUpperCase() : 'INACTIVE')}
+                          </Badge>
+                          <Badge variant="outline">{(company.availability ? 'AVAILABLE' : 'UNAVAILABLE')}</Badge>
+                          <div className="flex items-center gap-1">
+                            <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                            <span className="text-sm">{company.rating}</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                      <div>
-                        <h4 className="font-semibold mb-2">Contact Information</h4>
-                        <div className="space-y-1">
-                          <p className="text-sm">
-                            <strong>Phone:</strong> {company.phone}
-                          </p>
-                          <p className="text-sm">
-                            <strong>Emergency:</strong> {company.emergencyPhone}
-                          </p>
-                          <p className="text-sm">
-                            <strong>Email:</strong> {company.email}
-                          </p>
-                        </div>
-                      </div>
-                      <div>
-                        <h4 className="font-semibold mb-2">Capacity</h4>
-                        <div className="space-y-1">
-                          <p className="text-sm">
-                            <strong>Light:</strong> {company.capacity.lightVehicles} units
-                          </p>
-                          <p className="text-sm">
-                            <strong>Heavy:</strong> {company.capacity.heavyVehicles} units
-                          </p>
-                          <p className="text-sm">
-                            <strong>Special:</strong> {company.capacity.specializedEquipment} units
-                          </p>
-                        </div>
-                      </div>
-                      <div>
-                        <h4 className="font-semibold mb-2">Rates</h4>
-                        <div className="space-y-1">
-                          <p className="text-sm">
-                            <strong>Base:</strong> R {company.rates.baseRate}
-                          </p>
-                          <p className="text-sm">
-                            <strong>Per KM:</strong> R {company.rates.perKm}
-                          </p>
-                          <p className="text-sm">
-                            <strong>Emergency:</strong> R {company.rates.emergencyRate}
-                          </p>
-                        </div>
-                      </div>
-                      <div>
-                        <h4 className="font-semibold mb-2">Performance</h4>
-                        <div className="space-y-1">
-                          <p className="text-sm">
-                            <strong>Response:</strong> {company.responseTime}
-                          </p>
-                          <p className="text-sm">
-                            <strong>Availability:</strong> {company.availability}
-                          </p>
-                          {company.lastUsed && (
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                        <div>
+                          <h4 className="font-semibold mb-2">Contact Information</h4>
+                          <div className="space-y-1">
                             <p className="text-sm">
-                              <strong>Last Used:</strong> {new Date(company.lastUsed).toLocaleDateString()}
+                              <strong>Phone:</strong> {company.phone}
                             </p>
-                          )}
+                            <p className="text-sm">
+                              <strong>Emergency:</strong> {company.emergency_phone}
+                            </p>
+                            <p className="text-sm">
+                              <strong>Email:</strong> {company.email}
+                            </p>
+                          </div>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold mb-2">Capacity</h4>
+                          <div className="space-y-1">
+                            <p className="text-sm">
+                              <strong>Light:</strong> {(company.capacity?.lightVehicles ?? 0)} units
+                            </p>
+                            <p className="text-sm">
+                              <strong>Heavy:</strong> {(company.capacity?.heavyVehicles ?? 0)} units
+                            </p>
+                            <p className="text-sm">
+                              <strong>Special:</strong> {(company.capacity?.specializedEquipment ?? 0)} units
+                            </p>
+                          </div>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold mb-2">Rates</h4>
+                          <div className="space-y-1">
+                            <p className="text-sm">
+                              <strong>Base:</strong> R {(company.rates?.baseRate ?? 0)}
+                            </p>
+                            <p className="text-sm">
+                              <strong>Per KM:</strong> R {(company.rates?.perKm ?? 0)}
+                            </p>
+                            <p className="text-sm">
+                              <strong>Emergency:</strong> R {(company.rates?.emergencyRate ?? 0)}
+                            </p>
+                          </div>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold mb-2">Performance</h4>
+                          <div className="space-y-1">
+                            <p className="text-sm">
+                              <strong>Response:</strong> {company.response_time}
+                            </p>
+                            <p className="text-sm">
+                              <strong>Availability:</strong> {company.availability}
+                            </p>
+                            {company.last_used && (
+                              <p className="text-sm">
+                                <strong>Last Used:</strong> {new Date(company.last_used).toLocaleDateString()}
+                              </p>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="mb-4">
-                      <h4 className="font-semibold mb-2">Service Areas</h4>
-                      <div className="flex flex-wrap gap-1">
-                        {company.serviceAreas.map((area) => (
-                          <Badge key={area} variant="outline" className="text-xs">
-                            {area}
-                          </Badge>
-                        ))}
+                      {Array.isArray(company.service_areas) && company.service_areas.length > 0 && (
+                        <div className="mb-4">
+                          <h4 className="font-semibold mb-2">Service Areas</h4>
+                          <div className="flex flex-wrap gap-1">
+                            {company.service_areas.map((area) => (
+                              <Badge key={area} variant="outline" className="text-xs">
+                                {area}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {Array.isArray(company.vehicle_types) && company.vehicle_types.length > 0 && (
+                        <div className="mb-4">
+                          <h4 className="font-semibold mb-2">Vehicle Types</h4>
+                          <div className="flex flex-wrap gap-1">
+                            {company.vehicle_types.map((type) => (
+                              <Badge key={type} variant="secondary" className="text-xs">
+                                {type}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm">
+                          <Phone className="h-4 w-4 mr-2" />
+                          Call
+                        </Button>
+                        <Button variant="outline" size="sm">
+                          <AlertTriangle className="h-4 w-4 mr-2" />
+                          Emergency
+                        </Button>
+                        <Button size="sm">Request Service</Button>
                       </div>
-                    </div>
-
-                    <div className="mb-4">
-                      <h4 className="font-semibold mb-2">Vehicle Types</h4>
-                      <div className="flex flex-wrap gap-1">
-                        {company.vehicleTypes.map((type) => (
-                          <Badge key={type} variant="secondary" className="text-xs">
-                            {type}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm">
-                        <Phone className="h-4 w-4 mr-2" />
-                        Call
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        <AlertTriangle className="h-4 w-4 mr-2" />
-                        Emergency
-                      </Button>
-                      <Button size="sm">Request Service</Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                ))
+              )}
             </div>
           </TabsContent>
 
@@ -898,7 +864,7 @@ export default function ExternalClientsPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    R {clients.reduce((sum, c) => sum + c.totalRevenue, 0).toLocaleString()}
+                    R {clients.reduce((sum, c) => sum + (c.total_revenue ?? 0), 0).toLocaleString()}
                   </div>
                   <p className="text-xs text-muted-foreground">From external clients</p>
                 </CardContent>
@@ -934,19 +900,19 @@ export default function ExternalClientsPage() {
                 <CardContent>
                   <div className="space-y-4">
                     {clients
-                      .sort((a, b) => b.totalRevenue - a.totalRevenue)
+                      .sort((a, b) => (b.total_revenue ?? 0) - (a.total_revenue ?? 0))
                       .slice(0, 5)
                       .map((client, index) => (
                         <div key={client.id} className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
                             <span className="font-semibold">#{index + 1}</span>
                             <div>
-                              <p className="font-medium">{client.companyName}</p>
-                              <p className="text-sm text-gray-500">{client.totalJobs} jobs</p>
+                              <p className="font-medium">{client.company_name}</p>
+                              <p className="text-sm text-gray-500">{client.total_jobs} jobs</p>
                             </div>
                           </div>
                           <div className="text-right">
-                            <p className="font-semibold">R {client.totalRevenue.toLocaleString()}</p>
+                            <p className="font-semibold">R {(client.total_revenue ?? 0).toLocaleString()}</p>
                             <div className="flex items-center gap-1">
                               <Star className="h-3 w-3 text-yellow-500 fill-current" />
                               <span className="text-xs">{client.rating}</span>
@@ -971,13 +937,15 @@ export default function ExternalClientsPage() {
                         <div className="flex justify-between">
                           <span className="text-sm">Available</span>
                           <span className="text-sm font-medium">
-                            {subcontractors.filter((s) => s.availability === "available").length}
+                            {subcontractors.filter((s) => s.availability === true).length}
+                            {subcontractors.filter((s) => s.availability === true).length > 0 && <span>Available</span>}
                           </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-sm">Busy</span>
                           <span className="text-sm font-medium">
-                            {subcontractors.filter((s) => s.availability === "busy").length}
+                            {subcontractors.filter((s) => s.availability === true).length}
+                            {subcontractors.filter((s) => s.availability === true).length > 0 && <span>Available</span>}
                           </span>
                         </div>
                       </div>
@@ -988,13 +956,13 @@ export default function ExternalClientsPage() {
                         <div className="flex justify-between">
                           <span className="text-sm">Light Vehicles</span>
                           <span className="text-sm font-medium">
-                            {towingCompanies.reduce((sum, c) => sum + c.capacity.lightVehicles, 0)} units
+                            {towingCompanies.reduce((sum, c) => sum + (c.capacity?.lightVehicles ?? 0), 0)} units
                           </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-sm">Heavy Vehicles</span>
                           <span className="text-sm font-medium">
-                            {towingCompanies.reduce((sum, c) => sum + c.capacity.heavyVehicles, 0)} units
+                            {towingCompanies.reduce((sum, c) => sum + (c.capacity?.heavyVehicles ?? 0), 0)} units
                           </span>
                         </div>
                       </div>
