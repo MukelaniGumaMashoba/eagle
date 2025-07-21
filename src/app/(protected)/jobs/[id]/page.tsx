@@ -80,7 +80,7 @@ export default function FleetJobDetailPage() {
                 const { data: jobData, error } = await supabase
                     .from('job_assignments')
                     .select('*, drivers!drivers_job_allocated_fkey(*), vehiclesc(*)')
-                    .eq('id', params.id)
+                    .eq('id', Number(params.id))
                     .single()
 
                 if (error) {
