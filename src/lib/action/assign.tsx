@@ -89,7 +89,7 @@ export async function assignTechnicianToJob({
     const { data: jobUpdateData, error: jobError } = await supabase
         .from('job_assignments')
         .update({
-            technician_id: technicianId,
+            technician_id: Number(technicianId),
             status: 'assigned',
         })
         .eq('id', jobId)
@@ -104,7 +104,7 @@ export async function assignTechnicianToJob({
     const { data: technicianUpdateData, error: techError } = await supabase
         .from('technicians')
         .update({ availability: 'busy' })
-        .eq('id', technicianId)
+        .eq('id', Number(technicianId))
         .select('id, availability')
 
     if (techError) {

@@ -58,6 +58,7 @@ export async function signup(formData: FormData) {
 
   const { error: inserterror, data: profile } = await supabase.from("profiles").insert(
     {
+      // @ts-expect-error
       id: signs.session?.user.id,
       full_name: fullName,
       role,
