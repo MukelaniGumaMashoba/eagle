@@ -1,73 +1,99 @@
 "use server"
 
-
 import { createClient } from "@/lib/supabase/server"
 
-
-let breakdownno = 0;
-
-
-export async function AvailableBreakdown() {
-    const supabase = await createClient();
-    const { data: ActiveBreakDown, error } = await supabase
-        .from('breakdowns')
-        .select("*", { count: "exact", head: true })
-        .eq('status', 'available')
-
-    return ActiveBreakDown;
+// Returns the number of active breakdowns (status = 'available')
+export async function getActiveBreakdowns() {
+    const supabase = createClient();
+    const { count, error } = await (await supabase).from('breakdowns')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'available');
+    if (error) throw error;
+    return count || 0;
 }
 
-
-export async function NoOfVehicles() {
-    const supabase = await createClient();
-    const { data: ActiveBreakDown, error } = await supabase
-        .from('breakdown')
-        .select("*", { count: "exact", head: true });
+// Returns the number of pending approvals (status = 'pending')
+export async function getPendingApprovals() {
+    const supabase = createClient();
+    const { count, error } = await (await supabase)
+        .from('approvals')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'pending');
+    if (error) throw error;
+    return count || 0;
 }
 
-
-
-export async function NoofBreakDowns() {
-    const supabase = await createClient();
-    const { data: ActiveBreakDown, error } = await supabase
-        .from('breakdowns')
-        .select("*", { count: "exact", head: true })
-        .eq('status', 'available')
-}
-
-
-export async function AvailableTechnicians() {
-    const supabase = await createClient();
-    const { data: ActiveBreakDown, error } = await supabase
+// Returns the number of available technicians (status = true or availability = 'available')
+export async function getAvailableTechnicians() {
+    const supabase = createClient();
+    const { count, error } = await (await supabase)
         .from('technicians')
-        .select("*", { count: "exact", head: true })
-        .eq('status', 'available')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', true); // or .eq('availability', 'available') if that's the correct field
+    if (error) throw error;
+    return count || 0;
 }
 
-export async function TodayBreaKdown() {
-    const supabase = await createClient();
-    const { data: ActiveBreakDown, error } = await supabase
-        .from('')
-        .select("*", { count: "exact", head: true })
-        .eq('status', 'available')
+// Returns the total number of vehicles
+export async function getTotalVehicles() {
+    const supabase = createClient();
+    const { count, error } = await (await supabase)
+        .from('vehiclesc')
+        .select('*', { count: 'exact', head: true });
+    if (error) throw error;
+    return count || 0;
 }
 
+// Returns the total revenue for the current month (sum of actual_cost in job_assignments completed this month)
+export async function getMonthlyRevenue() {
+    const supabase = createClient();
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999).toISOString();
+    const { data, error } = await (await supabase)
+        .from('job_assignments')
+        .select('actual_cost, completed_at')
+        .gte('completed_at', startOfMonth)
+        .lte('completed_at', endOfMonth);
+    if (error) throw error;
+    const total = (data || []).reduce((sum, job) => sum + (job.actual_cost || 0), 0);
+    return total;
+}
 
-const today = new Date();
-const startOfDay = new Date(today.setHours(0, 0, 0, 0)).toISOString();
-const endOfDay = new Date(
-    today.setHours(23, 59, 59, 999)
-).toISOString();
+// Returns the number of jobs completed this month
+export async function getCompletedJobs() {
+    const supabase = createClient();
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999).toISOString();
+    const { count, error } = await (await supabase)
+        .from('job_assignments')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'Done')
+        .gte('completed_at', startOfMonth)
+        .lte('completed_at', endOfMonth);
+    if (error) throw error;
+    return count || 0;
+}
 
-export async function NumberofBreakdowns() {
-    const supabase = await createClient();
-    const { count: breakdown, error: fileError } = await supabase
-        .from("file")
-        .select("*", { count: "exact", head: true });
-    if (fileError) {
-        throw fileError;
-    }
-
+// Returns all dashboard stats in one call
+export async function getDashboardStats() {
+    const [activeBreakdowns, pendingApprovals, availableTechnicians, totalVehicles, monthlyRevenue, completedJobs] = await Promise.all([
+        getActiveBreakdowns(),
+        getPendingApprovals(),
+        getAvailableTechnicians(),
+        getTotalVehicles(),
+        getMonthlyRevenue(),
+        getCompletedJobs(),
+    ]);
+    return {
+        activeBreakdowns,
+        pendingApprovals,
+        availableTechnicians,
+        totalVehicles,
+        monthlyRevenue,
+        completedJobs,
+    };
 }
 
 

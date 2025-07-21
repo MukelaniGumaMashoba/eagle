@@ -47,6 +47,10 @@ export default function ExternalClientsPage() {
   const [isAddSubcontractorOpen, setIsAddSubcontractorOpen] = useState(false)
   const [isAddTowingOpen, setIsAddTowingOpen] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [availableJobs, setAvailableJobs] = useState<any[]>([])
+  const [selectedSubcontractor, setSelectedSubcontractor] = useState<any | null>(null)
+  const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false)
+  const [jobSearchTerm, setJobSearchTerm] = useState("")
 
   // Fetch all clients from Supabase and split by type
   const fetchClients = async () => {
@@ -70,9 +74,40 @@ export default function ExternalClientsPage() {
     setLoading(false)
   }
 
+  // Fetch available jobs for assignment
+  const fetchAvailableJobs = async () => {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from("job_assignments")
+      .select("*")
+      .is("subcontractor_id", null)
+      .eq("status", "pending")
+    if (!error) setAvailableJobs(data || [])
+  }
+
   useEffect(() => {
     fetchClients()
+    fetchAvailableJobs()
   }, [])
+
+  // Assignment logic
+  async function assignJobToSubcontractor(jobId: number, subcontractorId: number) {
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("job_assignments")
+      .update({
+        subcontractor_id: subcontractorId,
+        status: "assigned",
+      })
+      .eq("id", jobId)
+    if (error) {
+      toast.error("Failed to assign job: " + error.message)
+    } else {
+      toast.success("Job assigned to subcontractor!")
+      fetchAvailableJobs()
+      setIsAssignDialogOpen(false)
+    }
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -614,14 +649,66 @@ export default function ExternalClientsPage() {
                         </div>
                       )}
 
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 mt-2">
                         <Button variant="outline" size="sm" className="flex-1 bg-transparent">
                           <Phone className="h-4 w-4 mr-2" />
                           Contact
                         </Button>
-                        <Button size="sm" className="flex-1">
+                        <Button size="sm" className="flex-1" onClick={() => { if (typeof sub.id === 'number') { setSelectedSubcontractor(sub); setIsAssignDialogOpen(true); } }}>
                           Assign Job
                         </Button>
+                        <Dialog open={isAssignDialogOpen && selectedSubcontractor?.id === sub.id} onOpenChange={setIsAssignDialogOpen}>
+                          <DialogContent className="max-w-2xl">
+                            <DialogHeader>
+                              <DialogTitle>Assign Job to {sub.company_name}</DialogTitle>
+                              <DialogDescription>Select a job to assign to this subcontractor</DialogDescription>
+                            </DialogHeader>
+                            <Input
+                              placeholder="Search jobs..."
+                              value={jobSearchTerm}
+                              onChange={(e) => setJobSearchTerm(e.target.value)}
+                              className="mb-2"
+                            />
+                            <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
+                              {availableJobs.filter(job =>
+                                (job.job_id || "").toLowerCase().includes(jobSearchTerm.toLowerCase()) ||
+                                (job.description || "").toLowerCase().includes(jobSearchTerm.toLowerCase()) ||
+                                (job.location || "").toLowerCase().includes(jobSearchTerm.toLowerCase())
+                              ).map((job) => (
+                                <Card key={job.id} className="hover:bg-gray-50">
+                                  <CardContent className="p-4">
+                                    <div className="flex justify-between items-start mb-2">
+                                      <div>
+                                        <h4 className="font-semibold">{job.job_id}</h4>
+                                        <p className="text-sm text-gray-600">{job.description}</p>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <Badge>{job.priority}</Badge>
+                                      </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4 text-sm">
+                                      <div>
+                                        <span className="text-gray-500">Location:</span>
+                                        <p>{job.location}</p>
+                                      </div>
+                                      <div>
+                                        <span className="text-gray-500">Status:</span>
+                                        <p>{job.status}</p>
+                                      </div>
+                                    </div>
+                                    <div className="mt-2 flex justify-end">
+                                      <Button variant="outline" size="sm" onClick={() => {
+                                        if (typeof sub.id === 'number') assignJobToSubcontractor(job.id, sub.id)
+                                      }}>
+                                        Assign
+                                      </Button>
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              ))}
+                            </div>
+                          </DialogContent>
+                        </Dialog>
                       </div>
                     </CardContent>
                   </Card>

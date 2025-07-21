@@ -20,6 +20,8 @@ import {
   FileText,
 } from "lucide-react"
 import { Router } from "next/router"
+import { getDashboardStats } from "@/lib/stats/dashboard";
+import { createClient } from "@/lib/supabase/client";
 
 interface DashboardStats {
   activeBreakdowns: number
@@ -59,41 +61,88 @@ export default function Dashboard() {
     completedJobs: 0,
   })
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const router = useRouter()
 
   useEffect(() => {
-    // Get user info from localStorage
+    const supabase = createClient();
+    let channel: any;
+    let isMounted = true;
 
+    async function fetchStats() {
+      setLoading(true)
+      setError(null)
+      try {
+        const data = await getDashboardStats();
+        if (isMounted) setStats(data)
+      } catch (err: any) {
+        if (isMounted) setError("Failed to load dashboard stats")
+      } finally {
+        if (isMounted) setLoading(false)
+      }
+    }
 
+    fetchStats();
 
-  //   // Mock data - in real app, fetch from API based on user role
-    setStats({
-      activeBreakdowns: 12,
-      pendingApprovals: 5,
-      availableTechnicians: 8,
-      totalVehicles: 45,
-      monthlyRevenue: 125000,
-      completedJobs: 89,
-    })
+    // Helper to add a new activity event
+    function addActivity(event: any, table: string) {
+      const now = new Date();
+      let type: RecentActivity["type"] = "completion";
+      let title = "";
+      let description = "";
+      let status = "";
+      if (table === "breakdowns") {
+        type = "breakdown";
+        title = `Breakdown ${event.new?.id || event.old?.id}`;
+        description = event.new?.issue_description || event.old?.issue_description || "Breakdown event";
+        status = event.new?.status || event.old?.status || "";
+      } else if (table === "approvals") {
+        type = "approval";
+        title = `Approval ${event.new?.id || event.old?.id}`;
+        description = event.new?.reason || event.old?.reason || "Approval event";
+        status = event.new?.status || event.old?.status || "";
+      } else if (table === "job_assignments") {
+        type = "completion";
+        title = `Job ${event.new?.id || event.old?.id}`;
+        description = event.new?.description || event.old?.description || "Job assignment event";
+        status = event.new?.status || event.old?.status || "";
+      }
+      setRecentActivity(prev => [
+        {
+          id: `${table}-${event.new?.id || event.old?.id}-${event.eventType}-${now.getTime()}`,
+          type,
+          title,
+          description,
+          timestamp: now.toLocaleString(),
+          status,
+        },
+        ...prev
+      ].slice(0, 10)); // Keep only the 10 most recent
+    }
 
-    setRecentActivity([
-      {
-        id: "1",
-        type: "breakdown",
-        title: "New Breakdown Reported",
-        description: "Vehicle ABC 123 GP - Engine overheating on N1 Highway",
-        timestamp: "5 minutes ago",
-        status: "urgent",
-      },
-      {
-        id: "2",
-        type: "approval",
-        title: "Quotation Approved",
-        description: "R2,500 repair work for Order OR.128651312",
-        timestamp: "15 minutes ago",
-        status: "approved",
-      },
-    ])
+    // Subscribe to changes in all relevant tables and update recentActivity
+    channel = supabase.channel('dashboard-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'breakdowns' }, (payload) => {
+        fetchStats();
+        addActivity(payload, 'breakdowns');
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'approvals' }, (payload) => {
+        fetchStats();
+        addActivity(payload, 'approvals');
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'technicians' }, fetchStats)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'vehiclesc' }, fetchStats)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'job_assignments' }, (payload) => {
+        fetchStats();
+        addActivity(payload, 'job_assignments');
+      })
+      .subscribe();
+
+    return () => {
+      isMounted = false;
+      if (channel) supabase.removeChannel(channel);
+    }
   }, [router])
 
   const getQuickActions = (): QuickAction[] => {
@@ -221,6 +270,8 @@ export default function Dashboard() {
           <h2 className="text-3xl font-bold tracking-tight">Dashboard Overview</h2>
           <div className="text-sm text-gray-500">Last updated: {new Date().toLocaleString()}</div>
         </div>
+        {loading && <div>Loading stats...</div>}
+        {error && <div className="text-red-500">{error}</div>}
 
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -303,6 +354,7 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
+                {recentActivity.length === 0 && <div className="text-gray-400 text-sm">No recent activity yet.</div>}
                 {recentActivity.map((activity) => (
                   <div key={activity.id} className="flex items-start gap-3 p-3 rounded-lg bg-gray-50">
                     {getActivityIcon(activity.type)}
