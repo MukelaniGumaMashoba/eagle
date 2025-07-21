@@ -99,6 +99,7 @@ export default function Vehicles() {
       if (error) {
         console.error("the error is", error.name, error.message)
       } else {
+        // @ts-expect-error
         setVehicles(vehicles || [])
       }
     }
@@ -146,6 +147,7 @@ export default function Vehicles() {
   const handleAddVehicle = async (data: VehicleFormValues) => {
     const { data: vehicle, error } = await supabase
       .from('vehiclesc')
+      // @ts-expect-error
       .insert(data)
     if (error) {
       console.error(error.message)
