@@ -32,3 +32,32 @@ Should i be reg admin of company or fleet manager and they have prev to add user
 internal workshop mech, no we need to tow 
 
 when tow send 
+
+
+
+
+fleet manager : {
+   email: davidmanager@lg.co.za
+   0648629542
+   password12
+
+
+}
+
+call center : Lorren Gune{
+    lorrgune@lg.co.za
+    0762459594
+}
+
+
+technicians:{
+    0738618922
+    email: zamitech@lg.co.za
+    password12
+}
+
+driver: {
+    0893452367
+    driverxolani@lg.co.za
+    passsword12
+}

@@ -60,6 +60,10 @@ interface Job {
   location: string
   coordinates: { lat: number; lng: number }
   technician_id: number | null
+  technicians: {
+    name: string
+    phone: string
+  } | null
   estimatedCost?: number
   actualCost?: number
   clientType: "internal" | "external"
@@ -93,9 +97,10 @@ export default function FleetJobsPage() {
     const getJobs = async () => {
       const { data: jobs, error } = await supabase
         .from('job_assignments')
-        .select('*, drivers!drivers_job_allocated_fkey(*), vehiclesc(*)')
+        .select('*, drivers!drivers_job_allocated_fkey(*), vehiclesc(*), technicians(*)')
         .neq('status', 'completed')
         .neq('status', 'cancelled')
+        .order('created_at');
       if (error) {
         console.error(error)
       } else {
@@ -372,17 +377,21 @@ export default function FleetJobsPage() {
                               Location & Technician
                             </h4>
                             <p className="text-sm text-gray-600">{job.location}</p>
-                            {job.technician_id && (
+                            {job.technicians ? (
                               <>
                                 <p className="text-sm">
-                                  <strong>Tech:</strong> {job.technician_id}
+                                  <strong>Tech:</strong> {job.technicians.name}
                                 </p>
-                                {Array.isArray(job.technician_id) && job.technician_id.length > 0 && (
-                                  <p className="text-sm">
-                                    <strong>Phone:</strong> {job.technician_id[0].name}
-                                  </p>
-                                )}
+                                <p className="text-sm">
+                                  <strong>Phone:</strong> {job.technicians.phone}
+                                </p>
                               </>
+                            ) : (
+                              job.technician_id && (
+                                <p className="text-sm">
+                                  <strong>Tech ID:</strong> {job.technician_id}
+                                </p>
+                              )
                             )}
                           </div>
                           <div>
@@ -680,3 +689,22 @@ export default function FleetJobsPage() {
     </>
   )
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

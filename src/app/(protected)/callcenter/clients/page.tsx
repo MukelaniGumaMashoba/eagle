@@ -283,7 +283,7 @@ export default function ExternalClientsPage() {
 
         <Tabs defaultValue="clients" className="space-y-4">
           <TabsList>
-            <TabsTrigger value="clients">External Clients</TabsTrigger>
+            <TabsTrigger value="clients">External Workshop</TabsTrigger>
             <TabsTrigger value="subcontractors">Subcontractors</TabsTrigger>
             <TabsTrigger value="towing">Towing Companies</TabsTrigger>
             <TabsTrigger value="analytics">Network Analytics</TabsTrigger>
@@ -293,12 +293,12 @@ export default function ExternalClientsPage() {
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-semibold">Client Database</h3>
               <Dialog open={isAddClientOpen} onOpenChange={setIsAddClientOpen}>
-                <DialogTrigger asChild>
+                {/* <DialogTrigger asChild>
                   <Button>
                     <Plus className="h-4 w-4 mr-2" />
                     Add Client
                   </Button>
-                </DialogTrigger>
+                </DialogTrigger> */}
                 <DialogContent className="max-w-2xl">
                   <DialogHeader>
                     <DialogTitle>Add New External Client</DialogTitle>

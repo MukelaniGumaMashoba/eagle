@@ -528,7 +528,7 @@ export default function CostCenterPage() {
                           <FileText className="h-4 w-4 mr-2" />
                           View Details
                         </Button>
-                        {quotation.status === "pending" && (
+                        {/* {quotation.status === "pending" && (
                           <div className="flex items-center gap-2 text-yellow-600">
                             <Clock className="h-4 w-4" />
                             <span className="text-sm">Awaiting approval</span>
@@ -544,7 +544,7 @@ export default function CostCenterPage() {
                           <div className="flex items-center gap-2 text-red-600">
                             <span className="text-sm">Rejected</span>
                           </div>
-                        )}
+                        )} */}
                       </div>
                     </CardContent>
                   </Card>
