@@ -73,6 +73,7 @@ interface Job {
   approvedAt?: string
   notes: string
   attachments: string[]
+  completed_at: string
 }
 
 export default function FleetJobsPage() {
@@ -89,6 +90,25 @@ export default function FleetJobsPage() {
   const supabase = createClient()
 
   useEffect(() => {
+    const assignements = supabase.channel('custom-all-channel')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'assignements' },
+        (payload) => {
+          console.log('Change received!', payload)
+        }
+      )
+      .subscribe()
+
+    const jobAssignments = supabase.channel('custom-all-channel')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'job_assignments' },
+        (payload) => {
+          console.log('Change received!', payload)
+        }
+      )
+      .subscribe()
     // Get user role from localStorage
     const role = localStorage.getItem("userRole") || "call-center"
     setUserRole(role)
@@ -416,7 +436,7 @@ export default function FleetJobsPage() {
                             {/* )} */}
                             {/* {job.completionTime && ( */}
                             <p className="text-sm">
-                              <strong>Completed:</strong> {job.approvedAt}
+                              <strong>Completed:</strong> {job.completed_at}
                             </p>
                             {/* )} */}
 

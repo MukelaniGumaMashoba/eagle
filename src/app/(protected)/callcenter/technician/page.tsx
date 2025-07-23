@@ -163,6 +163,7 @@ export default function TechniciansPage() {
       .from('job_assignments')
       .select('*')
       .eq('status', 'Breakdown Request')
+      .is('technician_id', null)
     if (jobsError) {
       console.error('Error fetching available jobs:', jobsError)
     } else {
@@ -172,6 +173,16 @@ export default function TechniciansPage() {
   }
 
   useEffect(() => {
+
+    const jobAssignments = supabase.channel('custom-all-channel')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'job_assignments' },
+        (payload) => {
+          console.log('Change received!', payload)
+        }
+      )
+      .subscribe()
     refreshData()
   }, [])
 
@@ -529,12 +540,12 @@ export default function TechniciansPage() {
                         {formData.certifications.map((certification, index) => (
                           <Badge key={index} variant="outline" className="flex items-center gap-1">
                             {certification}
-                            <button
+                            <Button
                               onClick={() => removeCertification(certification)}
                               className="ml-1 text-red-500 hover:text-red-700"
                             >
                               ×
-                            </button>
+                            </Button>
                           </Badge>
                         ))}
                       </div>
