@@ -81,7 +81,7 @@ export default function ExternalClientsPage() {
       .from("job_assignments")
       .select("*")
       .is("subcontractor_id", null)
-      .eq("status", "pending")
+      .eq("status", "Breakdown Request")
     if (!error) setAvailableJobs(data || [])
   }
 
@@ -97,7 +97,7 @@ export default function ExternalClientsPage() {
       .from("job_assignments")
       .update({
         subcontractor_id: subcontractorId,
-        status: "assigned",
+        status: "Breakdown assigned",
       })
       .eq("id", jobId)
     if (error) {

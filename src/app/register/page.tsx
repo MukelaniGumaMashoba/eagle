@@ -66,7 +66,7 @@ export default function RegisterPage() {
   const pricingPlans = [
     {
       name: "Starter",
-      price: "$99",
+      price: "R99",
       period: "/month",
       description: "Perfect for small fleets",
       features: ["Up to 25 vehicles", "Basic breakdown management", "Call center integration", "Email support"],
@@ -74,7 +74,7 @@ export default function RegisterPage() {
     },
     {
       name: "Professional",
-      price: "$299",
+      price: "R299",
       period: "/month",
       description: "Ideal for growing businesses",
       features: [

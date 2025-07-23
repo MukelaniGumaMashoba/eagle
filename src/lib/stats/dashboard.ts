@@ -69,7 +69,7 @@ export async function getCompletedJobs() {
     const { count, error } = await (await supabase)
         .from('job_assignments')
         .select('*', { count: 'exact', head: true })
-        .eq('status', 'Done')
+        .eq('status', 'completed')
         .gte('completed_at', startOfMonth)
         .lte('completed_at', endOfMonth);
     if (error) throw error;

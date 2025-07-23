@@ -61,7 +61,7 @@ interface Technician {
   certifications: string[]
   vehicleType: string
   equipmentLevel: "basic" | "advanced" | "specialist"
-  assignedJobs?: JobAssignment[] 
+  assignedJobs?: JobAssignment[]
 }
 
 interface JobAssignment {
@@ -70,7 +70,7 @@ interface JobAssignment {
   description: string
   location: string
   priority: "low" | "medium" | "high" | "emergency"
-  status: "pending" | "assigned" | "in-progress" | "awaiting-approval" | "approved" | "completed" | "cancelled"
+  status: string
   assigned_technician?: string
   created_at: string
   updated_at?: string
@@ -162,7 +162,7 @@ export default function TechniciansPage() {
     const { data: jobs, error: jobsError } = await supabase
       .from('job_assignments')
       .select('*')
-      .eq('status', 'pending')
+      .eq('status', 'Breakdown Request')
     if (jobsError) {
       console.error('Error fetching available jobs:', jobsError)
     } else {
@@ -822,12 +822,22 @@ export default function TechniciansPage() {
                                             return;
                                           }
                                           try {
+                                            const { data: existingAssignments, error: fetchError } = await supabase
+                                              .from('assignements')
+                                              .select('driver_id')
+                                              .eq('job_id', job.id)
+                                              .single();
+
+                                            if (fetchError) {
+                                              console.error('Error fetching existing assignment:', fetchError);
+                                            }
                                             const { error } = await supabase
                                               .from('assignements')
                                               .upsert([
                                                 {
                                                   job_id: job.id,
-                                                  tech_id: technician.id
+                                                  tech_id: technician.id,
+                                                  driver_id: existingAssignments?.driver_id || null,
                                                 }
                                               ])
                                               .eq('job_id', job.id)

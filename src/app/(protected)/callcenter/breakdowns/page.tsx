@@ -59,7 +59,7 @@ interface BreakdownVehicle {
   insurance_provider: string
   policy_number: string
   coverage_type: "comprehensive" | "third-party" | "none"
-  status: "reported" | "assigned" | "in-progress" | "completed" | "cancelled"
+  status: "reported" | "assigned" | "inprogress" | "completed" | "cancelled"
   coordinates: { lat: number; lng: number }
   issue_description: string
   priority: "low" | "medium" | "high" | "emergency"
@@ -141,7 +141,7 @@ export default function VehiclesPage() {
     //     insuranceProvider: "Santam",
     //     policyNumber: "POL123456789",
     //     coverageType: "comprehensive",
-    //     status: "in-progress",
+    //     status: "inprogress",
     //     breakdownLocation: "N1 Highway, Johannesburg",
     //     coordinates: { lat: -26.2041, lng: 28.0473 },
     //     issueDescription: "Engine overheating, steam coming from radiator",
@@ -246,7 +246,7 @@ export default function VehiclesPage() {
       case "assigned":
       case "accepted":
         return "bg-blue-100 text-blue-800"
-      case "in-progress":
+      case "inprogress":
         return "bg-orange-100 text-orange-800"
       case "completed":
         return "bg-green-100 text-green-800"
@@ -404,7 +404,7 @@ export default function VehiclesPage() {
                 <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="reported">Reported</SelectItem>
                 <SelectItem value="assigned">Assigned</SelectItem>
-                <SelectItem value="in-progress">In Progress</SelectItem>
+                <SelectItem value="inprogress">In Progress</SelectItem>
                 <SelectItem value="completed">Completed</SelectItem>
                 <SelectItem value="cancelled">Cancelled</SelectItem>
               </SelectContent>

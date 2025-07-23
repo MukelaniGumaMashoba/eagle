@@ -42,7 +42,7 @@ interface Job {
   job_id: string
   title: string
   description: string
-  status: "pending" | "assigned" | "in-progress" | "awaiting-approval" | "approved" | "completed" | "cancelled"
+  status: string
   priority: "low" | "medium" | "high" | "emergency"
   created_at: string
   updated_at: string
@@ -97,7 +97,7 @@ export default function FleetJobsPage() {
     const getJobs = async () => {
       const { data: jobs, error } = await supabase
         .from('job_assignments')
-        .select('*, drivers!drivers_job_allocated_fkey(*), vehiclesc(*), technicians(*)')
+        .select('*, drivers!drivers_job_allocated_fkey(*), vehiclesc(*)')
         .neq('status', 'completed')
         .neq('status', 'cancelled')
         .order('created_at');
@@ -175,7 +175,7 @@ export default function FleetJobsPage() {
         return "bg-yellow-100 text-yellow-800"
       case "assigned":
         return "bg-blue-100 text-blue-800"
-      case "in-progress":
+      case "inprogress":
         return "bg-orange-100 text-orange-800"
       case "awaiting-approval":
         return "bg-purple-100 text-purple-800"
@@ -256,7 +256,7 @@ export default function FleetJobsPage() {
                 <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="pending">Pending</SelectItem>
                 <SelectItem value="assigned">Assigned</SelectItem>
-                <SelectItem value="in-progress">In Progress</SelectItem>
+                <SelectItem value="inprogress">In Progress</SelectItem>
                 <SelectItem value="awaiting-approval">Awaiting Approval</SelectItem>
                 <SelectItem value="approved">Approved</SelectItem>
                 <SelectItem value="completed">Completed</SelectItem>
@@ -416,7 +416,7 @@ export default function FleetJobsPage() {
                             {/* )} */}
                             {/* {job.completionTime && ( */}
                             <p className="text-sm">
-                              <strong>Completed:</strong> {new Date().toLocaleTimeString()}
+                              <strong>Completed:</strong> {job.approvedAt}
                             </p>
                             {/* )} */}
 
@@ -559,7 +559,7 @@ export default function FleetJobsPage() {
 
           <TabsContent value="kanban" className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {["pending", "in-progress", "awaiting-approval", "completed"].map((status) => (
+              {["pending", "inprogress", "awaiting-approval", "completed"].map((status) => (
                 <Card key={status}>
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-medium capitalize">
@@ -613,7 +613,7 @@ export default function FleetJobsPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    {jobs.filter((job) => job.status === "in-progress").length}
+                    {jobs.filter((job) => job.status === "inprogress").length}
                   </div>
                   <p className="text-xs text-muted-foreground">Active jobs being worked on</p>
                 </CardContent>
@@ -655,7 +655,7 @@ export default function FleetJobsPage() {
                   {[
                     "pending",
                     "assigned",
-                    "in-progress",
+                    "inprogress",
                     "awaiting-approval",
                     "approved",
                     "completed",
@@ -737,7 +737,7 @@ export default function FleetJobsPage() {
 //   job_id: string
 //   title: string
 //   description: string
-//   status: "pending" | "assigned" | "in-progress" | "awaiting-approval" | "approved" | "completed" | "cancelled"
+//   status: "pending" | "assigned" | "inprogress" | "awaiting-approval" | "approved" | "completed" | "cancelled"
 //   priority: "low" | "medium" | "high" | "emergency"
 //   created_at: string
 //   updated_at: string
@@ -870,7 +870,7 @@ export default function FleetJobsPage() {
 //         return "bg-yellow-100 text-yellow-800"
 //       case "assigned":
 //         return "bg-blue-100 text-blue-800"
-//       case "in-progress":
+//       case "inprogress":
 //         return "bg-orange-100 text-orange-800"
 //       case "awaiting-approval":
 //         return "bg-purple-100 text-purple-800"
@@ -951,7 +951,7 @@ export default function FleetJobsPage() {
 //                 <SelectItem value="all">All Status</SelectItem>
 //                 <SelectItem value="pending">Pending</SelectItem>
 //                 <SelectItem value="assigned">Assigned</SelectItem>
-//                 <SelectItem value="in-progress">In Progress</SelectItem>
+//                 <SelectItem value="inprogress">In Progress</SelectItem>
 //                 <SelectItem value="awaiting-approval">Awaiting Approval</SelectItem>
 //                 <SelectItem value="approved">Approved</SelectItem>
 //                 <SelectItem value="completed">Completed</SelectItem>
@@ -1254,7 +1254,7 @@ export default function FleetJobsPage() {
 
 //           <TabsContent value="kanban" className="space-y-4">
 //             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-//               {["pending", "in-progress", "awaiting-approval", "completed"].map((status) => (
+//               {["pending", "inprogress", "awaiting-approval", "completed"].map((status) => (
 //                 <Card key={status}>
 //                   <CardHeader className="pb-3">
 //                     <CardTitle className="text-sm font-medium capitalize">
@@ -1308,7 +1308,7 @@ export default function FleetJobsPage() {
 //                 </CardHeader>
 //                 <CardContent>
 //                   <div className="text-2xl font-bold">
-//                     {jobs.filter((job) => job.status === "in-progress").length}
+//                     {jobs.filter((job) => job.status === "inprogress").length}
 //                   </div>
 //                   <p className="text-xs text-muted-foreground">Active jobs being worked on</p>
 //                 </CardContent>
@@ -1350,7 +1350,7 @@ export default function FleetJobsPage() {
 //                   {[
 //                     "pending",
 //                     "assigned",
-//                     "in-progress",
+//                     "inprogress",
 //                     "awaiting-approval",
 //                     "approved",
 //                     "completed",

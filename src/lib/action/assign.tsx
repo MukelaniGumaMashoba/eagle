@@ -1,6 +1,7 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
+import { Database } from "../supabase/database.types"
 
 
 interface Technician {
@@ -34,7 +35,7 @@ interface JobAssignment {
     description: string
     location: string
     priority: "low" | "medium" | "high" | "emergency"
-    status: "pending" | "assigned" | "in-progress" | "awaiting-approval" | "approved" | "completed" | "cancelled"
+    status: Database["public"]["Tables"]["job_assignments"]["Row"]["status"][]
     accepted: boolean
     technician_id?: number
     created_at: string
@@ -48,7 +49,7 @@ export async function assignJob(Jobassignment: JobAssignment, technician_id: num
         .from("job_assignments")
         .update({
             technician_id: technician_id,
-            status: "assigned",
+            status: "Breakdown assigned ",
             accepted : true,
         })
         .eq("id", Jobassignment.id)
@@ -90,7 +91,7 @@ export async function assignTechnicianToJob({
         .from('job_assignments')
         .update({
             technician_id: Number(technicianId),
-            status: 'assigned',
+            status: 'Breakdown assigned',
         })
         .eq('id', jobId)
         .select('id, technician_id, status')

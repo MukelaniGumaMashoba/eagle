@@ -27,7 +27,7 @@ interface Breakdown {
   location: string
   coordinates: { lat: number; lng: number }
   issue: string
-  status: "pending" | "dispatched" | "in-progress" | "completed" | "cancelled"
+  status: string
   priority: "low" | "medium" | "high" | "emergency"
   created_at: string
   assigned_tech?: string
@@ -137,7 +137,7 @@ export default function CallCenterPage() {
         return "bg-yellow-100 text-yellow-800"
       case "dispatched":
         return "bg-blue-100 text-blue-800"
-      case "in-progress":
+      case "inprogress":
         return "bg-orange-100 text-orange-800"
       case "completed":
         return "bg-green-100 text-green-800"

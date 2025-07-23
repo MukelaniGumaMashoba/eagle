@@ -36,7 +36,7 @@ const roleNavigation = {
     { name: 'Dashboard', href: '/dashboard', Icon: <ChartBar /> },
     { name: 'Drivers', href: '/drivers', Icon: <Users /> },
     { name: 'Vehicles', href: '/vehicles', Icon: <Car /> },
-    { name: 'Management', href: '/userManagement', Icon: <PlusSquare /> },
+    { name: 'Qoute Management', href: '/userManagement', Icon: <PlusSquare /> },
     { name: 'Profile', href: '/profile', Icon: <Settings2Icon /> },
     { name: 'System Settings', href: '/settings', Icon: <Settings /> },
   ],

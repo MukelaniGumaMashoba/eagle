@@ -33,7 +33,7 @@ interface Job {
     job_id: string
     title: string
     description: string
-    status: "pending" | "assigned" | "in-progress" | "awaiting-approval" | "approved" | "completed" | "cancelled"
+    status: "pending" | "assigned" | "inprogress" | "awaiting-approval" | "approved" | "completed" | "cancelled"
     priority: "low" | "medium" | "high" | "emergency"
     created_at: string
     updated_at: string
@@ -110,7 +110,7 @@ export default function FleetJobDetailPage() {
                 return "bg-yellow-100 text-yellow-800"
             case "assigned":
                 return "bg-blue-100 text-blue-800"
-            case "in-progress":
+            case "inprogress":
                 return "bg-orange-100 text-orange-800"
             case "awaiting-approval":
                 return "bg-purple-100 text-purple-800"
@@ -403,8 +403,8 @@ export default function FleetJobDetailPage() {
                                             Assigned
                                         </Button>
                                         <Button
-                                            variant={job.status === "in-progress" ? "default" : "outline"}
-                                            // onClick={() => handleStatusUpdate("in-progress")}
+                                            variant={job.status === "inprogress" ? "default" : "outline"}
+                                            // onClick={() => handleStatusUpdate("inprogress")}
                                             size="sm"
                                         >
                                             In Progress
