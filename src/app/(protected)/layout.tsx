@@ -5,7 +5,12 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Briefcase, Building2, Car, ChartBar, DollarSign, Phone, PlusSquare, Settings, Settings2Icon, Truck, Users, Wrench } from 'lucide-react'
+import {
+  Briefcase, Building2, Car, ChartBar, DollarSign,
+  Phone, PlusSquare,
+  Settings, ToolCaseIcon, Truck, Users, Wrench
+} from 'lucide-react'
+import { Toaster } from '@/components/ui/sonner'
 
 interface ProtectedLayoutProps {
   children: React.ReactNode
@@ -16,6 +21,7 @@ const roleNavigation = {
   'fleet manager': [
     { name: 'Dashboard', href: '/dashboard', Icon: <ChartBar /> },
     { name: 'Jobs', href: '/jobs', Icon: <Briefcase /> },
+    { name: 'Workshop', href: '/jobWorkShop', Icon: <ToolCaseIcon /> },
     { name: 'Drivers', href: '/drivers', Icon: <Users /> },
     { name: 'Vehicles', href: '/vehicles', Icon: <Car /> },
     { name: 'Qoute Management', href: '/ccenter', Icon: <Building2 /> },
@@ -187,6 +193,7 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
           <Card className="p-6">
             {children}
           </Card>
+          <Toaster />
         </main>
       </div>
     </div>

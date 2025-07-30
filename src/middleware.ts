@@ -4,23 +4,27 @@ import { createClient } from '@/lib/supabase/server'
 const roles = [
   {
     name: 'call centre',
-    path: ['/dashboard', '/profile', '/login', '/signup', '/','ccenter', '/logout','jobs'],
+    path: ['/dashboard', '/profile', '/login', '/signup', '/', 'ccenter', '/logout', 'jobs'],
   },
   {
     name: 'fleet manager',
-    path: ['/fleetManager','/jobs', '/dashboard', '/drivers', '/vehicles', '/technician', '/ccenter', '/profile', '/logs', '/login', '/signup', '/', '/logout'],
+    path: ['/fleetManager', '/jobs', '/dashboard', '/drivers', '/vehicles', '/technician', '/ccenter', '/profile', '/logs', '/login', '/signup', '/', '/logout', '/jobWorkShop'],
   },
   {
     name: 'customer',
-    path: ['/dashboard', '/profile', '/editCustomer', '/customer', '/login', '/signup', '/', '/logout','ccenter'],
+    path: ['/dashboard', '/profile', '/editCustomer', '/customer', '/login', '/signup', '/', '/logout', 'ccenter'],
   },
   {
     name: 'cost centre',
-    path: ['/dashboard', '/ccenter','jobs', '/profile', '/quotation', '/notification', '/login', '/signup', '/', '/logout', '/userManagement'],
+    path: ['/dashboard', '/ccenter', 'jobs', '/profile', '/quotation', '/notification', '/login', '/signup', '/', '/logout', '/userManagement'],
   },
 ]
 
-const publicRoutes = ['/login', '/signup', '/', '/logout', '/register', '/register/company', '/register/onboarding', '/register/success']
+const publicRoutes = ['/login', '/signup', '/', '/logout', '/register',
+  '/register/company', '/register/workshop',
+  '/register/workshop/jobCard', '/register/onboarding',
+  '/register/success', '/register/workshop/success',
+  '/register/workshop/fileUpload']
 
 function getAllowedPaths(role: string): string[] {
   return roles.find(r => r.name === role)?.path || []
