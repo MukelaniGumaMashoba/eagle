@@ -24,7 +24,6 @@ import {
 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 
-// Define your interface with all fields exactly as given:
 interface WorkshopFormData {
   // 1. Workshop Details
   work_name: string
@@ -52,211 +51,9 @@ interface WorkshopFormData {
   insurance_company_name: string
   insurance_policy_doc: string
 
-  // 5. Workshop Assosiated (booleans + docs)
-  dekra: boolean
-  apmma: boolean
-  cra: boolean
-  era: boolean
-  mibco: boolean
-  miwa: boolean
-  raaf: boolean
-  rmi: boolean
-  saarsa: boolean
-  sambra: boolean
-  saqa: boolean
-  sata: boolean
-
-  dekra_doc: string
-  apmma_doc: string
-  cra_doc: string
-  era_doc: string
-  mibco_doc: string
-  miwa_doc: string
-  raaf_doc: string
-  rmi_doc: string
-  saarsa_doc: string
-  sambra_doc: string
-  saqa_doc: string
-  sata_doc: string
-
   // 6. Type of Vehicles
   type_of_vehicle: string[]
 
-  // 7. Workshop Type
-  type_of_workshop: string[]
-
-  // 8. Engineer shop capability  
-  engineering_shop_capability: string[]
-  block_boring: boolean
-  crank_grinding: boolean
-  valve_grinding: boolean
-  block_pressure_test: boolean
-  engine_block_resurfacing: boolean
-
-  // 9. engineering shop tools (booleans + pictures)
-  micrometer: boolean
-  vernier_caliper: boolean
-  aluminum_welding: boolean
-  straight_Edge: boolean
-  depth_gauge: boolean
-  lathe_guage: boolean
-  lathe_machine: boolean
-  honing_tool: boolean
-
-  micrometer_picture: string
-  vernier_caliper_picture: string
-  aluminum_welding_picture: string
-  straight_Edge_picture: string
-  depth_gauge_picture: string
-  lathe_guage_picture: string
-  lathe_machine_picture: string
-  honing_tool_picture: string
-
-  // 10. Car wash capability (booleans)
-  standard_wash: boolean
-  valet: boolean
-  vehicles_detailing: boolean
-
-  // 11. Car Wash Tools (booleans + pictures)
-  high_pressure_wash: boolean
-  polisher_machine: boolean
-  vacuum_cleaner: boolean
-
-  high_pressure_wash_picture: string
-  polisher_machine_picture: string
-  vacuum_cleaner_picture: string
-
-  // 12. Mechanical Capability (booleans)
-  suspension: boolean
-  service: boolean
-  m_brakes: boolean
-  minor_repairs: boolean
-  major_repairs: boolean
-  engine_overhuals: boolean
-  drive_line: boolean
-  clutch_overhuals: boolean
-
-  // 13. Mechanical Tools (booleans + pictures)
-  four_two: boolean
-  engine_crane_mech: boolean
-  jack_mech: boolean
-  mechanical_tool: boolean
-  trestles: boolean
-  compression_tester: boolean
-  compressor_mech: boolean
-  pneumatic_tool: boolean
-
-  four_two_picture: string
-  engine_crane_mech_picture: string
-  jack_mech_picture: string
-  mechanical_tool_picture: string
-  trestles_picture: string
-  compression_tester_picture: string
-  compressor_mech_picture: string
-  pneumatic_tool_picture: string
-
-  // 14. Electrical Capability (booleans)
-  wiring_minor: boolean
-  wiring_major: boolean
-  starters: boolean
-  light_retros: boolean
-  radios_audio: boolean
-  two_way_radio: boolean
-
-  // 15. Electrical Tool (booleans + pictures)
-  starter: boolean
-  alternator: boolean
-  multi_meter: boolean
-  batter_charge_tool: boolean
-
-  starter_picture: string
-  alternator_picture: string
-  multi_meter_picture: string
-  batter_charge_tool_picture: string
-
-  // 16. Panel Beater Capability (booleans)
-  msr: boolean
-  nsr: boolean
-  hail_demage: boolean
-  couch_builder: boolean
-  body_modification: boolean
-  ambulance: boolean
-  cash_in_transit: boolean
-  dent_vehicles: boolean
-
-  // 17. Panel Beater Tools (booleans + pictures)
-  spray_booth: boolean
-  spray_gun: boolean
-  jig: boolean
-  mixing_booth: boolean
-  compressor_tool: boolean
-  straighning_tool: boolean
-  tig_welder_tool: boolean
-  mig_welder_tool: boolean
-
-  spray_booth_picture: string
-  spray_gun_picture: string
-  jig_picture: string
-  mixing_booth_picture: string
-  compressor_tool_picture: string
-  straighning_tool_picture: string
-  tig_welder_tool_picture: string
-  mig_welder_tool_picture: string
-
-  // 18. Fitment Center Tyre Tools (booleans + pictures)
-  wheel_alignment: boolean
-  wheel_balancing: boolean
-
-  wheel_alignment_machine_picture: string
-  wheel_balancing_machine_picture: string
-
-  // 19. Fitment Center Exhuast tools (booleans + pictures)
-  tig_welder: boolean
-  mig_welder: boolean
-  pipe_bender: boolean
-
-  tig_welder_picture: string
-  mig_welder_picture: string
-  pipe_bender_picture: string
-
-  // 20. Fitment center battery tools (booleans + pictures array)
-  battery_charge: boolean
-  battery_tester: boolean
-
-  battery_charge_doc: string
-  battery_tester_pictures: string[] // array upload
-
-  // 21. Driver Line Capability options (booleans only)
-  brakes: boolean
-  driver_line_cv_joints: boolean
-  clutch_over_huals: boolean
-  gearbox_bench: boolean
-  propshaft_bench: boolean
-
-  // 22. Driver line tools and docs (booleans + docs)
-  four_or_two_post_hoist: boolean
-  engine_crane: boolean
-  jack: boolean
-  mechanical_tools: boolean
-  trestle: boolean
-  press: boolean
-  compressor: boolean
-  pneumatic_tools: boolean
-  gearbox_test_bench: boolean
-  propshaft_test_bench: boolean
-
-  four_or_two_post_hoist_doc: string
-  engine_crane_doc: string
-  jack_doc: string
-  mechanical_tools_doc: string
-  trestle_doc: string
-  press_doc: string
-  compressor_doc: string
-  pneumatic_tools_doc: string
-  gearbox_test_bench_doc: string
-  propshaft_test_bench_doc: string
-
-  // 23. banking details
   payment_method: string[]
   bank_name: string
   account_no: number
@@ -270,7 +67,6 @@ interface WorkshopFormData {
   postal_code: number
 }
 
-// Simplified for demo - adjust to match your full interface and DB types
 interface WorkshopData {
   work_name: string;
   trading_name?: string;
@@ -297,31 +93,6 @@ interface WorkshopData {
   town?: string;
   postal_code?: number;
 }
-
-interface CapabilitiesData {
-  workshop_id: string; // FK to workshop
-  dekra?: boolean;
-  apmma?: boolean;
-
-  brakes?: boolean;
-  gearbox_bench?: boolean;
-}
-
-interface WorkshopToolData {
-  workshop_id: string;
-  category: string; // e.g. 'engineering', 'mechanical', ...
-  tool_name: string;
-  has_tool: boolean;
-  document_url?: string | null;
-  verified?: boolean;
-}
-
-interface WorkshopDocumentData {
-  workshop_id: string;
-  document_type: string;
-  document_url?: string | null;
-  verified?: boolean;
-}
 // Arrays for selections:
 const vehicleTypes = [
   "passenger",
@@ -336,34 +107,6 @@ const vehicleTypes = [
   "trailers",
   "boats",
 ]
-
-const workshopTypes = [
-  "breakdown",
-  "car wash",
-  "driver line repairs",
-  "electrical",
-  "fitment centre (Batteries)",
-  "fitment centre (Glass)",
-  "fitment centre (Tyres)",
-  "fitment centre (Exhaust)",
-  "fitment centre (Retro Fitments)",
-  "mechanical",
-  "towing",
-  "vehicle testing station",
-  "engineering shop",
-  "check overall",
-  "due for service",
-]
-
-const engineeringCapabilities = [
-  "crank grinding",
-  "head pressure test",
-  "engine block resurfacing",
-  "block pressure test",
-  "valve grinding",
-  "block boring",
-]
-
 const bbbeelevels = [
   "Level 1",
   "Level 2",
@@ -378,91 +121,6 @@ const bbbeelevels = [
 
 const paymentMethods = ["EFT"]
 
-// Reusable Boolean + Optional File Input component
-interface BooleanFileInputProps {
-  label: string
-  boolField: keyof WorkshopFormData
-  fileField?: keyof WorkshopFormData
-  formData: WorkshopFormData
-  setFormData: React.Dispatch<React.SetStateAction<WorkshopFormData>>
-  accept?: string
-  multipleFile?: boolean // for array file uploads only, default false
-}
-
-function BooleanFileInput({
-  label,
-  boolField,
-  fileField,
-  formData,
-  setFormData,
-  accept = ".pdf,.jpg,.jpeg,.png",
-  multipleFile = false,
-}: BooleanFileInputProps) {
-  return (
-    <div className="mb-4">
-      <div className="flex items-center space-x-2">
-        <Checkbox
-          id={boolField}
-          checked={formData[boolField] as boolean}
-          onCheckedChange={(checked) =>
-            setFormData((prev) => ({
-              ...prev,
-              [boolField]: checked,
-              ...(checked === false && fileField ? { [fileField]: multipleFile ? [] : "" } : {}),
-            }))
-          }
-        />
-        <Label htmlFor={boolField}>{label}</Label>
-      </div>
-
-      {fileField && formData[boolField] && (
-        <div className="mt-2">
-          <Label htmlFor={fileField}>Upload {label} Document/Image</Label>
-          <Input
-            id={String(fileField)}
-            type="file"
-            accept={accept}
-            multiple={multipleFile}
-            onChange={(e) => {
-              const files = e.target.files
-              if (files && fileField) {
-                if (multipleFile) {
-                  // Read names of all files
-                  const fileNames = Array.from(files).map((file) => file.name)
-                  setFormData((prev) => ({
-                    ...prev,
-                    [fileField]: fileNames,
-                  }))
-                } else {
-                  setFormData((prev) => ({
-                    ...prev,
-                    [fileField]: files[0]?.name || "",
-                  }))
-                }
-              }
-            }}
-          />
-          {/* Show uploaded file(s) */}
-          {multipleFile ? (
-            Array.isArray(formData[fileField]) &&
-            formData[fileField].length > 0 && (
-              <ul className="text-sm mt-1 text-gray-700 list-disc ml-4">
-                {(formData[fileField] as string[]).map((name, idx) => (
-                  <li key={idx}>{name}</li>
-                ))}
-              </ul>
-            )
-          ) : (
-            formData[fileField] && (
-              <p className="text-sm mt-1 text-gray-700">Uploaded file: {formData[fileField]}</p>
-            )
-          )}
-        </div>
-      )}
-    </div>
-  )
-}
-
 export default function WorkshopRegistrationPage() {
   const router = useRouter()
   const [currentStep, setCurrentStep] = useState(1)
@@ -472,26 +130,9 @@ export default function WorkshopRegistrationPage() {
     { id: 2, title: "VAT Information", description: "VAT details and documents", icon: <DollarSign className="h-2 w-2" /> },
     { id: 3, title: "BBBEE Information", description: "BBBEE certification", icon: <Award className="h-2 w-2" /> },
     { id: 4, title: "Insurance Information", description: "Insurance policy details", icon: <Shield className="h-2 w-2" /> },
-    { id: 5, title: "Workshop Associations", description: "Associations and certificates", icon: <FileText className="h-2 w-2" /> },
-    { id: 6, title: "Vehicle Types", description: "Specify vehicle types handled", icon: <Car className="h-2 w-2" /> },
-    { id: 7, title: "Workshop Types", description: "Workshop service types", icon: <Wrench className="h-2 w-2" /> },
-    { id: 8, title: "Engineer Shop Capability", description: "Engineering capabilities", icon: <Wrench className="h-2 w-2" /> },
-    { id: 9, title: "Engineering Shop Tools", description: "Tools for engineering shop", icon: <Wrench className="h-2 w-2" /> },
-    { id: 10, title: "Car Wash Capability", description: "Car wash services", icon: <Car className="h-2 w-2" /> },
-    { id: 11, title: "Car Wash Tools", description: "Tools for car wash", icon: <Car className="h-2 w-2" /> },
-    { id: 12, title: "Mechanical Capability", description: "Mechanical repair capabilities", icon: <Wrench className="h-2 w-2" /> },
-    { id: 13, title: "Mechanical Tools", description: "Mechanical tools list", icon: <Wrench className="h-2 w-2" /> },
-    { id: 14, title: "Electrical Capability", description: "Electrical repair capabilities", icon: <Wrench className="h-2 w-2" /> },
-    { id: 15, title: "Electrical Tools", description: "Electrical tools list", icon: <Wrench className="h-2 w-2" /> },
-    { id: 16, title: "Panel Beater Capability", description: "Panel beating services", icon: <Wrench className="h-2 w-2" /> },
-    { id: 17, title: "Panel Beater Tools", description: "Tools for panel beating", icon: <Wrench className="h-2 w-2" /> },
-    { id: 18, title: "Fitment Center Tyre Tools", description: "Tyre related tools", icon: <Wrench className="h-2 w-2" /> },
-    { id: 19, title: "Fitment Center Exhaust Tools", description: "Exhaust repair tools", icon: <Wrench className="h-2 w-2" /> },
-    { id: 20, title: "Fitment Center Battery Tools", description: "Battery tools and pictures", icon: <Wrench className="h-2 w-2" /> },
-    { id: 21, title: "Driver Line Capability", description: "Driver line capabilities", icon: <Wrench className="h-2 w-2" /> },
-    { id: 22, title: "Driver Line Tools & Docs", description: "Driver line tools and documents", icon: <Wrench className="h-2 w-2" /> },
-    { id: 23, title: "Banking Details", description: "Bank account information", icon: <Award className="h-2 w-2" /> },
-    { id: 24, title: "Physical Address", description: "Workshop physical location", icon: <Building2 className="h-2 w-2" /> },
+    { id: 5, title: "Vehicle Types", description: "Specify vehicle types handled", icon: <Car className="h-2 w-2" /> },
+    { id: 6, title: "Banking Details", description: "Bank account information", icon: <Award className="h-2 w-2" /> },
+    { id: 7, title: "Physical Address", description: "Workshop physical location", icon: <Building2 className="h-2 w-2" /> },
   ]
 
   const [formData, setFormData] = useState<WorkshopFormData>({
@@ -503,217 +144,28 @@ export default function WorkshopRegistrationPage() {
     company_registration_doc: "",
     after_hours_number: "",
     franchise: "",
-
     vat_number: 0,
     vat_certificate: "",
     vat_cert_expiry_date: "",
-
     bbbee_level: "",
     bbbee_doc: "",
     hdi_perc: "",
     bbbee_expire_date: "",
-
     insurance_policy_number: 0,
     insurance_company_name: "",
     insurance_policy_doc: "",
-
-    dekra: false,
-    apmma: false,
-    cra: false,
-    era: false,
-    mibco: false,
-    miwa: false,
-    raaf: false,
-    rmi: false,
-    saarsa: false,
-    sambra: false,
-    saqa: false,
-    sata: false,
-
-    dekra_doc: "",
-    apmma_doc: "",
-    cra_doc: "",
-    era_doc: "",
-    mibco_doc: "",
-    miwa_doc: "",
-    raaf_doc: "",
-    rmi_doc: "",
-    saarsa_doc: "",
-    sambra_doc: "",
-    saqa_doc: "",
-    sata_doc: "",
-
     type_of_vehicle: [],
-
-    type_of_workshop: [],
-
-    engineering_shop_capability: [],
-    block_boring: false,
-    crank_grinding: false,
-    valve_grinding: false,
-    block_pressure_test: false,
-    engine_block_resurfacing: false,
-
-    micrometer: false,
-    vernier_caliper: false,
-    aluminum_welding: false,
-    straight_Edge: false,
-    depth_gauge: false,
-    lathe_guage: false,
-    lathe_machine: false,
-    honing_tool: false,
-
-    micrometer_picture: "",
-    vernier_caliper_picture: "",
-    aluminum_welding_picture: "",
-    straight_Edge_picture: "",
-    depth_gauge_picture: "",
-    lathe_guage_picture: "",
-    lathe_machine_picture: "",
-    honing_tool_picture: "",
-
-    standard_wash: false,
-    valet: false,
-    vehicles_detailing: false,
-
-    high_pressure_wash: false,
-    polisher_machine: false,
-    vacuum_cleaner: false,
-
-    high_pressure_wash_picture: "",
-    polisher_machine_picture: "",
-    vacuum_cleaner_picture: "",
-
-    suspension: false,
-    service: false,
-    m_brakes: false,
-    minor_repairs: false,
-    major_repairs: false,
-    engine_overhuals: false,
-    drive_line: false,
-    clutch_overhuals: false,
-
-    four_two: false,
-    engine_crane_mech: false,
-    jack_mech: false,
-    mechanical_tool: false,
-    trestles: false,
-    compression_tester: false,
-    compressor_mech: false,
-    pneumatic_tool: false,
-
-    four_two_picture: "",
-    engine_crane_mech_picture: "",
-    jack_mech_picture: "",
-    mechanical_tool_picture: "",
-    trestles_picture: "",
-    compression_tester_picture: "",
-    compressor_mech_picture: "",
-    pneumatic_tool_picture: "",
-
-    wiring_minor: false,
-    wiring_major: false,
-    starters: false,
-    light_retros: false,
-    radios_audio: false,
-    two_way_radio: false,
-
-    starter: false,
-    alternator: false,
-    multi_meter: false,
-    batter_charge_tool: false,
-
-    starter_picture: "",
-    alternator_picture: "",
-    multi_meter_picture: "",
-    batter_charge_tool_picture: "",
-
-    msr: false,
-    nsr: false,
-    hail_demage: false,
-    couch_builder: false,
-    body_modification: false,
-    ambulance: false,
-    cash_in_transit: false,
-    dent_vehicles: false,
-
-    spray_booth: false,
-    spray_gun: false,
-    jig: false,
-    mixing_booth: false,
-    compressor_tool: false,
-    straighning_tool: false,
-    tig_welder_tool: false,
-    mig_welder_tool: false,
-
-    spray_booth_picture: "",
-    spray_gun_picture: "",
-    jig_picture: "",
-    mixing_booth_picture: "",
-    compressor_tool_picture: "",
-    straighning_tool_picture: "",
-    tig_welder_tool_picture: "",
-    mig_welder_tool_picture: "",
-
-    wheel_alignment: false,
-    wheel_balancing: false,
-
-    wheel_alignment_machine_picture: "",
-    wheel_balancing_machine_picture: "",
-
-    tig_welder: false,
-    mig_welder: false,
-    pipe_bender: false,
-
-    tig_welder_picture: "",
-    mig_welder_picture: "",
-    pipe_bender_picture: "",
-
-    battery_charge: false,
-    battery_tester: false,
-    battery_charge_doc: "",
-    battery_tester_pictures: [],
-
-    brakes: false,
-    driver_line_cv_joints: false,
-    clutch_over_huals: false,
-    gearbox_bench: false,
-    propshaft_bench: false,
-
-    four_or_two_post_hoist: false,
-    engine_crane: false,
-    jack: false,
-    mechanical_tools: false,
-    trestle: false,
-    press: false,
-    compressor: false,
-    pneumatic_tools: false,
-    gearbox_test_bench: false,
-    propshaft_test_bench: false,
-
-    four_or_two_post_hoist_doc: "",
-    engine_crane_doc: "",
-    jack_doc: "",
-    mechanical_tools_doc: "",
-    trestle_doc: "",
-    press_doc: "",
-    compressor_doc: "",
-    pneumatic_tools_doc: "",
-    gearbox_test_bench_doc: "",
-    propshaft_test_bench_doc: "",
-
     payment_method: [],
     bank_name: "",
     account_no: 0,
     bank_letter: "",
-
     province: "",
     street: "",
     city: "",
     town: "",
     postal_code: 0,
   })
-  const [workshopInfor, setWorkshopInfor] = useState<WorkshopData>()
+  
   // Helpers
   const handleArrayChange = (field: keyof WorkshopFormData, value: string, checked: boolean) => {
     setFormData((prev) => {
@@ -984,36 +436,7 @@ export default function WorkshopRegistrationPage() {
       case 5:
         return (
           <>
-            {/* Step 5: Workshop Associated (booleans + docs) */}
-            {[
-              { bool: "dekra", doc: "dekra_doc", label: "DEKRA" },
-              { bool: "apmma", doc: "apmma_doc", label: "APMMA" },
-              { bool: "cra", doc: "cra_doc", label: "CRA" },
-              { bool: "era", doc: "era_doc", label: "ERA" },
-              { bool: "mibco", doc: "mibco_doc", label: "MIBCO" },
-              { bool: "miwa", doc: "miwa_doc", label: "MIWA" },
-              { bool: "raaf", doc: "raaf_doc", label: "RAAF" },
-              { bool: "rmi", doc: "rmi_doc", label: "RMI" },
-              { bool: "saarsa", doc: "saarsa_doc", label: "SAARSA" },
-              { bool: "sambra", doc: "sambra_doc", label: "SAMBRA" },
-              { bool: "saqa", doc: "saqa_doc", label: "SAQA" },
-              { bool: "sata", doc: "sata_doc", label: "SATA" },
-            ].map(({ bool, doc, label }) => (
-              <BooleanFileInput
-                key={bool}
-                label={label}
-                boolField={bool as keyof WorkshopFormData}
-                fileField={doc as keyof WorkshopFormData}
-                formData={formData}
-                setFormData={setFormData}
-              />
-            ))}
-          </>
-        )
-      case 6:
-        return (
-          <>
-            {/* Step 6: Type of Vehicles */}
+            {/* Step 5: Type of Vehicles */}
             <h3 className="font-semibold mb-2">Vehicle Types Handled</h3>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-64 overflow-auto border p-2 rounded">
               {vehicleTypes.map((type) => (
@@ -1031,372 +454,10 @@ export default function WorkshopRegistrationPage() {
             </div>
           </>
         )
-      case 7:
+      case 6:
         return (
           <>
-            {/* Step 7: Workshop Type */}
-            <h3 className="font-semibold mb-2">Workshop Types</h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-64 overflow-auto border p-2 rounded">
-              {workshopTypes.map((type) => (
-                <div key={type} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`workshop-${type}`}
-                    checked={formData.type_of_workshop.includes(type)}
-                    onCheckedChange={(checked) => handleArrayChange("type_of_workshop", type, checked as boolean)}
-                  />
-                  <Label htmlFor={`workshop-${type}`} className="capitalize text-sm">
-                    {type}
-                  </Label>
-                </div>
-              ))}
-            </div>
-          </>
-        )
-      case 8:
-        return (
-          <>
-            {/* Step 8: Engineer shop capability */}
-            <h3 className="font-semibold mb-2">Engineering Shop Capabilities</h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-64 overflow-auto border p-2 rounded">
-              {engineeringCapabilities.map((cap) => (
-                <div key={cap} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`eng-${cap}`}
-                    checked={formData.engineering_shop_capability.includes(cap)}
-                    onCheckedChange={(checked) => handleArrayChange("engineering_shop_capability", cap, checked as boolean)}
-                  />
-                  <Label htmlFor={`eng-${cap}`} className="capitalize text-sm">{cap}</Label>
-                </div>
-              ))}
-            </div>
-          </>
-        )
-      case 9:
-        return (
-          <>
-            {/* Step 9: engineering shop tools (boolean + picture) */}
-            {[
-              { bool: "micrometer", file: "micrometer_picture", label: "Micrometer" },
-              { bool: "vernier_caliper", file: "vernier_caliper_picture", label: "Vernier Caliper" },
-              { bool: "aluminum_welding", file: "aluminum_welding_picture", label: "Aluminum Welding" },
-              { bool: "straight_Edge", file: "straight_Edge_picture", label: "Straight Edge" },
-              { bool: "depth_gauge", file: "depth_gauge_picture", label: "Depth Gauge" },
-              { bool: "lathe_guage", file: "lathe_guage_picture", label: "Lathe Gauge" },
-              { bool: "lathe_machine", file: "lathe_machine_picture", label: "Lathe Machine" },
-              { bool: "honing_tool", file: "honing_tool_picture", label: "Honing Tool" },
-            ].map(({ bool, file, label }) => (
-              <BooleanFileInput
-                key={bool}
-                label={label}
-                boolField={bool as keyof WorkshopFormData}
-                fileField={file as keyof WorkshopFormData}
-                formData={formData}
-                setFormData={setFormData}
-              />
-            ))}
-          </>
-        )
-      case 10:
-        return (
-          <>
-            {/* Step 10: Car wash capability (booleans only) */}
-            {[
-              { bool: "standard_wash", label: "Standard Wash" },
-              { bool: "valet", label: "Valet" },
-              { bool: "vehicles_detailing", label: "Vehicles Detailing" },
-            ].map(({ bool, label }) => (
-              <div key={bool} className="mb-4 flex items-center space-x-2">
-                <Checkbox
-                  id={bool}
-                  checked={formData[bool as keyof WorkshopFormData] as boolean}
-                  onCheckedChange={(checked) =>
-                    setFormData((f) => ({ ...f, [bool]: checked }))
-                  }
-                />
-                <Label htmlFor={bool}>{label}</Label>
-              </div>
-            ))}
-          </>
-        )
-      case 11:
-        return (
-          <>
-            {/* Step 11: Car Wash Tools (booleans + pictures) */}
-            {[
-              { bool: "high_pressure_wash", file: "high_pressure_wash_picture", label: "High Pressure Wash" },
-              { bool: "polisher_machine", file: "polisher_machine_picture", label: "Polisher Machine" },
-              { bool: "vacuum_cleaner", file: "vacuum_cleaner_picture", label: "Vacuum Cleaner" },
-            ].map(({ bool, file, label }) => (
-              <BooleanFileInput
-                key={bool}
-                label={label}
-                boolField={bool as keyof WorkshopFormData}
-                fileField={file as keyof WorkshopFormData}
-                formData={formData}
-                setFormData={setFormData}
-              />
-            ))}
-          </>
-        )
-      case 12:
-        return (
-          <>
-            {/* Step 12: Mechanical Capability (booleans only) */}
-            {[
-              "suspension",
-              "service",
-              "m_brakes",
-              "minor_repairs",
-              "major_repairs",
-              "engine_overhuals",
-              "drive_line",
-              "clutch_overhuals",
-            ].map((key) => (
-              <div key={key} className="mb-4 flex items-center space-x-2">
-                <Checkbox
-                  id={key}
-                  checked={formData[key as keyof WorkshopFormData] as boolean}
-                  onCheckedChange={(checked) =>
-                    setFormData((f) => ({ ...f, [key]: checked }))
-                  }
-                />
-                <Label htmlFor={key}>{key.replace(/_/g, " ")}</Label>
-              </div>
-            ))}
-          </>
-        )
-      case 13:
-        return (
-          <>
-            {/* Step 13: Mechanical Tools (booleans + pictures) */}
-            {[
-              { bool: "four_two", file: "four_two_picture", label: "Four Two" },
-              { bool: "engine_crane_mech", file: "engine_crane_mech_picture", label: "Engine Crane" },
-              { bool: "jack_mech", file: "jack_mech_picture", label: "Jack" },
-              { bool: "mechanical_tool", file: "mechanical_tool_picture", label: "Mechanical Tool" },
-              { bool: "trestles", file: "trestles_picture", label: "Trestles" },
-              { bool: "compression_tester", file: "compression_tester_picture", label: "Compression Tester" },
-              { bool: "compressor_mech", file: "compressor_mech_picture", label: "Compressor" },
-              { bool: "pneumatic_tool", file: "pneumatic_tool_picture", label: "Pneumatic Tool" },
-            ].map(({ bool, file, label }) => (
-              <BooleanFileInput
-                key={bool}
-                label={label}
-                boolField={bool as keyof WorkshopFormData}
-                fileField={file as keyof WorkshopFormData}
-                formData={formData}
-                setFormData={setFormData}
-              />
-            ))}
-          </>
-        )
-      case 14:
-        return (
-          <>
-            {/* Step 14: Electrical Capability (booleans only) */}
-            {[
-              "wiring_minor",
-              "wiring_major",
-              "starters",
-              "light_retros",
-              "radios_audio",
-              "two_way_radio",
-            ].map((key) => (
-              <div key={key} className="mb-4 flex items-center space-x-2">
-                <Checkbox
-                  id={key}
-                  checked={formData[key as keyof WorkshopFormData] as boolean}
-                  onCheckedChange={(checked) => setFormData((f) => ({ ...f, [key]: checked }))}
-                />
-                <Label htmlFor={key}>{key.replace(/_/g, " ")}</Label>
-              </div>
-            ))}
-          </>
-        )
-      case 15:
-        return (
-          <>
-            {/* Step 15: Electrical Tools (booleans + pictures) */}
-            {[
-              { bool: "starter", file: "starter_picture", label: "Starter" },
-              { bool: "alternator", file: "alternator_picture", label: "Alternator" },
-              { bool: "multi_meter", file: "multi_meter_picture", label: "Multi Meter" },
-              { bool: "batter_charge_tool", file: "batter_charge_tool_picture", label: "Battery Charge Tool" },
-            ].map(({ bool, file, label }) => (
-              <BooleanFileInput
-                key={bool}
-                label={label}
-                boolField={bool as keyof WorkshopFormData}
-                fileField={file as keyof WorkshopFormData}
-                formData={formData}
-                setFormData={setFormData}
-              />
-            ))}
-          </>
-        )
-      case 16:
-        return (
-          <>
-            {/* Step 16: Panel Beater Capability (booleans only) */}
-            {[
-              "msr",
-              "nsr",
-              "hail_demage",
-              "couch_builder",
-              "body_modification",
-              "ambulance",
-              "cash_in_transit",
-              "dent_vehicles",
-            ].map((key) => (
-              <div key={key} className="mb-4 flex items-center space-x-2">
-                <Checkbox
-                  id={key}
-                  checked={formData[key as keyof WorkshopFormData] as boolean}
-                  onCheckedChange={(checked) => setFormData((f) => ({ ...f, [key]: checked }))}
-                />
-                <Label htmlFor={key}>{key.replace(/_/g, " ")}</Label>
-              </div>
-            ))}
-          </>
-        )
-      case 17:
-        return (
-          <>
-            {/* Step 17: Panel Beater Tools (booleans + pictures) */}
-            {[
-              { bool: "spray_booth", file: "spray_booth_picture", label: "Spray Booth" },
-              { bool: "spray_gun", file: "spray_gun_picture", label: "Spray Gun" },
-              { bool: "jig", file: "jig_picture", label: "Jig" },
-              { bool: "mixing_booth", file: "mixing_booth_picture", label: "Mixing Booth" },
-              { bool: "compressor_tool", file: "compressor_tool_picture", label: "Compressor" },
-              { bool: "straighning_tool", file: "straighning_tool_picture", label: "Straightening Tool" },
-              { bool: "tig_welder_tool", file: "tig_welder_tool_picture", label: "TIG Welder" },
-              { bool: "mig_welder_tool", file: "mig_welder_tool_picture", label: "MIG Welder" },
-            ].map(({ bool, file, label }) => (
-              <BooleanFileInput
-                key={bool}
-                label={label}
-                boolField={bool as keyof WorkshopFormData}
-                fileField={file as keyof WorkshopFormData}
-                formData={formData}
-                setFormData={setFormData}
-              />
-            ))}
-          </>
-        )
-      case 18:
-        return (
-          <>
-            {/* Step 18: Fitment Center Tyre Tools */}
-            {[
-              { bool: "wheel_alignment", file: "wheel_alignment_machine_picture", label: "Wheel Alignment Machine" },
-              { bool: "wheel_balancing", file: "wheel_balancing_machine_picture", label: "Wheel Balancing Machine" },
-            ].map(({ bool, file, label }) => (
-              <BooleanFileInput
-                key={bool}
-                label={label}
-                boolField={bool as keyof WorkshopFormData}
-                fileField={file as keyof WorkshopFormData}
-                formData={formData}
-                setFormData={setFormData}
-              />
-            ))}
-          </>
-        )
-      case 19:
-        return (
-          <>
-            {/* Step 19: Fitment Center Exhaust tools */}
-            {[
-              { bool: "tig_welder", file: "tig_welder_picture", label: "TIG Welder" },
-              { bool: "mig_welder", file: "mig_welder_picture", label: "MIG Welder" },
-              { bool: "pipe_bender", file: "pipe_bender_picture", label: "Pipe Bender" },
-            ].map(({ bool, file, label }) => (
-              <BooleanFileInput
-                key={bool}
-                label={label}
-                boolField={bool as keyof WorkshopFormData}
-                fileField={file as keyof WorkshopFormData}
-                formData={formData}
-                setFormData={setFormData}
-              />
-            ))}
-          </>
-        )
-      case 20:
-        return (
-          <>
-            {/* Step 20: Fitment Center Battery Tools */}
-            <BooleanFileInput
-              label="Battery Charge"
-              boolField="battery_charge"
-              fileField="battery_charge_doc"
-              formData={formData}
-              setFormData={setFormData}
-            />
-            <BooleanFileInput
-              label="Battery Tester"
-              boolField="battery_tester"
-              fileField="battery_tester_pictures"
-              formData={formData}
-              setFormData={setFormData}
-              multipleFile
-            />
-          </>
-        )
-      case 21:
-        return (
-          <>
-            {/* Step 21: Driver Line Capability options */}
-            {[
-              "brakes",
-              "driver_line_cv_joints",
-              "clutch_over_huals",
-              "gearbox_bench",
-              "propshaft_bench",
-            ].map((key) => (
-              <div key={key} className="mb-4 flex items-center space-x-2">
-                <Checkbox
-                  id={key}
-                  checked={formData[key as keyof WorkshopFormData] as boolean}
-                  onCheckedChange={(checked) => setFormData((f) => ({ ...f, [key]: checked }))}
-                />
-                <Label htmlFor={key}>{key.replace(/_/g, " ")}</Label>
-              </div>
-            ))}
-          </>
-        )
-      case 22:
-        return (
-          <>
-            {/* Step 22: Driver line tools and docs */}
-            {[
-              { bool: "four_or_two_post_hoist", file: "four_or_two_post_hoist_doc", label: "Four or Two Post Hoist" },
-              { bool: "engine_crane", file: "engine_crane_doc", label: "Engine Crane" },
-              { bool: "jack", file: "jack_doc", label: "Jack" },
-              { bool: "mechanical_tools", file: "mechanical_tools_doc", label: "Mechanical Tools" },
-              { bool: "trestle", file: "trestle_doc", label: "Trestle" },
-              { bool: "press", file: "press_doc", label: "Press" },
-              { bool: "compressor", file: "compressor_doc", label: "Compressor" },
-              { bool: "pneumatic_tools", file: "pneumatic_tools_doc", label: "Pneumatic Tools" },
-              { bool: "gearbox_test_bench", file: "gearbox_test_bench_doc", label: "Gearbox Test Bench" },
-              { bool: "propshaft_test_bench", file: "propshaft_test_bench_doc", label: "Propshaft Test Bench" },
-            ].map(({ bool, file, label }) => (
-              <BooleanFileInput
-                key={bool}
-                label={label}
-                boolField={bool as keyof WorkshopFormData}
-                fileField={file as keyof WorkshopFormData}
-                formData={formData}
-                setFormData={setFormData}
-              />
-            ))}
-          </>
-        )
-      case 23:
-        return (
-          <>
-            {/* Step 23: banking details */}
+            {/* Step 7: banking details */}
             <div>
               <Label htmlFor="payment_method">Payment Method *</Label>
               <Select
@@ -1456,10 +517,10 @@ export default function WorkshopRegistrationPage() {
             </div>
           </>
         )
-      case 24:
+      case 7:
         return (
           <>
-            {/* Step 24: physical address */}
+            {/* Step 8: physical address */}
             <div>
               <Label htmlFor="province">Province *</Label>
               <Input
@@ -1530,47 +591,10 @@ export default function WorkshopRegistrationPage() {
     return workshop;
   }
 
-  // Insert capabilities for given workshop_id
-  async function insertCapabilities(data: Omit<CapabilitiesData, 'workshop_id'>, workshop_id: string) {
-    const { data: cap, error } = await supabase
-      .from("capabilities")
-      .insert([{ ...data, workshop_id }])
-      .select()
-      .single();
-
-    if (error || !cap) throw error ?? new Error("Failed to insert capabilities");
-    return cap;
-  }
-
-  // Insert multiple tools for a workshop
-  async function insertWorkshopTools(tools: WorkshopToolData[]) {
-    const { data, error } = await supabase
-      .from("workshop_tools")
-      .insert(tools);
-
-    if (error) throw error;
-    return data;
-  }
-
-  // Insert multiple documents for a workshop
-  async function insertWorkshopDocuments(docs: WorkshopDocumentData[]) {
-    const { data, error } = await supabase
-      .from("workshop_documents")
-      .insert(docs as []);
-
-    if (error) throw error;
-    return data;
-  }
-
   // On submit
-  const handleSubmit = (e: React.FormEvent, workshopData: WorkshopData,
-    capabilitiesData: Omit<CapabilitiesData, 'workshop_id'>,
-    toolsData: Omit<WorkshopToolData, 'workshop_id'>[],
-    documentsData: Omit<WorkshopDocumentData, 'workshop_id'>[]) => {
+  const handleSubmit = (e: React.FormEvent, workshopData: WorkshopData) => {
     e.preventDefault()
     insertWorkshop(workshopData)
-    insertCapabilities(capabilitiesData, workshopData.work_name)
-    // insertWorkshopTools(toolsData)
     localStorage.setItem("workshopRegistrationData", JSON.stringify(formData))
     router.push("/register/workshop/fileUpload")
   }
@@ -1606,22 +630,7 @@ export default function WorkshopRegistrationPage() {
       town: formData.town,
       postal_code: formData.postal_code,
     }
-
-    // Extract capabilities data
-    const capabilitiesData: Omit<CapabilitiesData, 'workshop_id'> = {
-      dekra: formData.dekra,
-      apmma: formData.apmma,
-      brakes: formData.brakes,
-      gearbox_bench: formData.gearbox_bench,
-    }
-
-    // Extract tools data (you'll need to map your formData to tools array)
-    const toolsData: Omit<WorkshopToolData, 'workshop_id'>[] = []
-
-    // Extract documents data (you'll need to map your formData to documents array)
-    const documentsData: Omit<WorkshopDocumentData, 'workshop_id'>[] = []
-
-    handleSubmit(e, workshopData, capabilitiesData, toolsData, documentsData)
+    handleSubmit(e, workshopData)
   }
 
 
@@ -1631,7 +640,7 @@ export default function WorkshopRegistrationPage() {
 
       {/* Steps Progress Bar */}
       <div className="mb-6">
-        {/* <div className="flex justify-between items-center mb-3">
+        <div className="flex justify-between items-center mb-3">
           {steps.map((step) => (
             <div key={step.id} className="flex items-center">
               <div
@@ -1645,7 +654,7 @@ export default function WorkshopRegistrationPage() {
               )}
             </div>
           ))}
-        </div> */}
+        </div>
         <Progress value={progress} className="h-2" />
         <p className="text-center mt-1 text-gray-600">
           Step {currentStep} of {steps.length}: {steps[currentStep - 1].title}
@@ -1694,9 +703,6 @@ export default function WorkshopRegistrationPage() {
           {formData.bbbee_level && <Badge variant="secondary">BBBEE Level Set</Badge>}
           {formData.type_of_vehicle.length > 0 && (
             <Badge variant="secondary">{formData.type_of_vehicle.length} Vehicle Types</Badge>
-          )}
-          {formData.type_of_workshop.length > 0 && (
-            <Badge variant="secondary">{formData.type_of_workshop.length} Workshop Types</Badge>
           )}
           {formData.bank_name && <Badge variant="secondary">Bank Info Provided</Badge>}
           {formData.province && <Badge variant="secondary">Physical Address Set</Badge>}
