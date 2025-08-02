@@ -1501,6 +1501,7 @@ export type Database = {
           vat_cert_expiry_date: string | null
           vat_certificate: string | null
           vat_number: number | null
+          vehicles_type: string[] | null
           work_name: string
         }
         Insert: {
@@ -1529,6 +1530,7 @@ export type Database = {
           vat_cert_expiry_date?: string | null
           vat_certificate?: string | null
           vat_number?: number | null
+          vehicles_type?: string[] | null
           work_name: string
         }
         Update: {
@@ -1557,9 +1559,46 @@ export type Database = {
           vat_cert_expiry_date?: string | null
           vat_certificate?: string | null
           vat_number?: number | null
+          vehicles_type?: string[] | null
           work_name?: string
         }
         Relationships: []
+      }
+      workshop_assign: {
+        Row: {
+          created_at: string
+          id: number
+          job_id: string | null
+          workshop_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          job_id?: string | null
+          workshop_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          job_id?: string | null
+          workshop_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workshop_job_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "workshop"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workshop_job_workshop_id_fkey"
+            columns: ["workshop_id"]
+            isOneToOne: false
+            referencedRelation: "workshop"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       workshop_documents: {
         Row: {

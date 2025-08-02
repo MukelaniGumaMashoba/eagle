@@ -131,7 +131,10 @@ export default function FleetJobsPage() {
     getJobs()
     setFilteredJobs(jobs)
 
-
+    return () => {
+      assignements.unsubscribe()
+      jobAssignments.unsubscribe()
+    }
 
   }, [])
 

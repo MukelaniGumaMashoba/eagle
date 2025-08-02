@@ -116,11 +116,17 @@ const workshop = [
   }
 ]
 
-interface newjob {
-  registration_number: string,
-  type_of_work: string,
-  description: string,
+// Form interface for creating new workshop jobs
+interface CreateWorkshopJobForm {
+  registration_number: string
   job_type: string
+  description: string
+  estimated_cost?: number
+  client_name?: string
+  client_phone?: string
+  location?: string
+  notes?: string
+  selected_workshop_id?: string
 }
 
 
@@ -139,28 +145,86 @@ export default function FleetJobsPage() {
   const [isWorkshopDialogOpen, setIsWorkshopDialogOpen] = useState(false)
   const [selectedJobForWorkshop, setSelectedJobForWorkshop] = useState<Job | null>(null)
   const [searchWorkshop, setSearchWorkshop] = useState("")
-  const [regNumber, setRegNumber] = useState("");
-  ;
-  // const fetchWorkshops = async () => {
-  //   const { data, error } = await supabase.from('workshop').select('*')
-  //   if (error) console.error("Error fetching workshops:", error)
-  //   else setWorkshops(data)
-  // }
+
+  // Form state for creating new workshop jobs
+  const [isCreateJobDialogOpen, setIsCreateJobDialogOpen] = useState(false)
+  const [createJobForm, setCreateJobForm] = useState<CreateWorkshopJobForm>({
+    registration_number: "",
+    job_type: "",
+    description: "",
+    estimated_cost: undefined,
+    client_name: "",
+    client_phone: "",
+    location: "",
+    notes: "",
+    selected_workshop_id: ""
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [vehicleExists, setVehicleExists] = useState<boolean | null>(null)
+
+     const fetchWorkshops = async () => {
+     const { data, error } = await supabase.from('workshop').select('*')
+     if (error) {
+       console.error("Error fetching workshops:", error)
+       // Fallback to mock data if database fetch fails
+       setWorkshops(workshop.map(w => ({
+         id: w.id.toString(),
+         work_name: w.name,
+         trading_name: null,
+         city: w.location,
+         town: null,
+         province: w.location,
+         street: null,
+         labour_rate: 150,
+         fleet_rate: 120,
+         created_at: null
+       })))
+     } else {
+       // Map the database response to match your schema
+       const mappedWorkshops = data.map(workshop => ({
+         id: workshop.id,
+         work_name: workshop.work_name,
+         trading_name: workshop.trading_name,
+         city: workshop.city,
+         town: workshop.town,
+         province: workshop.province,
+         street: workshop.street,
+         labour_rate: workshop.labour_rate,
+         fleet_rate: workshop.fleet_rate,
+         created_at: workshop.created_at
+       }))
+       setWorkshops(mappedWorkshops)
+     }
+   }
+
+  // Check if vehicle exists by registration number
+  const checkVehicleExists = async (registrationNumber: string) => {
+    if (!registrationNumber) {
+      setVehicleExists(null)
+      return null
+    }
+
+    try {
+      const vehicle = await getVehicleByRegistrationNumber(registrationNumber)
+      setVehicleExists(!!vehicle)
+      return vehicle
+    } catch (error) {
+      console.error("Error checking vehicle:", error)
+      setVehicleExists(false)
+      return null
+    }
+  }
 
 
   useEffect(() => {
+    fetchWorkshops()
 
-    const checkVihecle = async () => {
-      const constCheck = await getVehicleByRegistrationNumber(regNumber)
-
-      if (!constCheck) {
-        alert("Error checking registration number")
-      }
-      else {
-        alert("Found and continue")
-      }
+    // Check vehicle when registration number changes
+    if (createJobForm.registration_number) {
+      checkVehicleExists(createJobForm.registration_number)
+    } else {
+      setVehicleExists(null)
     }
-    checkVihecle();
 
 
     const assignements = supabase.channel('custom-all-channel')
@@ -204,6 +268,10 @@ export default function FleetJobsPage() {
     getJobs()
     setFilteredJobs(jobs)
 
+    return () => {
+      assignements.unsubscribe()
+      jobAssignments.unsubscribe()
+    }
 
 
   }, [])
@@ -323,6 +391,104 @@ export default function FleetJobsPage() {
     }
   }
 
+  async function getVehicleByRegistrationNumber(registrationNumber: string) {
+    if (!registrationNumber) {
+      console.error("Registration number is required");
+      return null;
+
+    }
+    const { data, error } = await supabase
+      .from('vehiclesc')
+      .select()
+      .eq("registration_number", registrationNumber)
+      .single();
+
+
+    if (error) {
+      console.error("Error fetching vehicle by registration number:", error);
+      return null;
+    }
+    return data;
+  }
+
+  // Create new workshop job and assign to workshop
+  const createWorkshopJob = async () => {
+    if (!createJobForm.registration_number || !createJobForm.job_type || !createJobForm.description) {
+      toast.error("Please fill in all required fields")
+      return
+    }
+
+    if (!createJobForm.selected_workshop_id) {
+      toast.error("Please select a workshop")
+      return
+    }
+
+    setIsSubmitting(true)
+
+    try {
+      // Check if vehicle exists and get vehicle data
+      const vehicleData = await checkVehicleExists(createJobForm.registration_number)
+
+      if (!vehicleData) {
+        toast.error("Vehicle not found in database. Please enter a valid registration number.")
+        return
+      }
+
+      // First, create the job in workshop_job table
+      const { data: newJob, error: jobError } = await (supabase as any)
+        .from('workshop_job')
+        .insert({
+          registration_no: createJobForm.registration_number,
+          job_type: createJobForm.job_type,
+          description: createJobForm.description
+        })
+        .select()
+        .single()
+
+      if (jobError) {
+        console.error('Job creation failed:', jobError)
+        toast.error("Failed to create job")
+        return
+      }
+
+      // Then assign the job to the selected workshop
+      const { error: assignError } = await (supabase as any)
+        .from('workshop_assign')
+        .insert({
+          job_id: newJob.id,
+          workshop_id: createJobForm.selected_workshop_id
+        })
+
+      if (assignError) {
+        console.error('Assignment failed:', assignError)
+        toast.error("Failed to assign job to workshop")
+        return
+      }
+
+      // Get selected workshop name for success message
+      const selectedWorkshop = workshops.find(w => w.id === createJobForm.selected_workshop_id)
+      const workshopName = selectedWorkshop?.work_name || 'Unknown Workshop'
+
+      toast.success(`Job created successfully! Vehicle: ${vehicleData.make} ${vehicleData.model} (${createJobForm.registration_number}) assigned to ${workshopName}`)
+      setIsCreateJobDialogOpen(false)
+
+      // Reset form
+      setCreateJobForm({
+        registration_number: "",
+        job_type: "",
+        description: "",
+        client_name: "",
+        client_phone: "",
+        selected_workshop_id: ""
+      })
+
+    } catch (error) {
+      console.error('Error creating job:', error)
+      toast.error("An error occurred while creating the job")
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   return (
     <>
@@ -371,134 +537,184 @@ export default function FleetJobsPage() {
 
 
         <div className="flex justify-end">
-          <Dialog>
+          <Dialog open={isCreateJobDialogOpen} onOpenChange={setIsCreateJobDialogOpen}>
             <DialogTrigger asChild>
-              <Button>Create Job</Button>
+              <Button>Create Workshop Job</Button>
             </DialogTrigger>
 
-            <DialogContent>
-              <DialogTitle>Create Job</DialogTitle>
-              <form className="space-y-4">
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Create New Workshop Job</DialogTitle>
+                <DialogDescription>
+                  Create a new job and assign it to a workshop. All fields marked with * are required.
+                </DialogDescription>
+              </DialogHeader>
+
+              <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); createWorkshopJob(); }}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="registration_number">Registration Number *</Label>
+                    <Input
+                      id="registration_number"
+                      placeholder="DD80MKGP"
+                      value={createJobForm.registration_number}
+                      onChange={(e) => setCreateJobForm({
+                        ...createJobForm,
+                        registration_number: e.target.value.toUpperCase()
+                      })}
+                      className={vehicleExists === false ? "border-red-500" : vehicleExists === true ? "border-green-500" : ""}
+                    />
+                    {vehicleExists === false && (
+                      <p className="text-sm text-red-500 mt-1">Vehicle not found in database</p>
+                    )}
+                    {vehicleExists === true && (
+                      <p className="text-sm text-green-500 mt-1">Vehicle found ✓</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <Label htmlFor="job_type">Type of Work *</Label>
+                    <Select
+                      value={createJobForm.job_type}
+                      onValueChange={(value) => setCreateJobForm({
+                        ...createJobForm,
+                        job_type: value
+                      })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select type of work" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="towing">Towing</SelectItem>
+                        <SelectItem value="mechanical">Mechanical</SelectItem>
+                        <SelectItem value="electrical">Electrical</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
                 <div>
-                  <label className="block mb-1 font-medium">Registration Number</label>
-                  <Input
-                    placeholder="DD80MKGP"
-                    value={regNumber}
-                    onChange={(e) => {
-                      setRegNumber(e.target.value)
-                    }}
+                  <Label htmlFor="description">Problem Description *</Label>
+                  <Textarea
+                    id="description"
+                    placeholder="Describe the problem or work needed..."
+                    value={createJobForm.description}
+                    onChange={(e) => setCreateJobForm({
+                      ...createJobForm,
+                      description: e.target.value
+                    })}
+                    rows={3}
                   />
                 </div>
 
-                <div>
-                  <label className="block mb-1 font-medium">Type Of Work</label>
-                  <Select value={""} onValueChange={setPriorityFilter}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select type of work" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="towing">Towing</SelectItem>
-                      <SelectItem value="mechanical">Mechanical</SelectItem>
-                      <SelectItem value="electrical">Electrical</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="client_name">Client Name</Label>
+                    <Input
+                      id="client_name"
+                      placeholder="Client name"
+                      value={createJobForm.client_name}
+                      onChange={(e) => setCreateJobForm({
+                        ...createJobForm,
+                        client_name: e.target.value
+                      })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="client_phone">Client Phone</Label>
+                    <Input
+                      id="client_phone"
+                      placeholder="Phone number"
+                      value={createJobForm.client_phone}
+                      onChange={(e) => setCreateJobForm({
+                        ...createJobForm,
+                        client_phone: e.target.value
+                      })}
+                    />
+                  </div>
                 </div>
+                                 <div>
+                   <label className="text-center block mb-1 font-medium">Available Workshops</label>
+                 </div>
+                 <div className="mb-3">
+                   <Select value={searchWorkshop} onValueChange={setSearchWorkshop}>
+                     <SelectTrigger className="w-full">
+                       <SelectValue placeholder="Select Location" />
+                     </SelectTrigger>
+                     <SelectContent>
+                       {(() => {
+                         const locations = [...new Set(workshops.map(w => w.city || w.town || w.province).filter(Boolean))]
+                         if (locations.length === 0) {
+                           return <SelectItem value="no-location" disabled>No locations available</SelectItem>
+                         }
+                         return locations.map(location => (
+                           <SelectItem key={location} value={location}>
+                             {location.charAt(0).toUpperCase() + location.slice(1)}
+                           </SelectItem>
+                         ))
+                       })()}
+                     </SelectContent>
+                   </Select>
+                 </div>
+                 
+                 {/* Show available workshops based on selected location */}
+                 {searchWorkshop && searchWorkshop !== "no-location" && (
+                   <div className="mb-4">
+                     <Label className="text-sm font-medium mb-2 block">Workshops in {searchWorkshop}:</Label>
+                     <div className="space-y-2 max-h-40 overflow-y-auto">
+                       {workshops
+                         .filter(w => w.city === searchWorkshop || w.town === searchWorkshop || w.province === searchWorkshop)
+                         .map((workshop) => (
+                           <div
+                             key={workshop.id}
+                             className="p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
+                             onClick={() => setCreateJobForm({
+                               ...createJobForm,
+                               selected_workshop_id: workshop.id
+                             })}
+                           >
+                             <div className="flex items-center justify-between">
+                               <div>
+                                 <p className="font-medium">{workshop.work_name}</p>
+                                 <p className="text-sm text-gray-600">
+                                   {workshop.trading_name && `${workshop.trading_name} • `}
+                                   {workshop.city || workshop.town || workshop.province}
+                                 </p>
+                                 {workshop.labour_rate && (
+                                   <p className="text-xs text-gray-500">Labour Rate: R{workshop.labour_rate}/hr</p>
+                                 )}
+                               </div>
+                               <div className="flex items-center">
+                                 {createJobForm.selected_workshop_id === workshop.id && (
+                                   <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                                     <div className="w-2 h-2 bg-white rounded-full"></div>
+                                   </div>
+                                 )}
+                               </div>
+                             </div>
+                           </div>
+                         ))}
+                       {workshops.filter(w => w.city === searchWorkshop || w.town === searchWorkshop || w.province === searchWorkshop).length === 0 && (
+                         <p className="text-sm text-gray-500 text-center py-2">No workshops found in this location</p>
+                       )}
+                     </div>
+                   </div>
+                 )}
 
-                <div>
-                  <label className="block mb-1 font-medium">Problem Description</label>
-                  <Input
-                    placeholder="What's wrong?"
-                    value={""}
-                    onChange={() => { }}
-                  />
-                </div>
-
-                <div>
-                  <label className="block mb-1 font-medium">Job Type</label>
-                  <Select value={""} onValueChange={setPriorityFilter}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select job type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="towing">Towing</SelectItem>
-                      <SelectItem value="mechanical">Mechanical</SelectItem>
-                      <SelectItem value="electrical">Electrical</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <label className="text-center  block mb-1 font-medium">Available Workshops</label>
-                </div>
-                <div className="mb-3">
-                  <Select value={searchWorkshop} onValueChange={setSearchWorkshop}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select Location" />
-                    </SelectTrigger>
-
-                    <SelectContent>
-                      {[...new Set(workshops.map(w => w.location))].map(location => (
-                        <SelectItem key={location} value={location}>
-                          {location.charAt(0).toUpperCase() + location.slice(1)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-
-                  </Select>
-                  {/* <Input
-                    placeholder="Search by name, location, type, capability..."
-                    value={searchWorkshop}
-                    onChange={(e) => setSearchWorkshop(e.target.value)}
-                  /> */}
-                </div>
-
-                <div className="max-h-[300px] overflow-y-auto space-y-2">
-                  {workshops
-                    .filter(w =>
-                      w.name?.toLowerCase().includes(searchWorkshop.toLowerCase()) ||
-                      w.type?.toLowerCase().includes(searchWorkshop.toLowerCase()) ||
-                      w.location?.toLowerCase().includes(searchWorkshop.toLowerCase()) ||
-                      w.capabilities?.toLowerCase().includes(searchWorkshop.toLowerCase())
-                    )
-                    .map((workshop) => (
-                      <div
-                        key={workshop.id}
-                        className="p-3 border rounded hover:bg-gray-100 flex justify-between items-start"
-                      >
-                        <div>
-                          <p className="font-bold">{workshop.name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            <strong>Type:</strong> {workshop.type}<br />
-                            <strong>Location:</strong> {workshop.location}<br />
-                            <strong>Capabilities:</strong> {workshop.capabilities}
-                          </p>
-                        </div>
-                        <Button
-                          size="sm"
-                          onClick={async () => {
-                            if (!selectedJobForWorkshop) return
-
-                            const { error } = await supabase
-                              .from('job_assignments')
-                              .update({
-                                workshop_id: workshop.id,
-                                updated_at: new Date().toISOString()
-                              })
-                              .eq('id', selectedJobForWorkshop.id)
-
-                            if (error) {
-                              toast.error("Failed to assign workshop.")
-                              console.error(error)
-                            } else {
-                              toast.success(`Assigned ${workshop.name} to job.`)
-                              setIsWorkshopDialogOpen(false)
-                            }
-                          }}
-                        >
-                          Assign
-                        </Button>
-                      </div>
-                    ))}
+                <div className="flex justify-end space-x-2 pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsCreateJobDialogOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting || !createJobForm.registration_number || !createJobForm.job_type || !createJobForm.description || !createJobForm.selected_workshop_id}
+                  >
+                    {isSubmitting ? "Creating..." : "Create Job"}
+                  </Button>
                 </div>
               </form>
             </DialogContent>
@@ -921,7 +1137,7 @@ export default function FleetJobsPage() {
             </Card>
           </TabsContent>
 
-          {/* <Dialog open={isWorkshopDialogOpen} onOpenChange={setIsWorkshopDialogOpen}>
+          <Dialog open={isWorkshopDialogOpen} onOpenChange={setIsWorkshopDialogOpen}>
             <DialogContent className="max-w-2xl">
               <DialogHeader>
                 <DialogTitle>Assign Workshop to Job: {selectedJobForWorkshop?.job_id}</DialogTitle>
@@ -985,8 +1201,7 @@ export default function FleetJobsPage() {
                   ))}
               </div>
             </DialogContent>
-          </Dialog> */}
-
+          </Dialog>
         </Tabs>
       </div>
     </>
