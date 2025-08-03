@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -506,7 +506,7 @@ interface WorkshopDocumentData {
   verified?: boolean;
 }
 
-export default function FileUploadPage() {
+function FileUploadignPage() {
   const router = useRouter()
   const [currentStep, setCurrentStep] = useState(1)
   const [isMobile, setIsMobile] = useState(false)
@@ -1318,7 +1318,7 @@ export default function FileUploadPage() {
       console.log("Workshop tools successfully inserted:", result);
     } catch (error) {
       console.error("Error inserting tools:", error);
-    }    
+    }
     // Update workshop types
     await updateWorkshop(workshopId, formData.type_of_workshop);
 
@@ -1419,4 +1419,10 @@ export default function FileUploadPage() {
       </div>
     </div>
   )
+}
+
+export default function FileUploadPage() {
+  <Suspense fallback={<div>Loading file upload...</div>}>
+    <FileUploadignPage />
+  </Suspense>
 } 
