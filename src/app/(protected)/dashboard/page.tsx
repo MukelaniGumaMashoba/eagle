@@ -337,7 +337,7 @@ export default function Dashboard() {
                       <action.icon className="h-5 w-5 mt-0.5" />
                       <div className="text-left">
                         <div className="font-semibold">{action.title}</div>
-                        <div className="text-xs opacity-70">{action.description}</div>
+                        <div className="text-xs opacity-70 text-wrap hover:text-balance">{action.description}</div>
                       </div>
                     </div>
                   </Button>
