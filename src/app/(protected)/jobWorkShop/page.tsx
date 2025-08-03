@@ -403,7 +403,6 @@ export default function FleetJobsPage() {
       .eq("registration_number", registrationNumber)
       .single();
 
-
     if (error) {
       console.error("Error fetching vehicle by registration number:", error);
       return null;
