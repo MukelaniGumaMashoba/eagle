@@ -165,7 +165,7 @@ export default function WorkshopRegistrationPage() {
     town: "",
     postal_code: 0,
   })
-  
+
   // Helpers
   const handleArrayChange = (field: keyof WorkshopFormData, value: string, checked: boolean) => {
     setFormData((prev) => {
@@ -588,6 +588,11 @@ export default function WorkshopRegistrationPage() {
       .single();
 
     if (error || !workshop) throw error ?? new Error("Failed to insert workshop");
+    else {
+      // router.push("/register/workshop/fileUpload")
+      const newUUID = workshop.id;
+      router.push(`/register/workshop/fileUpload?workshopId=${newUUID}`);
+    }
     return workshop;
   }
 
@@ -596,13 +601,12 @@ export default function WorkshopRegistrationPage() {
     e.preventDefault()
     insertWorkshop(workshopData)
     localStorage.setItem("workshopRegistrationData", JSON.stringify(formData))
-    router.push("/register/workshop/fileUpload")
+
   }
 
   // Form submit handler wrapper
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-
     // Extract workshop data from formData
     const workshopData: WorkshopData = {
       work_name: formData.work_name,

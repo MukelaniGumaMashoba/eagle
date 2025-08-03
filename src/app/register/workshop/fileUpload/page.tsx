@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -19,6 +19,7 @@ import {
   Monitor,
   FileText,
 } from "lucide-react"
+
 import { createClient } from "@/lib/supabase/client"
 
 // Arrays for selections
@@ -495,6 +496,7 @@ interface WorkshopToolData {
   has_tool: boolean;
   document_url?: string | null;
   verified?: boolean;
+  picture?: string | null,
 }
 
 interface WorkshopDocumentData {
@@ -509,6 +511,14 @@ export default function FileUploadPage() {
   const [currentStep, setCurrentStep] = useState(1)
   const [isMobile, setIsMobile] = useState(false)
   const [isTablet, setIsTablet] = useState(false)
+  const searchParams = useSearchParams();
+  const workshopId = searchParams.get("workshopId");
+  useEffect(() => {
+    if (workshopId) {
+      console.log("Received UUID:", workshopId);
+    }
+  }, [workshopId]);
+
 
   useEffect(() => {
     const checkDevice = () => {
@@ -760,26 +770,26 @@ export default function FileUploadPage() {
   const supabase = createClient();
 
   // Insert capabilities for given workshop_id
-  async function insertCapabilities(data: Omit<CapabilitiesData, 'workshop_id'>, workshop_id: string) {
-    const { data: cap, error } = await supabase
-      .from("capabilities")
-      .insert([{ ...data, workshop_id }])
-      .select()
-      .single();
+  // async function insertCapabilities(data: Omit<CapabilitiesData, 'workshop_id'>, workshop_id: string) {
+  //   const { data: cap, error } = await supabase
+  //     .from("capabilities")
+  //     .insert([{ ...data, workshop_id }])
+  //     .select()
+  //     .single();
 
-    if (error || !cap) throw error ?? new Error("Failed to insert capabilities");
-    return cap;
-  }
+  //   if (error || !cap) throw error ?? new Error("Failed to insert capabilities");
+  //   return cap;
+  // }
 
   // Insert multiple tools for a workshop
-  async function insertWorkshopTools(tools: WorkshopToolData[]) {
-    const { data, error } = await supabase
-      .from("workshop_tools")
-      .insert(tools);
+  // async function insertWorkshopTools(tools: WorkshopToolData[]) {
+  //   const { data, error } = await supabase
+  //     .from("workshop_tools")
+  //     .insert(tools);
 
-    if (error) throw error;
-    return data;
-  }
+  //   if (error) throw error;
+  //   return data;
+  // }
   // Insert multiple documents for a workshop
   async function insertWorkshopDocuments(docs: WorkshopDocumentData[]) {
     const { data, error } = await supabase
@@ -1074,10 +1084,247 @@ export default function FileUploadPage() {
     }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    router.push("/register/workshop/success")
+  async function updateWorkshop(workshopId: string, selectedTypes: string[]) {
+    const { data, error } = await supabase
+      .from("workshop")
+      .update({
+        workshop_type: formData.type_of_workshop
+      })
+      .eq('id', workshopId.toString())
+      .single();
+
+    if (error) {
+      console.error("Failed to update workshop:", error);
+    } else {
+      console.log("Workshop updated:", data);
+    }
   }
+
+  async function insertCapabilities(workshopId: string, formData: CapabilitiesFormData) {
+    const payload = {
+      workshop_id: workshopId,
+      // Workshop Associations
+      dekra: formData.dekra,
+      apmma: formData.apmma,
+      cra: formData.cra,
+      era: formData.era,
+      mibco: formData.mibco,
+      miwa: formData.miwa,
+      raaf: formData.raaf,
+      rmi: formData.rmi,
+      saarsa: formData.saarsa,
+      sambra: formData.sambra,
+      saqa: formData.saqa,
+      sata: formData.sata,
+
+      // Engineering Shop Capabilities
+      block_boring: formData.block_boring,
+      crank_grinding: formData.crank_grinding,
+      valve_grinding: formData.valve_grinding,
+      block_pressure_test: formData.block_pressure_test,
+      engine_block_resurfacing: formData.engine_block_resurfacing,
+
+      // Car Wash Capabilities
+      standard_wash: formData.standard_wash,
+      valet: formData.valet,
+      vehicles_detailing: formData.vehicles_detailing,
+
+      // Mechanical Capabilities
+      suspension: formData.suspension,
+      service: formData.service,
+      m_brakes: formData.m_brakes,
+      minor_repairs: formData.minor_repairs,
+      major_repairs: formData.major_repairs,
+      engine_overhuals: formData.engine_overhuals,
+      drive_line: formData.drive_line,
+      clutch_overhuals: formData.clutch_overhuals,
+
+      // Electrical Capabilities
+      wiring_minor: formData.wiring_minor,
+      wiring_major: formData.wiring_major,
+      starters: formData.starters,
+      light_retros: formData.light_retros,
+      radios_audio: formData.radios_audio,
+      two_way_radio: formData.two_way_radio,
+
+      // Panel Beater Capabilities
+      msr: formData.msr,
+      nsr: formData.nsr,
+      hail_demage: formData.hail_demage,
+      couch_builder: formData.couch_builder,
+      body_modification: formData.body_modification,
+      ambulance: formData.ambulance,
+      cash_in_transit: formData.cash_in_transit,
+      dent_vehicles: formData.dent_vehicles,
+
+      // Fitment Center Tyre Capabilities
+      wheel_alignment: formData.wheel_alignment,
+      wheel_balancing: formData.wheel_balancing,
+
+      // Fitment Center Exhaust Capabilities
+      tig_welder: formData.tig_welder,
+      mig_welder: formData.mig_welder,
+      pipe_bender: formData.pipe_bender,
+
+      // Fitment Center Battery Capabilities
+      battery_charge: formData.battery_charge,
+      battery_tester: formData.battery_tester,
+
+      // Driver Line Capabilities
+      brakes: formData.brakes,
+      driver_line_cv_joints: formData.driver_line_cv_joints,
+      clutch_over_huals: formData.clutch_over_huals,
+      gearbox_bench: formData.gearbox_bench,
+      propshaft_bench: formData.propshaft_bench
+    };
+
+    const { data, error } = await supabase
+      .from("capabilities")
+      .upsert([payload]); // .upsert ensures it replaces if exists
+
+    if (error) throw error;
+    return data;
+  }
+  async function insertWorkshopTools(workshopId: string, formData: CapabilitiesFormData) {
+    const toolPayload: WorkshopToolData[] = [];
+
+    // Define all tool mappings: boolean field, file field, category
+    const toolMap = [
+      // 🔌 Electrical Tools
+      { bool: "starter", file: "starter_picture", category: "Electrical" },
+      { bool: "alternator", file: "alternator_picture", category: "Electrical" },
+      { bool: "multi_meter", file: "multi_meter_picture", category: "Electrical" },
+      { bool: "batter_charge_tool", file: "batter_charge_tool_picture", category: "Electrical" },
+
+      // 🧰 Mechanical Tools
+      { bool: "four_two", file: "four_two_picture", category: "Mechanical" },
+      { bool: "engine_crane_mech", file: "engine_crane_mech_picture", category: "Mechanical" },
+      { bool: "jack_mech", file: "jack_mech_picture", category: "Mechanical" },
+      { bool: "mechanical_tool", file: "mechanical_tool_picture", category: "Mechanical" },
+      { bool: "trestles", file: "trestles_picture", category: "Mechanical" },
+      { bool: "compression_tester", file: "compression_tester_picture", category: "Mechanical" },
+      { bool: "compressor_mech", file: "compressor_mech_picture", category: "Mechanical" },
+      { bool: "pneumatic_tool", file: "pneumatic_tool_picture", category: "Mechanical" },
+
+      // 🧼 Car Wash Tools
+      { bool: "high_pressure_wash", file: "high_pressure_wash_picture", category: "Car Wash" },
+      { bool: "polisher_machine", file: "polisher_machine_picture", category: "Car Wash" },
+      { bool: "vacuum_cleaner", file: "vacuum_cleaner_picture", category: "Car Wash" },
+
+      // ⚙️ Engineering Shop Tools
+      { bool: "micrometer", file: "micrometer_picture", category: "Engineering" },
+      { bool: "vernier_caliper", file: "vernier_caliper_picture", category: "Engineering" },
+      { bool: "aluminum_welding", file: "aluminum_welding_picture", category: "Engineering" },
+      { bool: "straight_Edge", file: "straight_Edge_picture", category: "Engineering" },
+      { bool: "depth_gauge", file: "depth_gauge_picture", category: "Engineering" },
+      { bool: "lathe_guage", file: "lathe_guage_picture", category: "Engineering" },
+      { bool: "lathe_machine", file: "lathe_machine_picture", category: "Engineering" },
+      { bool: "honing_tool", file: "honing_tool_picture", category: "Engineering" },
+
+      // 🛠️ Panel Beater Tools
+      { bool: "spray_booth", file: "spray_booth_picture", category: "Panel Beater" },
+      { bool: "spray_gun", file: "spray_gun_picture", category: "Panel Beater" },
+      { bool: "jig", file: "jig_picture", category: "Panel Beater" },
+      { bool: "mixing_booth", file: "mixing_booth_picture", category: "Panel Beater" },
+      { bool: "compressor_tool", file: "compressor_tool_picture", category: "Panel Beater" },
+      { bool: "straighning_tool", file: "straighning_tool_picture", category: "Panel Beater" },
+      { bool: "tig_welder_tool", file: "tig_welder_tool_picture", category: "Panel Beater" },
+      { bool: "mig_welder_tool", file: "mig_welder_tool_picture", category: "Panel Beater" },
+
+      // 🔧 Fitment Centre Tools
+      { bool: "wheel_alignment", file: "wheel_alignment_machine_picture", category: "Fitment - Tyres" },
+      { bool: "wheel_balancing", file: "wheel_balancing_machine_picture", category: "Fitment - Tyres" },
+      { bool: "tig_welder", file: "tig_welder_picture", category: "Fitment - Exhaust" },
+      { bool: "mig_welder", file: "mig_welder_picture", category: "Fitment - Exhaust" },
+      { bool: "pipe_bender", file: "pipe_bender_picture", category: "Fitment - Exhaust" },
+      { bool: "battery_charge", file: "battery_charge_doc", category: "Fitment - Battery" },
+      { bool: "battery_tester", file: "battery_tester_pictures", category: "Fitment - Battery" },
+
+      // 🧱 Driver Line Tools
+      { bool: "four_or_two_post_hoist", file: "four_or_two_post_hoist_doc", category: "Driver Line" },
+      { bool: "engine_crane", file: "engine_crane_doc", category: "Driver Line" },
+      { bool: "jack", file: "jack_doc", category: "Driver Line" },
+      { bool: "mechanical_tools", file: "mechanical_tools_doc", category: "Driver Line" },
+      { bool: "trestle", file: "trestle_doc", category: "Driver Line" },
+      { bool: "press", file: "press_doc", category: "Driver Line" },
+      { bool: "compressor", file: "compressor_doc", category: "Driver Line" },
+      { bool: "pneumatic_tools", file: "pneumatic_tools_doc", category: "Driver Line" },
+      { bool: "gearbox_test_bench", file: "gearbox_test_bench_doc", category: "Driver Line" },
+      { bool: "propshaft_test_bench", file: "propshaft_test_bench_doc", category: "Driver Line" }
+    ];
+
+    // Build payload
+    for (const item of toolMap) {
+      const hasTool = formData[item.bool as keyof CapabilitiesFormData];
+      if (hasTool) {
+        const document = formData[item.file as keyof CapabilitiesFormData];
+        toolPayload.push({
+          workshop_id: workshopId,
+          category: item.category,
+          tool_name: item.bool,
+          has_tool: true,
+          document_url: typeof document === "string" ? document : null,
+          picture: typeof document === "string" ? document : null,
+          verified: false
+        });
+      }
+    }
+
+    const { data, error } = await supabase
+      .from("workshop_tools")
+      .insert(toolPayload);
+
+    if (error) throw error;
+    return data;
+  }
+
+
+
+  const handleSubmit = async (e: React.FormEvent, workshopId: string) => {
+    e.preventDefault();
+
+
+    // Insert capabilities
+    await insertCapabilities(workshopId, formData);
+    await insertWorkshopTools(workshopId, formData);
+
+    // Insert documents
+    const documentKeys = Object.keys(formData).filter((key) => key.endsWith("_doc") || key.endsWith("_picture"));
+    const documentPayload = documentKeys.map((key) => ({
+      workshop_id: workshopId,
+      document_type: key,
+      document_url: (formData as any)[key],
+      verified: false,
+    }));
+    await insertWorkshopDocuments(documentPayload as []);
+    // Insert tools
+    const toolPayload = [];
+    for (const [key, value] of Object.entries(formData)) {
+      if (typeof value === "boolean" && key.endsWith("_tool")) {
+        const pictureKey = `${key}_picture`;
+        toolPayload.push({
+          workshop_id: workshopId,
+          category: "derived from key", // optionally categorize based on prefix
+          tool_name: key,
+          has_tool: value,
+          document_url: (formData as any)[pictureKey] ?? null,
+          verified: false,
+        });
+      }
+    }
+    // Only insert tools if there are any in the payload
+    try {
+      const result = await insertWorkshopTools(workshopId, formData);
+      console.log("Workshop tools successfully inserted:", result);
+    } catch (error) {
+      console.error("Error inserting tools:", error);
+    }    
+    // Update workshop types
+    await updateWorkshop(workshopId, formData.type_of_workshop);
+
+    router.push("/register/workshop/success");
+  };
+
 
   // Show device-specific message for desktop users
   if (!isMobile && !isTablet) {
@@ -1128,7 +1375,7 @@ export default function FileUploadPage() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={(e) => handleSubmit(e, workshopId!)}>
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">

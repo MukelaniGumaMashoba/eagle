@@ -1503,6 +1503,7 @@ export type Database = {
           vat_number: number | null
           vehicles_type: string[] | null
           work_name: string
+          workshop_type: string[] | null
         }
         Insert: {
           account_no?: number | null
@@ -1532,6 +1533,7 @@ export type Database = {
           vat_number?: number | null
           vehicles_type?: string[] | null
           work_name: string
+          workshop_type?: string[] | null
         }
         Update: {
           account_no?: number | null
@@ -1561,6 +1563,7 @@ export type Database = {
           vat_number?: number | null
           vehicles_type?: string[] | null
           work_name?: string
+          workshop_type?: string[] | null
         }
         Relationships: []
       }
@@ -1568,27 +1571,27 @@ export type Database = {
         Row: {
           created_at: string
           id: number
-          job_id: string | null
+          job_id: number | null
           workshop_id: string | null
         }
         Insert: {
           created_at?: string
           id?: number
-          job_id?: string | null
+          job_id?: number | null
           workshop_id?: string | null
         }
         Update: {
           created_at?: string
           id?: number
-          job_id?: string | null
+          job_id?: number | null
           workshop_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "workshop_job_job_id_fkey"
+            foreignKeyName: "workshop_assign_job_id_fkey"
             columns: ["job_id"]
             isOneToOne: false
-            referencedRelation: "workshop"
+            referencedRelation: "workshop_job"
             referencedColumns: ["id"]
           },
           {
@@ -1637,6 +1640,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      workshop_job: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: number
+          job_type: string | null
+          registration_no: string | null
+          type_of_work: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: number
+          job_type?: string | null
+          registration_no?: string | null
+          type_of_work?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: number
+          job_type?: string | null
+          registration_no?: string | null
+          type_of_work?: string | null
+        }
+        Relationships: []
       }
       workshop_tools: {
         Row: {

@@ -2,26 +2,63 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { createClient } from "@/lib/supabase/client"
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent
+} from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { CheckCircle, Building2, Phone, Mail, FileText, Clock } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import {
+  CheckCircle,
+  Clock,
+  Building2,
+  FileText,
+  Phone,
+  Mail
+} from "lucide-react"
 
 export default function WorkshopSuccessPage() {
   const router = useRouter()
   const [workshopData, setWorkshopData] = useState<any>(null)
+  const supabase = createClient()
+  const handleContinue = () => {
+    router.push("/dashboard")
+  }
 
   useEffect(() => {
-    const savedData = localStorage.getItem("workshopRegistrationData")
-    if (savedData) {
-      setWorkshopData(JSON.parse(savedData))
+    const fetchWorkshopData = async () => {
+      const { data, error } = await supabase
+        .from("workshop")
+        .select("*, capabilities(*)")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single()
+
+      if (error) {
+        console.error("Error fetching workshop data:", error)
+        return
+      }
+
+      setWorkshopData({
+        ...data,
+        type_of_vehicle: data.vehicles_type || [],
+        type_of_workshop: data.workshop_type || [],
+        engineering_shop_capability: extractCapabilities(data.capabilities),
+      })
     }
+
+    fetchWorkshopData()
   }, [])
 
-  const handleContinue = () => {
-    // Clear registration data and redirect to main app
-    localStorage.removeItem("workshopRegistrationData")
-    router.push("/dashboard")
+  const extractCapabilities = (capabilities: any) => {
+    if (!capabilities) return []
+    return Object.entries(capabilities)
+      .filter(([key, value]) => typeof value === "boolean" && value)
+      .map(([key]) => key.replace(/_/g, " "))
   }
 
   if (!workshopData) {
@@ -38,16 +75,16 @@ export default function WorkshopSuccessPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      {/* Success Header */}
       <div className="text-center mb-8">
         <div className="flex justify-center mb-4">
           <CheckCircle className="h-16 w-16 text-green-600" />
         </div>
         <h1 className="text-3xl font-bold text-green-900 mb-2">Workshop Registration</h1>
-        <p className="text-green-700">Welcome to the Breakdown App workshop network. Your application is being reviewed. But need to upload files for the tools</p>
+        <p className="text-green-700">
+          Welcome to the Breakdown App workshop network. Your application is being reviewed. But need to upload files for the tools.
+        </p>
       </div>
 
-      {/* Registration Summary */}
       <div className="grid md:grid-cols-2 gap-6 mb-8">
         <Card>
           <CardHeader>
@@ -116,7 +153,6 @@ export default function WorkshopSuccessPage() {
         </Card>
       </div>
 
-      {/* Services Summary */}
       <Card className="mb-8">
         <CardHeader>
           <CardTitle>Workshop Capabilities</CardTitle>
@@ -162,65 +198,36 @@ export default function WorkshopSuccessPage() {
         </CardContent>
       </Card>
 
-      {/* Next Steps */}
       <Card className="mb-8">
         <CardHeader>
           <CardTitle>What Happens Next?</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-sm font-semibold text-blue-600">
-                1
-              </div>
-              <div>
-                <h4 className="font-semibold">Application Review</h4>
-                <p className="text-sm text-gray-600">
-                  Our team will review your application and verify all submitted documents within 2-3 business days.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-sm font-semibold text-blue-600">
-                2
-              </div>
-              <div>
-                <h4 className="font-semibold">Workshop Inspection</h4>
-                <p className="text-sm text-gray-600">
-                  A quality assurance representative will schedule a visit to verify your workshop capabilities.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-sm font-semibold text-blue-600">
-                3
-              </div>
-              <div>
-                <h4 className="font-semibold">Account Activation</h4>
-                <p className="text-sm text-gray-600">
-                  Once approved, you'll receive login credentials and access to the workshop portal.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-sm font-semibold text-blue-600">
-                4
-              </div>
-              <div>
-                <h4 className="font-semibold">Start Receiving Jobs</h4>
-                <p className="text-sm text-gray-600">
-                  Begin receiving breakdown and maintenance jobs from our fleet management clients.
-                </p>
-              </div>
-            </div>
+            {[`Application Review`, `Workshop Inspection`, `Account Activation`, `Start Receiving Jobs`].map(
+              (step, idx) => (
+                <div key={idx} className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-sm font-semibold text-blue-600">
+                    {idx + 1}
+                  </div>
+                  <div>
+                    <h4 className="font-semibold">{step}</h4>
+                    <p className="text-sm text-gray-600">
+                      {[
+                        `Our team will review your application and verify all submitted documents within 2–3 business days.`,
+                        `A quality assurance representative will schedule a visit to verify your workshop capabilities.`,
+                        `Once approved, you'll receive login credentials and access to the workshop portal.`,
+                        `Begin receiving breakdown and maintenance jobs from our fleet management clients.`
+                      ][idx]}
+                    </p>
+                  </div>
+                </div>
+              )
+            )}
           </div>
         </CardContent>
       </Card>
 
-      {/* Contact Information */}
       <Card className="mb-8">
         <CardHeader>
           <CardTitle>Need Help?</CardTitle>
@@ -245,7 +252,6 @@ export default function WorkshopSuccessPage() {
         </CardContent>
       </Card>
 
-      {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row gap-4 justify-center">
         <Button onClick={handleContinue} className="bg-blue-600 hover:bg-blue-700">
           Continue to Dashboard
@@ -255,7 +261,6 @@ export default function WorkshopSuccessPage() {
         </Button>
       </div>
 
-      {/* Footer */}
       <div className="text-center mt-8 text-gray-500">
         <p className="text-sm">
           Registration ID: WS-{Date.now().toString().slice(-6)} | Submitted: {new Date().toLocaleDateString()}
