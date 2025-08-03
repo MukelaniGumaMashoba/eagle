@@ -37,7 +37,7 @@ import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
 import { nullable } from "zod"
 import { toast } from "sonner"
-import { getVehicleByRegistrationNumber } from "@/lib/action/function"
+// import { getVehicleByRegistrationNumber } from "@/lib/action/function"
 
 interface Job {
   id: number
