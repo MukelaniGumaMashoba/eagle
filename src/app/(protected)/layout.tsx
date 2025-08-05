@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import {
-  Briefcase, Building2, Car, ChartBar, DollarSign,
+  Briefcase, Building2, Car, ChartBar, DockIcon, DollarSign,
   Phone, PlusSquare,
   Settings, ToolCaseIcon, Truck, Users, Wrench
 } from 'lucide-react'
@@ -25,7 +25,7 @@ const roleNavigation = {
     { name: 'Drivers', href: '/drivers', Icon: <Users /> },
     { name: 'Vehicles', href: '/vehicles', Icon: <Car /> },
     { name: 'Qoute Management', href: '/ccenter', Icon: <Building2 /> },
-    // { name: 'Profile', href: '/profile', Icon: <Settings2Icon /> },
+    { name: 'Reports', href: '/reports', Icon: <DockIcon /> },
     { name: 'System Settings', href: '/settings', Icon: <Settings /> },
   ],
   'call centre': [
