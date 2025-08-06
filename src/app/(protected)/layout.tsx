@@ -1,19 +1,43 @@
 'use client'
 
+
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
+  SidebarProvider,
+  SidebarRail,
+} from "@/components/ui/sidebar"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { useState, useEffect, use } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import {
-  Briefcase, Building2, Car, ChartBar, DockIcon, DollarSign,
+  ArrowRightLeft,
+  Briefcase, Building2, Car, ChartBar, ChevronDown, ChevronsRight, ClipboardList, ClipboardListIcon, DockIcon, DollarSign,
+  Fuel,
+  GanttChart,
+  Package,
   Phone, PlusSquare,
-  Settings, ToolCaseIcon, Truck, Users, Wrench
+  ScrollText,
+  Settings, ShieldAlert, ToolCaseIcon, Truck, Users, Wrench
 } from 'lucide-react'
 import { Toaster } from '@/components/ui/sonner'
+import { getReportCountsByCategory } from "@/lib/reports-data"
 
 interface ProtectedLayoutProps {
-  children: React.ReactNode
+  children: React.ReactNode,
+  role: "call centre" | "fleet manager" | "cost centre" | "customer";
 }
 
 // Role-based navigation configuration
@@ -25,7 +49,9 @@ const roleNavigation = {
     { name: 'Drivers', href: '/drivers', Icon: <Users /> },
     { name: 'Vehicles', href: '/vehicles', Icon: <Car /> },
     { name: 'Qoute Management', href: '/ccenter', Icon: <Building2 /> },
-    { name: 'Reports', href: '/reports', Icon: <DockIcon /> },
+    {
+      name: 'Reports', href: '/reports', Icon: <DockIcon />, hasSubMenu: true, subMenu: [],
+    },
     { name: 'System Settings', href: '/settings', Icon: <Settings /> },
   ],
   'call centre': [
@@ -46,6 +72,7 @@ const roleNavigation = {
     { name: 'Qoute Management', href: '/userManagement', Icon: <PlusSquare /> },
     // { name: 'Profile', href: '/profile', Icon: <Settings2Icon /> },
     { name: 'System Settings', href: '/settings', Icon: <Settings /> },
+
   ],
   'cost centre': [
     { name: 'Dashboard', href: '/dashboard', Icon: <ChartBar /> },
@@ -55,8 +82,36 @@ const roleNavigation = {
     { name: 'System Settings', href: '/settings', Icon: <Settings /> },
   ],
 }
+const reportCategoryIcons: Record<string, React.ElementType> = {
+  vehicles: Car,
+  "vehicle-assignments": ArrowRightLeft,
+  inspections: ClipboardListIcon,
+  issues: ShieldAlert,
+  service: Wrench,
+  "work-orders": GanttChart,
+  contacts: Users,
+  parts: Package,
+  fuel: Fuel,
+}
+export default function ProtectedLayout({ children, role }: ProtectedLayoutProps) {
+  const currentNavItems = roleNavigation[role] || roleNavigation["fleet manager"]
+  useEffect(() => {
+    const reportCounts = getReportCountsByCategory()
+    const reportMenuItem = currentNavItems.find((item: { name: string }) => item.name === "Reports")
 
-export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
+    if (reportMenuItem) {
+      reportMenuItem.subMenu = [
+        { name: "All Reports", href: "/reports", icon: ScrollText },
+        ...reportCounts.map((item) => ({
+          name: `${item.category.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())} (${item.count})`,
+          href: `/reports/${item.category}`,
+          icon: reportCategoryIcons[item.category] || ChevronsRight,
+        })),
+      ]
+    }
+  }, [currentNavItems])
+
+
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [userRole, setUserRole] = useState<string>('')
   const [navigation, setNavigation] = useState<any[]>([])
@@ -94,108 +149,142 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
   }
 
   return (
-    <div className="bg-gray-50 w-full">
-      {/* Mobile sidebar overlay */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden w-full"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+    <SidebarProvider>
+      <div className="bg-gray-50 w-full">
+        {/* Mobile sidebar overlay */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden w-full"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
 
-      {/* Sidebar: this is sticky/fixed and does NOT move */}
-      <div className={`
+        {/* Sidebar: this is sticky/fixed and does NOT move */}
+        <div className={`
         fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg
         transform transition-transform duration-300 ease-in-out
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         lg:translate-x-0
         h-screen
       `}>
-        {/* Header, nav, footer go here */}
-        <div className="flex flex-col h-full">
-          {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b">
-            <h1 className="text-xl font-bold text-gray-900">Breakdown Brigade</h1>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setSidebarOpen(false)}
-              className="lg:hidden"
-            >
-              ✕
-            </Button>
-          </div>
+          {/* Header, nav, footer go here */}
+          <div className="flex flex-col h-full">
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b">
+              <h1 className="text-xl font-bold text-gray-900">Breakdown Brigade</h1>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSidebarOpen(false)}
+                className="lg:hidden"
+              >
+                ✕
+              </Button>
+            </div>
 
-          {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-2">
-            {navigation.map((item) => {
-              const isActive = pathname.startsWith(item.href)
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={`
+            {/* Navigation */}
+            <nav className="flex-1 p-4 space-y-2">
+              {navigation.map((item) => {
+                const isActive = pathname.startsWith(item.href)
+                if (item.hasSubMenu) {
+                  return (
+                    <Collapsible
+                      key={item.name}
+                      defaultOpen={item.subMenu.some((subItem: { href: string }) => pathname.startsWith(subItem.href))}
+                      className="group/collapsible"
+                    >
+                      <SidebarMenuItem>
+                        <CollapsibleTrigger asChild>
+                          <SidebarMenuButton isActive={isActive}>
+                            <span>{item.name}</span>
+                            <ChevronDown className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180" />
+                          </SidebarMenuButton>
+                        </CollapsibleTrigger>
+                      </SidebarMenuItem>
+                      <CollapsibleContent>
+                        <SidebarMenuSub>
+                          {item.subMenu.map((subItem) => (
+                            <SidebarMenuSubItem key={subItem.name}>
+                              <SidebarMenuSubButton asChild isActive={pathname.startsWith(subItem.href)}>
+                                <Link href={subItem.href}>
+                                  {subItem.icon && <subItem.icon className="text-sidebar-foreground/60" />}
+                                  <span>{subItem.name}</span>
+                                </Link>
+                              </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                          ))}
+                        </SidebarMenuSub>
+                      </CollapsibleContent>
+                    </Collapsible>
+                  )
+                }
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className={`
                     flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors
                     ${isActive
-                      ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-700'
-                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                    }
+                        ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-700'
+                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                      }
                   `}
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  <span className="mr-3">{item.Icon}</span>
-                  {item.name}
-                </Link>
-              )
-            })}
-          </nav>
+                    onClick={() => setSidebarOpen(false)}
+                  >
+                    <span className="mr-3">{item.Icon}</span>
+                    {item.name}
+                  </Link>
+                )
+              })}
+            </nav>
 
-          {/* Footer */}
-          <div className="p-4 border-t">
-            <div className="mb-2 text-xs text-gray-500 text-center">
-              Role: {userRole}
-            </div>
-            <Button
-              onClick={handleLogout}
-              variant="outline"
-              className="w-full"
-            >
-              🚪 Logout
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Main content: this scrolls */}
-      <div className="ml-64 h-screen overflow-y-auto">
-        {/* Top bar */}
-        <div className="sticky top-0 z-30 bg-white border-b shadow-sm">
-          <div className="flex items-center justify-between px-4 py-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setSidebarOpen(true)}
-              className="lg:hidden"
-            >
-              ☰
-            </Button>
-
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">
-                Welcome back
-              </span>
+            {/* Footer */}
+            <div className="p-4 border-t">
+              <div className="mb-2 text-xs text-gray-500 text-center">
+                Role: {userRole}
+              </div>
+              <Button
+                onClick={handleLogout}
+                variant="outline"
+                className="w-full"
+              >
+                🚪 Logout
+              </Button>
             </div>
           </div>
         </div>
 
-        {/* Page content */}
-        <main className="p-6 w-full">
-          <Card className="p-6">
-            {children}
-          </Card>
-          <Toaster />
-        </main>
+        {/* Main content: this scrolls */}
+        <div className="ml-64 h-screen overflow-y-auto">
+          {/* Top bar */}
+          <div className="sticky top-0 z-30 bg-white border-b shadow-sm">
+            <div className="flex items-center justify-between px-4 py-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSidebarOpen(true)}
+                className="lg:hidden"
+              >
+                ☰
+              </Button>
+
+              <div className="flex items-center space-x-4">
+                <span className="text-sm text-gray-600">
+                  Welcome back
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Page content */}
+          <main className="p-6 w-full">
+            <Card className="p-6">
+              {children}
+            </Card>
+            <Toaster />
+          </main>
+        </div>
       </div>
-    </div>
+    </SidebarProvider>
   )
 }
