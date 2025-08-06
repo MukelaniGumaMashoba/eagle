@@ -1,13 +1,6 @@
 'use client'
 
-
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarHeader,
-  SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
@@ -17,7 +10,7 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { useState, useEffect, use } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
@@ -40,46 +33,69 @@ interface ProtectedLayoutProps {
   role: "call centre" | "fleet manager" | "cost centre" | "customer";
 }
 
+type NavItem = {
+  name: string
+  href: string
+  Icon: React.ElementType
+  hasSubMenu?: boolean
+  subMenu?: {
+    name: string
+    href: string
+    icon: React.ElementType
+  }[]
+}
+
+interface SubMenuItem {
+  name: string;
+  href: string;
+  icon?: React.ElementType;
+}
+
+
 // Role-based navigation configuration
-const roleNavigation = {
+const roleNavigation: Record<string, NavItem[]> = {
   'fleet manager': [
-    { name: 'Dashboard', href: '/dashboard', Icon: <ChartBar /> },
-    { name: 'Jobs', href: '/jobs', Icon: <Briefcase /> },
-    { name: 'Workshop', href: '/jobWorkShop', Icon: <ToolCaseIcon /> },
-    { name: 'Drivers', href: '/drivers', Icon: <Users /> },
-    { name: 'Vehicles', href: '/vehicles', Icon: <Car /> },
-    { name: 'Qoute Management', href: '/ccenter', Icon: <Building2 /> },
+    { name: 'Dashboard', href: '/dashboard', Icon: ChartBar },
+    { name: 'Jobs', href: '/jobs', Icon: Briefcase },
+    { name: 'Workshop', href: '/jobWorkShop', Icon: ToolCaseIcon },
+    { name: 'Drivers', href: '/drivers', Icon: Users },
+    { name: 'Vehicles', href: '/vehicles', Icon: Car },
+    { name: 'Qoute Management', href: '/ccenter', Icon: Building2 },
     {
-      name: 'Reports', href: '/reports', Icon: <DockIcon />, hasSubMenu: true, subMenu: [],
+      name: 'Reports',
+      href: '/reports',
+      Icon: DockIcon,
+      hasSubMenu: true,
+      subMenu: [], // This is now valid
     },
-    { name: 'System Settings', href: '/settings', Icon: <Settings /> },
+    { name: 'System Settings', href: '/settings', Icon: Settings },
   ],
   'call centre': [
-    { name: 'Dashboard', href: '/dashboard', Icon: <ChartBar /> },
-    { name: 'Jobs', href: '/jobs', Icon: <Briefcase /> },
-    { name: 'Call Center', href: '/callcenter', Icon: <Phone /> },
-    { name: 'Technicians', href: '/callcenter/technician', Icon: <Wrench /> },
-    { name: 'Technician Vehicles', href: '/callcenter/breakdowns', Icon: <Truck /> },
-    { name: 'Subcontractors', href: '/callcenter/clients', Icon: <Users /> },
-    { name: 'Qoute Management', href: '/ccenter', Icon: <Building2 /> },
+    { name: 'Dashboard', href: '/dashboard', Icon: ChartBar },
+    { name: 'Jobs', href: '/jobs', Icon: Briefcase },
+    { name: 'Call Center', href: '/callcenter', Icon: Phone },
+    { name: 'Technicians', href: '/callcenter/technician', Icon: Wrench },
+    { name: 'Technician Vehicles', href: '/callcenter/breakdowns', Icon: Truck },
+    { name: 'Subcontractors', href: '/callcenter/clients', Icon: Users },
+    { name: 'Qoute Management', href: '/ccenter', Icon: Building2 },
     // { name: 'Profile', href: '/profile', Icon: <Settings2Icon /> },
-    { name: 'System Settings', href: '/settings', Icon: <Settings /> },
+    { name: 'System Settings', href: '/settings', Icon: Settings },
   ],
   'customer': [
-    { name: 'Dashboard', href: '/dashboard', Icon: <ChartBar /> },
-    { name: 'Drivers', href: '/drivers', Icon: <Users /> },
-    { name: 'Vehicles', href: '/vehicles', Icon: <Car /> },
-    { name: 'Qoute Management', href: '/userManagement', Icon: <PlusSquare /> },
+    { name: 'Dashboard', href: '/dashboard', Icon: ChartBar },
+    { name: 'Drivers', href: '/drivers', Icon: Users },
+    { name: 'Vehicles', href: '/vehicles', Icon: Car },
+    { name: 'Qoute Management', href: '/userManagement', Icon: PlusSquare },
     // { name: 'Profile', href: '/profile', Icon: <Settings2Icon /> },
-    { name: 'System Settings', href: '/settings', Icon: <Settings /> },
+    { name: 'System Settings', href: '/settings', Icon: Settings },
 
   ],
   'cost centre': [
-    { name: 'Dashboard', href: '/dashboard', Icon: <ChartBar /> },
-    { name: 'Cost', href: '/ccenter', Icon: <Building2 /> },
-    { name: "Qoute Management", href: '/ccenter/create-qoutation', Icon: <DollarSign /> },
+    { name: 'Dashboard', href: '/dashboard', Icon: ChartBar },
+    { name: 'Cost', href: '/ccenter', Icon: Building2 },
+    { name: "Qoute Management", href: '/ccenter/create-qoutation', Icon: DollarSign },
     // { name: 'Profile', href: '/profile', Icon: <Settings2Icon /> },
-    { name: 'System Settings', href: '/settings', Icon: <Settings /> },
+    { name: 'System Settings', href: '/settings', Icon: Settings },
   ],
 }
 const reportCategoryIcons: Record<string, React.ElementType> = {
@@ -94,7 +110,8 @@ const reportCategoryIcons: Record<string, React.ElementType> = {
   fuel: Fuel,
 }
 export default function ProtectedLayout({ children, role }: ProtectedLayoutProps) {
-  const currentNavItems = roleNavigation[role] || roleNavigation["fleet manager"]
+  const currentNavItems: NavItem[] = roleNavigation[role] || roleNavigation["fleet manager"]
+
   useEffect(() => {
     const reportCounts = getReportCountsByCategory()
     const reportMenuItem = currentNavItems.find((item: { name: string }) => item.name === "Reports")
@@ -108,6 +125,7 @@ export default function ProtectedLayout({ children, role }: ProtectedLayoutProps
           icon: reportCategoryIcons[item.category] || ChevronsRight,
         })),
       ]
+
     }
   }, [currentNavItems])
 
@@ -203,7 +221,7 @@ export default function ProtectedLayout({ children, role }: ProtectedLayoutProps
                       </SidebarMenuItem>
                       <CollapsibleContent>
                         <SidebarMenuSub>
-                          {item.subMenu.map((subItem) => (
+                          {item.subMenu.map((subItem: SubMenuItem) => (
                             <SidebarMenuSubItem key={subItem.name}>
                               <SidebarMenuSubButton asChild isActive={pathname.startsWith(subItem.href)}>
                                 <Link href={subItem.href}>
@@ -219,21 +237,37 @@ export default function ProtectedLayout({ children, role }: ProtectedLayoutProps
                   )
                 }
                 return (
+                  // <Link
+                  //   key={item.name}
+                  //   href={item.href}
+                  //   className={`
+                  //   flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors
+                  //   ${isActive
+                  //       ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-700'
+                  //       : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                  //     }
+                  // `}
+                  //   onClick={() => setSidebarOpen(false)}
+                  // >
+                  //   <span className="mr-3">{item.Icon}</span>
+                  //   {item.name}
+                  // </Link>
                   <Link
                     key={item.name}
                     href={item.href}
                     className={`
-                    flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors
-                    ${isActive
+                              flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors
+                              ${isActive
                         ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-700'
                         : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                       }
-                  `}
+                    `}
                     onClick={() => setSidebarOpen(false)}
                   >
-                    <span className="mr-3">{item.Icon}</span>
+                    <item.Icon className="mr-3" />
                     {item.name}
                   </Link>
+
                 )
               })}
             </nav>
