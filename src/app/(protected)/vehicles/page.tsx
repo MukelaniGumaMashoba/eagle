@@ -103,7 +103,7 @@ export default function Vehicles() {
         setVehicles(vehicles || [])
       }
     }
-    const vehiclesc = supabase.channel('custom-all-channel')
+    const vehiclesc = supabase.channel('schema-db-changes')
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'vehiclesc' },
@@ -113,6 +113,10 @@ export default function Vehicles() {
       )
       .subscribe()
     fetchVehicles()
+
+    return () => {
+      vehiclesc.unsubscribe;
+    }
   }, [])
 
 

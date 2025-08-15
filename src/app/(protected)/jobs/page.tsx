@@ -36,6 +36,7 @@ import {
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
 import { nullable } from "zod"
+import { useRouter } from "next/navigation"
 
 interface Job {
   id: number
@@ -88,106 +89,8 @@ export default function FleetJobsPage() {
   const [newStatus, setNewStatus] = useState("")
   const [updateNotes, setUpdateNotes] = useState("")
   const supabase = createClient()
+  const router = useRouter()
 
-  useEffect(() => {
-    const assignements = supabase.channel('custom-all-channel')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'assignements' },
-        (payload) => {
-          console.log('Change received!', payload)
-        }
-      )
-      .subscribe()
-
-    const jobAssignments = supabase.channel('custom-all-channel')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'job_assignments' },
-        (payload) => {
-          console.log('Change received!', payload)
-        }
-      )
-      .subscribe()
-    // Get user role from localStorage
-    const role = localStorage.getItem("userRole") || "call-center"
-    setUserRole(role)
-
-
-    const getJobs = async () => {
-      const { data: jobs, error } = await supabase
-        .from('job_assignments')
-        .select('*, drivers!drivers_job_allocated_fkey(*), vehiclesc(*)')
-        .neq('status', 'completed')
-        .neq('status', 'cancelled')
-        .order('created_at');
-      if (error) {
-        console.error(error)
-      } else {
-        setJobs(jobs as unknown as Job[])
-        console.log(jobs)
-      }
-    }
-    getJobs()
-    setFilteredJobs(jobs)
-
-
-
-  }, [])
-
-  useEffect(() => {
-    let filtered = jobs
-
-    // Search filter
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (job) => {
-          const searchLower = searchTerm.toLowerCase()
-
-          // Basic job fields
-          if (job.job_id?.toLowerCase().includes(searchLower) ||
-            job.description?.toLowerCase().includes(searchLower)) {
-            return true
-          }
-
-          // Driver information
-          if (job.drivers) {
-            const driverName = job.drivers?.[0]?.first_name?.toLowerCase() || ''
-            const driverSurname = job.drivers?.[0]?.surname?.toLowerCase() || ''
-            if (driverName.includes(searchLower) || driverSurname.includes(searchLower)) {
-              return true
-            }
-          }
-
-          // Vehicle information
-          if (job.vehiclesc) {
-            const regNumber = job.vehiclesc[0].registration_number || ''
-            const make = job.vehiclesc[0].make || ''
-            const model = job.vehiclesc[0].model || ''
-            if (regNumber.toLowerCase().includes(searchLower) ||
-              make.toLowerCase().includes(searchLower) ||
-              model.toLowerCase().includes(searchLower)) {
-              return true
-            }
-          }
-
-          return false
-        }
-      )
-    }
-
-    // Status filter
-    if (statusFilter !== "all") {
-      filtered = filtered.filter((job) => job.status === statusFilter)
-    }
-
-    // Priority filter
-    if (priorityFilter !== "all") {
-      filtered = filtered.filter((job) => job.priority === priorityFilter)
-    }
-
-    setFilteredJobs(filtered)
-  }, [jobs, searchTerm, statusFilter, priorityFilter])
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -252,6 +155,118 @@ export default function FleetJobsPage() {
 
   const canApproveJobs = userRole === "fleet-manager"
   const canUpdateStatus = userRole === "call-center" || userRole === "fleet-manager"
+
+  useEffect(() => {
+    const assignements = supabase.channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'assignements' },
+        (payload) => {
+          console.log('Change received!', payload)
+        }
+      )
+      .subscribe()
+
+    const jobAssignments = supabase.channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'job_assignments' },
+        (payload) => {
+          console.log('Change received!', payload)
+        }
+      )
+      .subscribe()
+    // Get user role from localStorage
+    const role = localStorage.getItem("userRole") || "call-center"
+    setUserRole(role)
+
+
+    const getJobs = async () => {
+      const { data: jobs, error } = await supabase
+        .from('job_assignments')
+        .select('*, drivers!drivers_job_allocated_fkey(*), vehiclesc(*)')
+        .neq('status', 'completed')
+        .neq('status', 'cancelled')
+        .order('created_at', { ascending: false });
+      if (error) {
+        console.error(error)
+      } else {
+        setJobs(jobs as unknown as Job[])
+        console.log(jobs)
+      }
+    }
+    getJobs();
+    setFilteredJobs(jobs)
+
+    return () => {
+      jobAssignments.unsubscribe();
+      assignements.unsubscribe();
+    };
+
+  }, [])
+
+  useEffect(() => {
+    let filtered = jobs
+
+    // Search filter
+    if (searchTerm) {
+      filtered = filtered.filter(
+        (job) => {
+          const searchLower = searchTerm.toLowerCase()
+
+          // Basic job fields
+          if (job.job_id?.toLowerCase().includes(searchLower) ||
+            job.description?.toLowerCase().includes(searchLower)) {
+            return true
+          }
+
+          // Driver information
+          if (job.drivers) {
+            const driverName = job.drivers?.[0]?.first_name?.toLowerCase() || ''
+            const driverSurname = job.drivers?.[0]?.surname?.toLowerCase() || ''
+            if (driverName.includes(searchLower) || driverSurname.includes(searchLower)) {
+              return true
+            }
+          }
+
+          // Vehicle information
+          if (job.vehiclesc) {
+            const regNumber = job.vehiclesc[0].registration_number || ''
+            const make = job.vehiclesc[0].make || ''
+            const model = job.vehiclesc[0].model || ''
+            if (regNumber.toLowerCase().includes(searchLower) ||
+              make.toLowerCase().includes(searchLower) ||
+              model.toLowerCase().includes(searchLower)) {
+              return true
+            }
+          }
+
+          return false
+        }
+      )
+    }
+
+    // Status filter
+    if (statusFilter !== "all") {
+      filtered = filtered.filter((job) => job.status === statusFilter)
+    }
+
+    // Priority filter
+    if (priorityFilter !== "all") {
+      filtered = filtered.filter((job) => job.priority === priorityFilter)
+    }
+
+    setFilteredJobs(filtered)
+  }, [jobs, searchTerm, statusFilter, priorityFilter])
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      router.refresh(); // Refreshes the current route
+    }, 30000); // 3000 milliseconds = 3 seconds
+    location.reload();
+    // Clean up the interval when the component unmounts
+    return () => clearInterval(interval);
+  }, [router]); // Re-run effect if router object changes
 
   return (
     <>

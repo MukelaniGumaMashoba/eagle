@@ -174,7 +174,7 @@ export default function TechniciansPage() {
 
   useEffect(() => {
 
-    const jobAssignments = supabase.channel('custom-all-channel')
+    const jobAssignments = supabase.channel('schema-db-changes')
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'job_assignments' },
@@ -184,6 +184,10 @@ export default function TechniciansPage() {
       )
       .subscribe()
     refreshData()
+
+    return () => {
+      jobAssignments.unsubscribe;      
+    }
   }, [])
 
   const getStatusColor = (status: string) => {
