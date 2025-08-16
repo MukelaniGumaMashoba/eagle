@@ -511,6 +511,9 @@ function FileUploadignPage() {
   const [currentStep, setCurrentStep] = useState(1)
   const [isMobile, setIsMobile] = useState(false)
   const [isTablet, setIsTablet] = useState(false)
+  const [userLocation, setUserLocation] = React.useState<{ latitude: number; longitude: number } | null>(null);
+  const [address, setAddress] = React.useState<string>("");
+
   const searchParams = useSearchParams();
   const workshopId = searchParams.get("workshopId");
   useEffect(() => {
@@ -532,6 +535,37 @@ function FileUploadignPage() {
     return () => window.removeEventListener('resize', checkDevice)
   }, [])
 
+  
+
+  const getUserLocation = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser.");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        setUserLocation({ latitude, longitude });
+
+        // Fetch human-readable address using Nominatim
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`
+          );
+          const data = await response.json();
+          setAddress(data.display_name || "Unknown address");
+        } catch (error) {
+          console.error("Failed to get address:", error);
+          setAddress("Unknown address");
+        }
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+        alert("Failed to retrieve your location."); // Handle error appropriately
+      }
+    );
+  };
 
   const steps = [
     { id: 1, title: "Workshop Types", description: "Select workshop types", icon: <Wrench className="h-2 w-2" /> },
@@ -1367,6 +1401,42 @@ function FileUploadignPage() {
         </p>
       </div>
 
+      {/* Location */}
+      <div className="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
+        <label className="flex flex-col min-w-40 flex-1">
+          <p className="text-[#0c151d] text-base font-medium leading-normal pb-2">Location</p>
+          <div className="flex w-full flex-1 items-stretch rounded-lg">
+            <input
+              placeholder="Capture GPS location"
+              className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0c151d] focus:outline-0 focus:ring-0 border border-[#cddcea] bg-slate-50 focus:border-[#cddcea] h-14 placeholder:text-[#4574a1] p-[15px] rounded-r-none border-r-0 pr-2 text-base font-normal leading-normal"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              readOnly={true} // Make it read-only since we are getting the location via button click
+            />
+            <div
+              className="text-[#4574a1] flex border border-[#cddcea] bg-slate-50 items-center justify-center pr-[15px] rounded-r-lg border-l-0"
+              data-icon="MapPin"
+              data-size="24px"
+              data-weight="regular"
+            >
+              <Button onClick={getUserLocation} variant={"outline"} className="flex items-center justify-center h-full w-full">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
+                  <path
+                    d="M128,64a40,40,0,1,0,40,40A40,40,0,0,0,128,64Zm0,64a24,24,0,1,1,24-24A24,24,0,0,1,128,128Zm0-112a88.1,88.1,0,0,0-88,88c0,31.4,14.51,64.68,42,96.25a254.19,254.19,0,0,0,41.45,38.3,8,8,0,0,0,9.18,0A254.19,254.19,0,0,0,174,200.25c27.45-31.57,42-64.85,42-96.25A88.1,88.1,0,0,0,128,16Zm0,206c-16.53-13-72-60.75-72-118a72,72,0,0,1,144,0C200,161.23,144.53,209,128,222Z"
+                  ></path>
+                </svg>
+              </Button>
+            </div>
+          </div>
+        </label>
+      </div>
+
+      {address && (
+        <div className="mb-4 text-sm text-gray-700">
+          <strong>Address:</strong> {address}
+        </div>
+      )}
+
       {/* Steps Progress Bar */}
       <div className="mb-6">
         <Progress value={progress} className="h-2" />
@@ -1422,7 +1492,9 @@ function FileUploadignPage() {
 }
 
 export default function FileUploadPage() {
-  <Suspense fallback={<div>Loading file upload...</div>}>
-    <FileUploadignPage />
-  </Suspense>
-} 
+  return (
+    <Suspense fallback={<div className="bg-black">Loading file upload...</div>}>
+      <FileUploadignPage />
+    </Suspense>
+  )
+}
