@@ -116,10 +116,7 @@ export default function RegisterPage() {
             className="bg-blue-600 hover:bg-blue-700"
             onClick={() => document.getElementById("contact-form")?.scrollIntoView()}
           >
-            Start Free Trial
-          </Button>
-          <Button size="lg" variant="outline">
-            Watch Demo
+            Register Workshop
           </Button>
         </div>
       </div>

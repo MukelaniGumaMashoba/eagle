@@ -292,7 +292,7 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-600">{stats.availableTechnicians}</div>
-              <p className="text-xs text-muted-foreground">Out of 12 total</p>
+              <p className="text-xs text-muted-foreground">Breakdowns</p>
             </CardContent>
           </Card>
           <Card>
@@ -302,7 +302,7 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-blue-600">{stats.totalVehicles}</div>
-              <p className="text-xs text-muted-foreground">42 active, 3 maintenance</p>
+              <p className="text-xs text-muted-foreground">Vehicles for the company</p>
             </CardContent>
           </Card>
           <Card>
@@ -312,7 +312,7 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-purple-600">{stats.totalVehicles}</div>
-              <p className="text-xs text-muted-foreground">+12% for the month</p>
+              <p className="text-xs text-muted-foreground">Total Vehicles for the breakdowns</p>
             </CardContent>
           </Card>
         </div>
@@ -336,8 +336,8 @@ export default function Dashboard() {
                     <div className="flex items-start gap-3">
                       <action.icon className="h-5 w-5 mt-0.5" />
                       <div className="text-left">
-                        <div className="font-semibold">{action.title}</div>
-                        <div className="text-xs opacity-70">{action.description}</div>
+                        <div className="font-semibold md:text-sm">{action.title}</div>
+                        <div className="text-xs opacity-70 text-wrap hover:text-balance">{action.description}</div>
                       </div>
                     </div>
                   </Button>
@@ -492,19 +492,19 @@ export default function Dashboard() {
                   <CardTitle className="text-lg">Weekly Trend</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-green-600">+15%</div>
+                  <div className="text-2xl font-bold text-green-600">TBC</div>
                   <p className="text-sm text-gray-600">Improvement over last week</p>
                 </CardContent>
               </Card>
-              <Card>
+              {/* <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">Cost Efficiency</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-blue-600">R1,250</div>
+                  <div className="text-2xl font-bold text-blue-600">R</div>
                   <p className="text-sm text-gray-600">Average cost per job</p>
                 </CardContent>
-              </Card>
+              </Card> */}
             </div>
           </TabsContent>
         </Tabs>

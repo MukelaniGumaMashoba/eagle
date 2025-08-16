@@ -571,7 +571,7 @@ export default function Drivers() {
                                                     >
                                                         View
                                                     </Button>
-                                                    <Button size="sm" variant="outline">Edit</Button>
+                                                    {/* <Button size="sm" variant="outline">Edit</Button> */}
                                                 </div>
                                             </TableCell>
                                         </TableRow>

@@ -1,36 +1,18 @@
-3. No location for mobile
 4. Technician is not added in authitication just in table only
 5. Need to change the RSL for tables Updates for all tables to USING (created_by = auth.uid())
 6. Havent been able to request breakdown and dispatch it functionality
-7. Doesnt add technicians as yet and add them to db
 8. Error so when new job created the old one is left with nothing as in the prev v id and driver id so i want to store it in both old and new
-9. Estimation times not working as yet.
 10. Store images as the url link to work on web storage bucket also in mobile app
 11. Add client side and also database to be changed to allow different companies
 
 
 Mobile App
-3. Location services not working
-4. Cant request the breakdown
-
-
-
-
-
-
-
-
-Done Task
-1. Record to dbs the status which is assigned
 
 
 
 Quick Q: 
-
 Should i be reg admin of company or fleet manager and they have prev to add users to their system or how 
-
 internal workshop mech, no we need to tow 
-
 when tow send 
 
 
@@ -40,8 +22,6 @@ fleet manager : {
    email: davidmanager@lg.co.za
    0648629542
    password12
-
-
 }
 
 call center : Lorren Gune{

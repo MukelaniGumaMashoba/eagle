@@ -186,7 +186,7 @@ export default function TechniciansPage() {
     refreshData()
 
     return () => {
-      jobAssignments.unsubscribe;      
+      jobAssignments.unsubscribe;
     }
   }, [])
 
