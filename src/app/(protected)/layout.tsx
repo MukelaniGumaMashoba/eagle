@@ -18,7 +18,7 @@ const roleNavigation = {
     { name: 'Jobs', href: '/jobs', Icon: <Briefcase /> },
     { name: 'Drivers', href: '/drivers', Icon: <Users /> },
     { name: 'Vehicles', href: '/vehicles', Icon: <Car /> },
-    { name: 'Qoute Management', href: '/ccenter', Icon: <Building2 /> },
+    { name: 'Qoute Management', href: '/qoutation', Icon: <Building2 /> },
     // { name: 'Profile', href: '/profile', Icon: <Settings2Icon /> },
     { name: 'System Settings', href: '/settings', Icon: <Settings /> },
   ],
