@@ -403,8 +403,8 @@ export default function CompanySetupPage() {
               <Label htmlFor="adminRole">Role/Title</Label>
               <Input
                 id="adminRole"
-                placeholder="Fleet Manager"
-                value={"fleet manager"}
+                placeholder="customer"
+                value={"customer"}
                 onChange={(e) => setFormData({ ...formData, adminRole: e.target.value })}
               />
             </div>
