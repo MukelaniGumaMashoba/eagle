@@ -58,6 +58,7 @@ export type Database = {
           job_id: number | null
           tech_id: number | null
           updated_by: string | null
+          vehicle_id: number | null
         }
         Insert: {
           breakdown_id?: number | null
@@ -67,6 +68,7 @@ export type Database = {
           job_id?: number | null
           tech_id?: number | null
           updated_by?: string | null
+          vehicle_id?: number | null
         }
         Update: {
           breakdown_id?: number | null
@@ -76,6 +78,7 @@ export type Database = {
           job_id?: number | null
           tech_id?: number | null
           updated_by?: string | null
+          vehicle_id?: number | null
         }
         Relationships: [
           {
@@ -111,6 +114,13 @@ export type Database = {
             columns: ["updated_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assignements_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehiclesc"
             referencedColumns: ["id"]
           },
         ]
@@ -943,47 +953,49 @@ export type Database = {
           },
         ]
       }
-      job_history: {
-        Row: {
-          created_at: string
-          id: number
-        }
-        Insert: {
-          created_at?: string
-          id?: number
-        }
-        Update: {
-          created_at?: string
-          id?: number
-        }
-        Relationships: []
-      }
       profiles: {
         Row: {
+          company: string | null
           created_at: string | null
+          department: string | null
           email: string | null
           full_name: string | null
           id: string
           phone_number: string | null
           role: string | null
+          workshop_id: string | null
         }
         Insert: {
+          company?: string | null
           created_at?: string | null
+          department?: string | null
           email?: string | null
           full_name?: string | null
           id: string
           phone_number?: string | null
           role?: string | null
+          workshop_id?: string | null
         }
         Update: {
+          company?: string | null
           created_at?: string | null
+          department?: string | null
           email?: string | null
           full_name?: string | null
           id?: string
           phone_number?: string | null
           role?: string | null
+          workshop_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_workshop_id_fkey"
+            columns: ["workshop_id"]
+            isOneToOne: false
+            referencedRelation: "workshop"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       quotations: {
         Row: {
@@ -1004,6 +1016,7 @@ export type Database = {
           job_type: string | null
           jobcard_id: number | null
           laborcost: number | null
+          markupPrice: string | null
           orderno: string | null
           paid: boolean | null
           parts_needed: string[] | null
@@ -1012,6 +1025,8 @@ export type Database = {
           reason: string | null
           status: string | null
           totalcost: number | null
+          type: string | null
+          typeJob: string | null
           vehiclereg: string | null
         }
         Insert: {
@@ -1032,6 +1047,7 @@ export type Database = {
           job_type?: string | null
           jobcard_id?: number | null
           laborcost?: number | null
+          markupPrice?: string | null
           orderno?: string | null
           paid?: boolean | null
           parts_needed?: string[] | null
@@ -1040,6 +1056,8 @@ export type Database = {
           reason?: string | null
           status?: string | null
           totalcost?: number | null
+          type?: string | null
+          typeJob?: string | null
           vehiclereg?: string | null
         }
         Update: {
@@ -1060,6 +1078,7 @@ export type Database = {
           job_type?: string | null
           jobcard_id?: number | null
           laborcost?: number | null
+          markupPrice?: string | null
           orderno?: string | null
           paid?: boolean | null
           parts_needed?: string[] | null
@@ -1068,6 +1087,8 @@ export type Database = {
           reason?: string | null
           status?: string | null
           totalcost?: number | null
+          type?: string | null
+          typeJob?: string | null
           vehiclereg?: string | null
         }
         Relationships: [
@@ -1204,10 +1225,10 @@ export type Database = {
           availability: Database["public"]["Enums"]["availability"] | null
           certifications: string[]
           coordinates: Json
+          created_by: string | null
           email: string
           equipment_level: string
           id: number
-          job_allocation: number | null
           join_date: string
           location: string
           name: string
@@ -1216,16 +1237,18 @@ export type Database = {
           skill_levels: Json
           specialties: string[]
           status: boolean | null
+          type: string | null
           vehicle_type: string
+          workshop_id: string | null
         }
         Insert: {
           availability?: Database["public"]["Enums"]["availability"] | null
           certifications: string[]
           coordinates: Json
+          created_by?: string | null
           email: string
           equipment_level: string
           id?: number
-          job_allocation?: number | null
           join_date: string
           location: string
           name: string
@@ -1234,16 +1257,18 @@ export type Database = {
           skill_levels: Json
           specialties: string[]
           status?: boolean | null
+          type?: string | null
           vehicle_type: string
+          workshop_id?: string | null
         }
         Update: {
           availability?: Database["public"]["Enums"]["availability"] | null
           certifications?: string[]
           coordinates?: Json
+          created_by?: string | null
           email?: string
           equipment_level?: string
           id?: number
-          job_allocation?: number | null
           join_date?: string
           location?: string
           name?: string
@@ -1252,58 +1277,16 @@ export type Database = {
           skill_levels?: Json
           specialties?: string[]
           status?: boolean | null
+          type?: string | null
           vehicle_type?: string
+          workshop_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "technicians_job_allocation_fkey"
-            columns: ["job_allocation"]
+            foreignKeyName: "technicians_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: "job_assignments"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      user: {
-        Row: {
-          company_id: number | null
-          created_at: string
-          created_by: string | null
-          email: string | null
-          first_name: string | null
-          id: number
-          phone: string | null
-          role: string | null
-          surname: string | null
-        }
-        Insert: {
-          company_id?: number | null
-          created_at?: string
-          created_by?: string | null
-          email?: string | null
-          first_name?: string | null
-          id?: number
-          phone?: string | null
-          role?: string | null
-          surname?: string | null
-        }
-        Update: {
-          company_id?: number | null
-          created_at?: string
-          created_by?: string | null
-          email?: string | null
-          first_name?: string | null
-          id?: number
-          phone?: string | null
-          role?: string | null
-          surname?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "company"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1360,7 +1343,6 @@ export type Database = {
         Row: {
           boarding_km_hours: number | null
           colour: string
-          company_id: number | null
           cost_centres: string | null
           created_at: string | null
           created_by: string | null
@@ -1383,15 +1365,16 @@ export type Database = {
           take_on_kilometers: number
           tank_capacity: number | null
           transmission_type: string | null
+          type: string | null
           updated_at: string | null
           vehicle_priority: string | null
           vehicle_type: string
           vin_number: string | null
+          workshop_id: string | null
         }
         Insert: {
           boarding_km_hours?: number | null
           colour: string
-          company_id?: number | null
           cost_centres?: string | null
           created_at?: string | null
           created_by?: string | null
@@ -1414,15 +1397,16 @@ export type Database = {
           take_on_kilometers: number
           tank_capacity?: number | null
           transmission_type?: string | null
+          type?: string | null
           updated_at?: string | null
           vehicle_priority?: string | null
           vehicle_type?: string
           vin_number?: string | null
+          workshop_id?: string | null
         }
         Update: {
           boarding_km_hours?: number | null
           colour?: string
-          company_id?: number | null
           cost_centres?: string | null
           created_at?: string | null
           created_by?: string | null
@@ -1445,17 +1429,19 @@ export type Database = {
           take_on_kilometers?: number
           tank_capacity?: number | null
           transmission_type?: string | null
+          type?: string | null
           updated_at?: string | null
           vehicle_priority?: string | null
           vehicle_type?: string
           vin_number?: string | null
+          workshop_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "vehiclesc_company_id_fkey"
-            columns: ["company_id"]
+            foreignKeyName: "vehiclesc_created_by_fkey1"
+            columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: "company"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]

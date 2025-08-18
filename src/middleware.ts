@@ -12,7 +12,7 @@ const roles = [
   },
   {
     name: 'customer',
-    path: ['/dashboard', '/profile', '/editCustomer', '/customer', '/login', '/signup', '/', '/logout','/ccenter'],
+    path: ['/dashboard', '/profile', '/editCustomer', '/customer', '/login', '/signup', '/', '/logout','/ccenter', '/exvehicles','/extechnicians'],
   },
   {
     name: 'cost centre',

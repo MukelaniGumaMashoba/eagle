@@ -270,6 +270,9 @@ export default function TechniciansPage() {
         certifications: formData.certifications,
         vehicleType: formData.vehicleType,
         equipmentLevel: formData.equipmentLevel,
+        type: "internal",
+        created_by: '',
+        workshop_id: '',
       })
 
       if (result.success) {

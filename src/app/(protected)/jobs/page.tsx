@@ -32,6 +32,7 @@ import {
   MessageSquare,
   FileImage,
   Download,
+  RefreshCcw,
 } from "lucide-react"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
@@ -161,51 +162,60 @@ export default function FleetJobsPage() {
   const canApproveJobs = userRole === "fleet-manager"
   const canUpdateStatus = userRole === "call-center" || userRole === "fleet-manager"
 
-  useEffect(() => {
-    const assignements = supabase.channel('schema-db-changes')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'assignements' },
-        (payload) => {
-          console.log('Change received!', payload)
-        }
-      )
-      .subscribe()
 
-    const jobAssignments = supabase.channel('schema-db-changes')
+
+  const getJobs = async () => {
+    const { data: jobs, error } = await supabase
+      .from('job_assignments')
+      .select(`
+      *,
+      drivers (*),
+      vehiclesc (*)
+    `)
+      .neq('status', 'completed')
+      .neq('status', 'cancelled')
+      .order('created_at', { ascending: false });
+    if (error) {
+      console.error(error)
+    } else {
+      setJobs(jobs as unknown as Job[])
+      console.log(jobs)
+    }
+  }
+
+  useEffect(() => {
+    const assignements = supabase
+      .channel("public:assignments")
       .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'job_assignments' },
+        "postgres_changes",
+        { event: "*", schema: "public", table: "assignments" },
         (payload) => {
-          console.log('Change received!', payload)
+          console.log("Change received in assignments table!", payload);
+          // Handle any updates to the assignments table
+          getJobs(); // Re-fetch jobs if needed or adjust to only update certain fields
         }
       )
-      .subscribe()
+      .subscribe();
+
+    const jobAssignments = supabase
+      .channel("public:job_assignments")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "job_assignments" }, // Only listen to insert events
+        (payload) => {
+          console.log("New job added:", payload);
+          // When a new job is inserted, add it to the jobs state
+          getJobs(); // Add the new job to the front of the list
+        }
+      )
+      .subscribe();
     // Get user role from localStorage
     const role = localStorage.getItem("userRole") || "call-center"
     setUserRole(role)
 
 
-    const getJobs = async () => {
-      const { data: jobs, error } = await supabase
-        .from('job_assignments')
-        .select(`
-        *,
-        drivers (*),
-        vehiclesc (*)
-      `)
-        .neq('status', 'completed')
-        .neq('status', 'cancelled')
-        .order('created_at', { ascending: false });
-      if (error) {
-        console.error(error)
-      } else {
-        setJobs(jobs as unknown as Job[])
-        console.log(jobs)
-      }
-    }
+
     getJobs();
-    setFilteredJobs(jobs)
 
     return () => {
       jobAssignments.unsubscribe();
@@ -214,6 +224,19 @@ export default function FleetJobsPage() {
 
   }, [])
 
+
+  // Fetch initial data when the component mounts
+  useEffect(() => {
+    getJobs();
+  }, []);
+  // Filter jobs once data is loaded
+  // Use useEffect dependency array to trigger after jobs state is set
+  useEffect(() => {
+    if (jobs.length > 0) {
+      setFilteredJobs(jobs);  // Now set filtered jobs after jobs are updated
+    }
+  }, [jobs]); // This effect will run when jobs change
+  // setFilteredJobs(jobs)
   useEffect(() => {
     let filtered = jobs
 
@@ -277,6 +300,14 @@ export default function FleetJobsPage() {
     return () => clearInterval(interval);
   }, [router]); // Re-run effect if router object changes
 
+  const handleRefreshClick = () => {
+    getJobs();
+  };
+
+  useEffect(() => {
+    handleRefreshClick()
+  })
+
   return (
     <>
       <div className="flex-1 space-y-4 p-4 pt-6">
@@ -319,6 +350,16 @@ export default function FleetJobsPage() {
                 <SelectItem value="low">Low</SelectItem>
               </SelectContent>
             </Select>
+
+            {/* Refresh Button */}
+            <div className="mt-4">
+              <button
+                onClick={handleRefreshClick}
+              >
+                <RefreshCcw />
+              </button>
+            </div>
+
           </div>
         </div>
 

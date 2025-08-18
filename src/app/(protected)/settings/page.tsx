@@ -13,6 +13,8 @@ import { MapPin, Plus } from "lucide-react"
 import { toast } from "sonner"
 import { Label } from "@radix-ui/react-label"
 import UpdatePswrd from "@/components/updatePwrd"
+import { createClient } from "@/lib/supabase/client"
+import { profile } from "console"
 
 interface User {
     id: string
@@ -45,40 +47,28 @@ export default function SettingsPage() {
     const [users, setUsers] = useState<User[]>([])
     const [roles, setRoles] = useState<Role[]>([])
     const [settings, setSettings] = useState<SystemSetting[]>([])
-
+    const supabase = createClient()
 
     useEffect(() => {
-        // Mock data
-        setUsers([
-            {
-                id: "1",
-                name: "John Admin",
-                email: "admin@company.com",
-                role: "admin",
-                status: "active",
-                lastLogin: "2025-01-15 09:30",
-                permissions: ["all"],
-            },
-            {
-                id: "2",
-                name: "Sarah Manager",
-                email: "sarah@company.com",
-                role: "fleet-manager",
-                status: "active",
-                lastLogin: "2025-01-15 08:45",
-                permissions: ["manage_vehicles", "manage_drivers", "approve_jobs"],
-            },
-            {
-                id: "3",
-                name: "Mike Operator",
-                email: "mike@company.com",
-                role: "call-center",
-                status: "active",
-                lastLogin: "2025-01-15 10:15",
-                permissions: ["view_breakdowns", "dispatch_technicians"],
-            },
-        ])
 
+        const UserData = async () => {
+            const { data: session, error } = await supabase.auth.getSession()
+            const userId = session.session?.user.aud;
+
+            if (userId) {
+                const { data: profile, error: profileError } = await supabase
+                    .from("profiles")
+                    .select("*")
+                    .eq("id", userId)
+                    .single();  // Since there's only one profile per user     
+                setUsers(profile as any)
+                if (profileError) {
+                    console.error("Error fetching profile:", profileError);
+                    return;
+                }
+            }
+        }
+        UserData();
         setRoles([
             {
                 id: "1",
@@ -117,7 +107,7 @@ export default function SettingsPage() {
                 id: "1",
                 category: "General",
                 name: "Company Name",
-                value: "Fleet Management Solutions",
+                value: "",
                 description: "The name of your company",
                 type: "text",
             },

@@ -26,7 +26,11 @@ interface Technician {
     joinDate: string
     certifications: string[]
     vehicleType: string
-    equipmentLevel: "basic" | "advanced" | "specialist"
+    equipmentLevel: "basic" | "advanced" | "specialist",
+    type: "external" | "internal",
+    created_by: '',
+    workshop_id: '',
+
 }
 
 interface JobAssignment {
@@ -50,7 +54,7 @@ export async function assignJob(Jobassignment: JobAssignment, technician_id: num
         .update({
             technician_id: technician_id,
             status: "Breakdown assigned ",
-            accepted : true,
+            accepted: true,
         })
         .eq("id", Jobassignment.id)
         .select("id, technician_id, status");
@@ -124,7 +128,8 @@ export async function assignTechnicianToJob({
 
 export async function addTechnician(technician: Technician) {
     const supabase = await createClient()
-
+    const { data: userSession, error: errorSession } = await supabase.auth.getUser()
+    const userId = userSession.user?.aud;
     const { data, error } = await supabase
         .from('technicians')
         .insert({
@@ -141,6 +146,52 @@ export async function addTechnician(technician: Technician) {
             certifications: technician.certifications,
             vehicle_type: technician.vehicleType,
             equipment_level: technician.equipmentLevel,
+            type: technician.type,
+            created_by: userId,
+        })
+        .select()
+
+    if (error) {
+        console.error('Failed to add technician:', error)
+        return { success: false, error: error.message }
+    }
+    return { success: true, technician: data[0] }
+}
+
+
+
+
+export async function ExternaladdTechnician(technician: Technician) {
+    const supabase = await createClient()
+    const { data: userSession, error: errorSession } = await supabase.auth.getUser()
+    const userId = userSession.user?.id;
+    if (!userId) {
+        return;
+    }
+    const { data: workshop } = await supabase.from("profiles").select('workshop_id').eq('id', userId).single()
+    if (!workshop) {
+        return
+    }
+    const workId = workshop.workshop_id;
+    const { data, error } = await supabase
+        .from('technicians')
+        .insert({
+            name: technician.name,
+            phone: technician.phone,
+            email: technician.email,
+            location: technician.location,
+            coordinates: technician.coordinates,
+            availability: technician.availability,
+            specialties: technician.specialties,
+            skill_levels: technician.skillLevels,
+            rating: technician.rating,
+            join_date: technician.joinDate,
+            certifications: technician.certifications,
+            vehicle_type: technician.vehicleType,
+            equipment_level: technician.equipmentLevel,
+            type: technician.type,
+            created_by: userId,
+            workshop_id: workshop.workshop_id,
         })
         .select()
 
