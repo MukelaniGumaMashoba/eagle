@@ -121,6 +121,7 @@ export default function TechniciansPage() {
     const { data: techniciansData, error: techError } = await supabase
       .from('technicians')
       .select('*')
+      .eq('type', 'internal')
     if (techError) {
       console.error('Error fetching technicians:', techError)
       setTechnicians([])
@@ -275,7 +276,7 @@ export default function TechniciansPage() {
         workshop_id: '',
       })
 
-      if (result.success) {
+      if (result && result.success) {
         toast.success("Technician added successfully!")
         setIsAddTechnicianOpen(false)
         // Reset form
@@ -301,7 +302,7 @@ export default function TechniciansPage() {
         })
         refreshData()
       } else {
-        toast.error("Failed to add technician: " + result.error)
+        toast.error("Failed to add technician: " + (result?.error ?? "Unknown error"))
       }
     } catch (error) {
       console.error('Error adding technician:', error)

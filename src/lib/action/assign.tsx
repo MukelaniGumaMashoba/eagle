@@ -129,7 +129,10 @@ export async function assignTechnicianToJob({
 export async function addTechnician(technician: Technician) {
     const supabase = await createClient()
     const { data: userSession, error: errorSession } = await supabase.auth.getUser()
-    const userId = userSession.user?.aud;
+    const userId = userSession.user?.id;
+    if (!userId) {
+        return;
+    }
     const { data, error } = await supabase
         .from('technicians')
         .insert({
@@ -148,6 +151,7 @@ export async function addTechnician(technician: Technician) {
             equipment_level: technician.equipmentLevel,
             type: technician.type,
             created_by: userId,
+            workshop_id: undefined,
         })
         .select()
 
