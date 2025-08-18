@@ -1016,7 +1016,7 @@ export type Database = {
           job_type: string | null
           jobcard_id: number | null
           laborcost: number | null
-          markupPrice: string | null
+          markupPrice: number | null
           orderno: string | null
           paid: boolean | null
           parts_needed: string[] | null
@@ -1047,7 +1047,7 @@ export type Database = {
           job_type?: string | null
           jobcard_id?: number | null
           laborcost?: number | null
-          markupPrice?: string | null
+          markupPrice?: number | null
           orderno?: string | null
           paid?: boolean | null
           parts_needed?: string[] | null
@@ -1078,7 +1078,7 @@ export type Database = {
           job_type?: string | null
           jobcard_id?: number | null
           laborcost?: number | null
-          markupPrice?: string | null
+          markupPrice?: number | null
           orderno?: string | null
           paid?: boolean | null
           parts_needed?: string[] | null

@@ -44,6 +44,7 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import { createClient } from "@/lib/supabase/client"
+import Link from "next/link"
 
 interface Quotation {
   id: string
@@ -112,6 +113,7 @@ export default function CostCenterPage() {
           jobcard_id
         `)
         .order("created_at", { ascending: false })
+        .is("markupPrice", null);
 
       if (error) {
         console.error("Error fetching quotations:", error)
@@ -234,9 +236,9 @@ export default function CostCenterPage() {
                         )}
 
                         <div className="flex gap-2">
-                          <Button variant="outline">
-                            <FileText className="h-4 w-4 mr-2" /> View Details
-                          </Button>
+                          <Link href={`/ccenter/${quotation.id}`}>
+                            <Button variant="outline">View Details</Button>
+                          </Link>
                         </div>
                       </CardContent>
                     </Card>

@@ -119,6 +119,7 @@ export default function CostCenterPage() {
           jobcard_id
         `)
                 .order("created_at", { ascending: false })
+                .not("markupPrice", "is", null);
 
             if (error) {
                 console.error("Error fetching quotations:", error)
