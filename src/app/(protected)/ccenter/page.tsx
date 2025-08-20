@@ -72,6 +72,7 @@ interface Quotation {
   totalcost?: number
   created_by?: string
   jobcard_id?: number
+  type: string
 }
 
 export default function CostCenterPage() {
@@ -110,7 +111,8 @@ export default function CostCenterPage() {
           partscost,
           totalcost,
           created_by,
-          jobcard_id
+          jobcard_id,
+          type
         `)
         .order("created_at", { ascending: false })
         .is("markupPrice", null);
@@ -144,6 +146,17 @@ export default function CostCenterPage() {
         return "bg-red-100 text-red-800"
       default:
         return "bg-gray-100 text-gray-800"
+    }
+  }
+
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case "internal":
+        return "bg-green-200"
+      case "external":
+        return "bg-blue-100"
+      default:
+        return "bg-white"
     }
   }
 
@@ -185,12 +198,12 @@ export default function CostCenterPage() {
                 quotations
                   .filter(q => tab === 'quotations' || q.status === tab)
                   .map((quotation) => (
-                    <Card key={quotation.id}>
+                    <Card key={quotation.id} className={getTypeColor(quotation.type)}>
                       <CardHeader>
                         <div className="flex justify-between items-start">
                           <div>
-                            <CardTitle className="text-lg">
-                              {quotation.orderno || `Quotation ${quotation.id.slice(0, 8)}`}
+                            <CardTitle className="text-md">
+                              {quotation.orderno || `Quotation ${quotation.id.slice(0, 8)}`} : {quotation.type.toUpperCase()} QOUTE
                             </CardTitle>
                             <CardDescription>Created on {new Date(quotation.created_at).toLocaleString()}</CardDescription>
                           </div>

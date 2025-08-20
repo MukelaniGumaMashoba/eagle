@@ -51,20 +51,6 @@ export default function ExternalClientsPage() {
   const [selectedSubcontractor, setSelectedSubcontractor] = useState<any | null>(null)
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false)
   const [jobSearchTerm, setJobSearchTerm] = useState("")
-  const [workshops, setWorkshops] = useState([]);
-  const supabase = createClient();
-
-  useEffect(() => {
-
-    async function fetchWorkshops() {
-      let { data, error } = await supabase
-        .from('workshop')
-        .select('*');
-      if (!error) setWorkshops(data as []);
-      else console.error('Error fetching workshops:', error);
-    }
-    fetchWorkshops();
-  }, []);
 
   // Fetch all clients from Supabase and split by type
   const fetchClients = async () => {

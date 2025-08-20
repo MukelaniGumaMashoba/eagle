@@ -150,14 +150,14 @@ export default function QuotationDetailPage() {
                                 >
                                     Approve
                                 </Button>
-                                <Button
+                                {/* <Button
                                     variant="outline"
                                     disabled={updating}
                                     onClick={() => updateStatus("paid")}
                                     className="px-4 py-2 border-2 border-blue-600 text-blue-600 rounded-md hover:bg-blue-100 disabled:bg-gray-200 transition-all duration-300"
                                 >
                                     Paid
-                                </Button>
+                                </Button> */}
                                 <Button
                                     variant="destructive"
                                     disabled={updating}

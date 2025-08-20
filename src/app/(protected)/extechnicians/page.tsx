@@ -120,9 +120,18 @@ export default function TechniciansPage() {
 
     const refreshData = async () => {
         // Fetch technicians
+        const { data: user, error: userError } = await supabase.auth.getUser()
+        const currentUser = user.user?.id;
+
+        if (!currentUser) {
+            setTechnicians([])
+            return;
+        }
+
         const { data: techniciansData, error: techError } = await supabase
             .from('technicians')
             .select('*')
+            .eq('created_by', currentUser)
         if (techError) {
             console.error('Error fetching technicians:', techError)
             setTechnicians([])
@@ -886,6 +895,18 @@ export default function TechniciansPage() {
                                                     </div>
                                                 </DialogContent>
                                             </Dialog>
+                                        </div>
+                                        <div className="mt-2">
+                                            <h4 className="font-semibold text-sm">Assigned Vehicle:</h4>
+                                            <ul className="list-disc ml-5 text-xs">
+                                                {technician.assignedJobs && technician.assignedJobs.length > 0 ? (
+                                                    technician.assignedJobs.map((job: JobAssignment) => (
+                                                        <li key={job.id}>{job.job_id} - {job.description} - {job.status}</li>
+                                                    ))
+                                                ) : (
+                                                    <li className="text-gray-500">No vehicle assigned to this technician.</li>
+                                                )}
+                                            </ul>
                                         </div>
                                         <div className="mt-2">
                                             <h4 className="font-semibold text-sm">Assigned Jobs:</h4>
