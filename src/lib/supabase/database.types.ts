@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -58,6 +58,7 @@ export type Database = {
           job_id: number | null
           tech_id: number | null
           updated_by: string | null
+          vehicle_id: number | null
         }
         Insert: {
           breakdown_id?: number | null
@@ -67,6 +68,7 @@ export type Database = {
           job_id?: number | null
           tech_id?: number | null
           updated_by?: string | null
+          vehicle_id?: number | null
         }
         Update: {
           breakdown_id?: number | null
@@ -76,6 +78,7 @@ export type Database = {
           job_id?: number | null
           tech_id?: number | null
           updated_by?: string | null
+          vehicle_id?: number | null
         }
         Relationships: [
           {
@@ -111,6 +114,13 @@ export type Database = {
             columns: ["updated_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assignements_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehiclesc"
             referencedColumns: ["id"]
           },
         ]
@@ -227,6 +237,188 @@ export type Database = {
             columns: ["job_id"]
             isOneToOne: false
             referencedRelation: "job_assignments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      capabilities: {
+        Row: {
+          ambulance: boolean | null
+          apmma: boolean | null
+          battery_charge: boolean | null
+          battery_tester: boolean | null
+          block_boring: boolean | null
+          block_pressure_test: boolean | null
+          body_modification: boolean | null
+          brakes: boolean | null
+          cash_in_transit: boolean | null
+          clutch_over_huals: boolean | null
+          clutch_overhuals: boolean | null
+          couch_builder: boolean | null
+          cra: boolean | null
+          crank_grinding: boolean | null
+          dekra: boolean | null
+          dent_vehicles: boolean | null
+          drive_line: boolean | null
+          driver_line_cv_joints: boolean | null
+          engine_block_resurfacing: boolean | null
+          engine_overhuals: boolean | null
+          era: boolean | null
+          gearbox_bench: boolean | null
+          hail_demage: boolean | null
+          light_retros: boolean | null
+          m_brakes: boolean | null
+          major_repairs: boolean | null
+          mibco: boolean | null
+          mig_welder: boolean | null
+          minor_repairs: boolean | null
+          miwa: boolean | null
+          msr: boolean | null
+          nsr: boolean | null
+          pipe_bender: boolean | null
+          propshaft_bench: boolean | null
+          raaf: boolean | null
+          radios_audio: boolean | null
+          rmi: boolean | null
+          saarsa: boolean | null
+          sambra: boolean | null
+          saqa: boolean | null
+          sata: boolean | null
+          service: boolean | null
+          standard_wash: boolean | null
+          starters: boolean | null
+          suspension: boolean | null
+          tig_welder: boolean | null
+          two_way_radio: boolean | null
+          valet: boolean | null
+          valve_grinding: boolean | null
+          vehicles_detailing: boolean | null
+          wheel_alignment: boolean | null
+          wheel_balancing: boolean | null
+          wiring_major: boolean | null
+          wiring_minor: boolean | null
+          workshop_id: string
+        }
+        Insert: {
+          ambulance?: boolean | null
+          apmma?: boolean | null
+          battery_charge?: boolean | null
+          battery_tester?: boolean | null
+          block_boring?: boolean | null
+          block_pressure_test?: boolean | null
+          body_modification?: boolean | null
+          brakes?: boolean | null
+          cash_in_transit?: boolean | null
+          clutch_over_huals?: boolean | null
+          clutch_overhuals?: boolean | null
+          couch_builder?: boolean | null
+          cra?: boolean | null
+          crank_grinding?: boolean | null
+          dekra?: boolean | null
+          dent_vehicles?: boolean | null
+          drive_line?: boolean | null
+          driver_line_cv_joints?: boolean | null
+          engine_block_resurfacing?: boolean | null
+          engine_overhuals?: boolean | null
+          era?: boolean | null
+          gearbox_bench?: boolean | null
+          hail_demage?: boolean | null
+          light_retros?: boolean | null
+          m_brakes?: boolean | null
+          major_repairs?: boolean | null
+          mibco?: boolean | null
+          mig_welder?: boolean | null
+          minor_repairs?: boolean | null
+          miwa?: boolean | null
+          msr?: boolean | null
+          nsr?: boolean | null
+          pipe_bender?: boolean | null
+          propshaft_bench?: boolean | null
+          raaf?: boolean | null
+          radios_audio?: boolean | null
+          rmi?: boolean | null
+          saarsa?: boolean | null
+          sambra?: boolean | null
+          saqa?: boolean | null
+          sata?: boolean | null
+          service?: boolean | null
+          standard_wash?: boolean | null
+          starters?: boolean | null
+          suspension?: boolean | null
+          tig_welder?: boolean | null
+          two_way_radio?: boolean | null
+          valet?: boolean | null
+          valve_grinding?: boolean | null
+          vehicles_detailing?: boolean | null
+          wheel_alignment?: boolean | null
+          wheel_balancing?: boolean | null
+          wiring_major?: boolean | null
+          wiring_minor?: boolean | null
+          workshop_id: string
+        }
+        Update: {
+          ambulance?: boolean | null
+          apmma?: boolean | null
+          battery_charge?: boolean | null
+          battery_tester?: boolean | null
+          block_boring?: boolean | null
+          block_pressure_test?: boolean | null
+          body_modification?: boolean | null
+          brakes?: boolean | null
+          cash_in_transit?: boolean | null
+          clutch_over_huals?: boolean | null
+          clutch_overhuals?: boolean | null
+          couch_builder?: boolean | null
+          cra?: boolean | null
+          crank_grinding?: boolean | null
+          dekra?: boolean | null
+          dent_vehicles?: boolean | null
+          drive_line?: boolean | null
+          driver_line_cv_joints?: boolean | null
+          engine_block_resurfacing?: boolean | null
+          engine_overhuals?: boolean | null
+          era?: boolean | null
+          gearbox_bench?: boolean | null
+          hail_demage?: boolean | null
+          light_retros?: boolean | null
+          m_brakes?: boolean | null
+          major_repairs?: boolean | null
+          mibco?: boolean | null
+          mig_welder?: boolean | null
+          minor_repairs?: boolean | null
+          miwa?: boolean | null
+          msr?: boolean | null
+          nsr?: boolean | null
+          pipe_bender?: boolean | null
+          propshaft_bench?: boolean | null
+          raaf?: boolean | null
+          radios_audio?: boolean | null
+          rmi?: boolean | null
+          saarsa?: boolean | null
+          sambra?: boolean | null
+          saqa?: boolean | null
+          sata?: boolean | null
+          service?: boolean | null
+          standard_wash?: boolean | null
+          starters?: boolean | null
+          suspension?: boolean | null
+          tig_welder?: boolean | null
+          two_way_radio?: boolean | null
+          valet?: boolean | null
+          valve_grinding?: boolean | null
+          vehicles_detailing?: boolean | null
+          wheel_alignment?: boolean | null
+          wheel_balancing?: boolean | null
+          wiring_major?: boolean | null
+          wiring_minor?: boolean | null
+          workshop_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "capabilities_workshop_id_fkey"
+            columns: ["workshop_id"]
+            isOneToOne: true
+            referencedRelation: "workshop"
             referencedColumns: ["id"]
           },
         ]
@@ -605,7 +797,6 @@ export type Database = {
           id: number
           id_or_passport_document: string | null
           id_or_passport_number: string
-          job_allocated: number | null
           license_code: string | null
           license_expiry_date: string | null
           license_number: string | null
@@ -629,7 +820,6 @@ export type Database = {
           id?: number
           id_or_passport_document?: string | null
           id_or_passport_number: string
-          job_allocated?: number | null
           license_code?: string | null
           license_expiry_date?: string | null
           license_number?: string | null
@@ -653,7 +843,6 @@ export type Database = {
           id?: number
           id_or_passport_document?: string | null
           id_or_passport_number?: string
-          job_allocated?: number | null
           license_code?: string | null
           license_expiry_date?: string | null
           license_number?: string | null
@@ -666,12 +855,43 @@ export type Database = {
           vehicle_restriction_code?: string | null
           work_permit_upload?: string | null
         }
+        Relationships: []
+      }
+      inspection: {
+        Row: {
+          created_at: string
+          data: Json | null
+          driver: number | null
+          id: number
+          vihecle: number | null
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          driver?: number | null
+          id?: number
+          vihecle?: number | null
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          driver?: number | null
+          id?: number
+          vihecle?: number | null
+        }
         Relationships: [
           {
-            foreignKeyName: "drivers_job_allocated_fkey"
-            columns: ["job_allocated"]
+            foreignKeyName: "inspection_driver_fkey"
+            columns: ["driver"]
             isOneToOne: false
-            referencedRelation: "job_assignments"
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspection_vihecle_fkey"
+            columns: ["vihecle"]
+            isOneToOne: false
+            referencedRelation: "vehiclesc"
             referencedColumns: ["id"]
           },
         ]
@@ -734,8 +954,10 @@ export type Database = {
           created_by: string | null
           description: string
           driver_id: number | null
+          driver_id: number | null
           emergency_type: string | null
           estimated_cost: number | null
+          eta: string | null
           eta: string | null
           fleet_status: string | null
           id: number
@@ -749,12 +971,15 @@ export type Database = {
           priority: string | null
           result_images: string[] | null
           scanned: boolean | null
+          scanned: boolean | null
           status: string | null
+          subcontractor_id: number | null
           subcontractor_id: number | null
           technician_id: number | null
           technician_phone: string | null
           updated_at: string | null
           updated_by: string | null
+          vehicle_id: number | null
         }
         Insert: {
           accepted?: boolean | null
@@ -774,8 +999,10 @@ export type Database = {
           created_by?: string | null
           description: string
           driver_id?: number | null
+          driver_id?: number | null
           emergency_type?: string | null
           estimated_cost?: number | null
+          eta?: string | null
           eta?: string | null
           fleet_status?: string | null
           id?: number
@@ -789,12 +1016,15 @@ export type Database = {
           priority?: string | null
           result_images?: string[] | null
           scanned?: boolean | null
+          scanned?: boolean | null
           status?: string | null
+          subcontractor_id?: number | null
           subcontractor_id?: number | null
           technician_id?: number | null
           technician_phone?: string | null
           updated_at?: string | null
           updated_by?: string | null
+          vehicle_id?: number | null
         }
         Update: {
           accepted?: boolean | null
@@ -814,8 +1044,10 @@ export type Database = {
           created_by?: string | null
           description?: string
           driver_id?: number | null
+          driver_id?: number | null
           emergency_type?: string | null
           estimated_cost?: number | null
+          eta?: string | null
           eta?: string | null
           fleet_status?: string | null
           id?: number
@@ -829,12 +1061,15 @@ export type Database = {
           priority?: string | null
           result_images?: string[] | null
           scanned?: boolean | null
+          scanned?: boolean | null
           status?: string | null
+          subcontractor_id?: number | null
           subcontractor_id?: number | null
           technician_id?: number | null
           technician_phone?: string | null
           updated_at?: string | null
           updated_by?: string | null
+          vehicle_id?: number | null
         }
         Relationships: [
           {
@@ -859,10 +1094,31 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "job_assignments_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_assignments_subcontractor_id_fkey"
+            columns: ["subcontractor_id"]
+            isOneToOne: false
+            referencedRelation: "company"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "job_assignments_technician_id_fkey"
             columns: ["technician_id"]
             isOneToOne: false
             referencedRelation: "technicians"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_assignments_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehiclesc"
             referencedColumns: ["id"]
           },
         ]
@@ -944,47 +1200,49 @@ export type Database = {
           },
         ]
       }
-      job_history: {
-        Row: {
-          created_at: string
-          id: number
-        }
-        Insert: {
-          created_at?: string
-          id?: number
-        }
-        Update: {
-          created_at?: string
-          id?: number
-        }
-        Relationships: []
-      }
       profiles: {
         Row: {
+          company: string | null
           created_at: string | null
+          department: string | null
           email: string | null
           full_name: string | null
           id: string
           phone_number: string | null
           role: string | null
+          workshop_id: string | null
         }
         Insert: {
+          company?: string | null
           created_at?: string | null
+          department?: string | null
           email?: string | null
           full_name?: string | null
           id: string
           phone_number?: string | null
           role?: string | null
+          workshop_id?: string | null
         }
         Update: {
+          company?: string | null
           created_at?: string | null
+          department?: string | null
           email?: string | null
           full_name?: string | null
           id?: string
           phone_number?: string | null
           role?: string | null
+          workshop_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_workshop_id_fkey"
+            columns: ["workshop_id"]
+            isOneToOne: false
+            referencedRelation: "workshop"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       quotations: {
         Row: {
@@ -996,7 +1254,13 @@ export type Database = {
           createdat: string | null
           description: string | null
           drivername: string | null
+          created_by: string | null
+          createdat: string | null
+          description: string | null
+          drivername: string | null
           estimate_amount: number | null
+          estimated_cost: number | null
+          estimated_time: string | null
           estimated_cost: number | null
           estimated_time: string | null
           id: string
@@ -1010,12 +1274,28 @@ export type Database = {
           parts_needed: string[] | null
           partscost: number | null
           priority: string | null
+          issue: string | null
+          job_id: number | null
+          job_type: string | null
+          jobcard_id: number | null
+          laborcost: number | null
+          markupPrice: number | null
+          orderno: string | null
+          paid: boolean | null
+          parts_needed: string[] | null
+          partscost: number | null
+          priority: string | null
           reason: string | null
           status: string | null
+          totalcost: number | null
+          type: string | null
+          typeJob: string | null
+          vehiclereg: string | null
           totalcost: number | null
           vehiclereg: string | null
         }
         Insert: {
+          additional_notes?: string | null
           additional_notes?: string | null
           breakdown_id?: string | null
           cost_center_id?: string | null
@@ -1024,7 +1304,13 @@ export type Database = {
           createdat?: string | null
           description?: string | null
           drivername?: string | null
+          created_by?: string | null
+          createdat?: string | null
+          description?: string | null
+          drivername?: string | null
           estimate_amount?: number | null
+          estimated_cost?: number | null
+          estimated_time?: string | null
           estimated_cost?: number | null
           estimated_time?: string | null
           id?: string
@@ -1038,8 +1324,23 @@ export type Database = {
           parts_needed?: string[] | null
           partscost?: number | null
           priority?: string | null
+          issue?: string | null
+          job_id?: number | null
+          job_type?: string | null
+          jobcard_id?: number | null
+          laborcost?: number | null
+          markupPrice?: number | null
+          orderno?: string | null
+          paid?: boolean | null
+          parts_needed?: string[] | null
+          partscost?: number | null
+          priority?: string | null
           reason?: string | null
           status?: string | null
+          totalcost?: number | null
+          type?: string | null
+          typeJob?: string | null
+          vehiclereg?: string | null
           totalcost?: number | null
           vehiclereg?: string | null
         }
@@ -1061,6 +1362,17 @@ export type Database = {
           job_type?: string | null
           jobcard_id?: number | null
           laborcost?: number | null
+          markupPrice?: number | null
+          orderno?: string | null
+          paid?: boolean | null
+          parts_needed?: string[] | null
+          partscost?: number | null
+          priority?: string | null
+          issue?: string | null
+          job_id?: number | null
+          job_type?: string | null
+          jobcard_id?: number | null
+          laborcost?: number | null
           orderno?: string | null
           paid?: boolean | null
           parts_needed?: string[] | null
@@ -1069,6 +1381,10 @@ export type Database = {
           reason?: string | null
           status?: string | null
           totalcost?: number | null
+          vehiclereg?: string | null
+          totalcost?: number | null
+          type?: string | null
+          typeJob?: string | null
           vehiclereg?: string | null
         }
         Relationships: [
@@ -1205,10 +1521,10 @@ export type Database = {
           availability: Database["public"]["Enums"]["availability"] | null
           certifications: string[]
           coordinates: Json
+          created_by: string | null
           email: string
           equipment_level: string
           id: number
-          job_allocation: number | null
           join_date: string
           location: string
           name: string
@@ -1217,16 +1533,18 @@ export type Database = {
           skill_levels: Json
           specialties: string[]
           status: boolean | null
+          type: string | null
           vehicle_type: string
+          workshop_id: string | null
         }
         Insert: {
           availability?: Database["public"]["Enums"]["availability"] | null
           certifications: string[]
           coordinates: Json
+          created_by?: string | null
           email: string
           equipment_level: string
           id?: number
-          job_allocation?: number | null
           join_date: string
           location: string
           name: string
@@ -1235,16 +1553,18 @@ export type Database = {
           skill_levels: Json
           specialties: string[]
           status?: boolean | null
+          type?: string | null
           vehicle_type: string
+          workshop_id?: string | null
         }
         Update: {
           availability?: Database["public"]["Enums"]["availability"] | null
           certifications?: string[]
           coordinates?: Json
+          created_by?: string | null
           email?: string
           equipment_level?: string
           id?: number
-          job_allocation?: number | null
           join_date?: string
           location?: string
           name?: string
@@ -1253,58 +1573,64 @@ export type Database = {
           skill_levels?: Json
           specialties?: string[]
           status?: boolean | null
+          type?: string | null
           vehicle_type?: string
+          workshop_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "technicians_job_allocation_fkey"
-            columns: ["job_allocation"]
+            foreignKeyName: "technicians_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: "job_assignments"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
       }
-      user: {
+      vehicle_inspections: {
         Row: {
-          company_id: number | null
-          created_at: string
-          created_by: string | null
-          email: string | null
-          first_name: string | null
+          created_at: string | null
+          driver_id: number | null
           id: number
-          phone: string | null
-          role: string | null
-          surname: string | null
+          inspected: boolean
+          inspection_date: string | null
+          updated_at: string | null
+          user_id: string | null
+          vehicle_id: number | null
         }
         Insert: {
-          company_id?: number | null
-          created_at?: string
-          created_by?: string | null
-          email?: string | null
-          first_name?: string | null
+          created_at?: string | null
+          driver_id?: number | null
           id?: number
-          phone?: string | null
-          role?: string | null
-          surname?: string | null
+          inspected?: boolean
+          inspection_date?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          vehicle_id?: number | null
         }
         Update: {
-          company_id?: number | null
-          created_at?: string
-          created_by?: string | null
-          email?: string | null
-          first_name?: string | null
+          created_at?: string | null
+          driver_id?: number | null
           id?: number
-          phone?: string | null
-          role?: string | null
-          surname?: string | null
+          inspected?: boolean
+          inspection_date?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          vehicle_id?: number | null
         }
         Relationships: [
           {
-            foreignKeyName: "user_company_id_fkey"
-            columns: ["company_id"]
+            foreignKeyName: "vehicle_inspections_driver_id_fkey"
+            columns: ["driver_id"]
             isOneToOne: false
-            referencedRelation: "company"
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vehicle_inspections_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehiclesc"
             referencedColumns: ["id"]
           },
         ]
@@ -1361,20 +1687,17 @@ export type Database = {
         Row: {
           boarding_km_hours: number | null
           colour: string
-          company_id: number | null
           cost_centres: string | null
           created_at: string | null
           created_by: string | null
-          driver_id: string | null
           engine_number: string | null
           expected_boarding_date: string | null
           fuel_type: string | null
           id: number
           inspected: boolean | null
-          job_allocated: number | null
           license_expiry_date: string | null
-          make: string
-          manufactured_year: number
+          make: string | null
+          manufactured_year: string
           model: string
           purchase_price: number | null
           register_number: string | null
@@ -1386,28 +1709,27 @@ export type Database = {
           take_on_kilometers: number
           tank_capacity: number | null
           transmission_type: string | null
+          type: string | null
           updated_at: string | null
           vehicle_priority: string | null
           vehicle_type: string
           vin_number: string | null
+          workshop_id: string | null
         }
         Insert: {
           boarding_km_hours?: number | null
           colour: string
-          company_id?: number | null
           cost_centres?: string | null
           created_at?: string | null
           created_by?: string | null
-          driver_id?: string | null
           engine_number?: string | null
           expected_boarding_date?: string | null
           fuel_type?: string | null
           id?: number
           inspected?: boolean | null
-          job_allocated?: number | null
           license_expiry_date?: string | null
-          make: string
-          manufactured_year: number
+          make?: string | null
+          manufactured_year: string
           model: string
           purchase_price?: number | null
           register_number?: string | null
@@ -1419,28 +1741,27 @@ export type Database = {
           take_on_kilometers: number
           tank_capacity?: number | null
           transmission_type?: string | null
+          type?: string | null
           updated_at?: string | null
           vehicle_priority?: string | null
           vehicle_type?: string
           vin_number?: string | null
+          workshop_id?: string | null
         }
         Update: {
           boarding_km_hours?: number | null
           colour?: string
-          company_id?: number | null
           cost_centres?: string | null
           created_at?: string | null
           created_by?: string | null
-          driver_id?: string | null
           engine_number?: string | null
           expected_boarding_date?: string | null
           fuel_type?: string | null
           id?: number
           inspected?: boolean | null
-          job_allocated?: number | null
           license_expiry_date?: string | null
-          make?: string
-          manufactured_year?: number
+          make?: string | null
+          manufactured_year?: string
           model?: string
           purchase_price?: number | null
           register_number?: string | null
@@ -1452,24 +1773,280 @@ export type Database = {
           take_on_kilometers?: number
           tank_capacity?: number | null
           transmission_type?: string | null
+          type?: string | null
           updated_at?: string | null
           vehicle_priority?: string | null
           vehicle_type?: string
           vin_number?: string | null
+          workshop_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "vehiclesc_company_id_fkey"
-            columns: ["company_id"]
+            foreignKeyName: "vehiclesc_created_by_fkey1"
+            columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: "company"
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workshop: {
+        Row: {
+          account_no: number | null
+          after_hours_number: string | null
+          bank_letter: string | null
+          bank_name: string | null
+          bbbee_expire_date: string | null
+          bbbee_level: string | null
+          city: string | null
+          company_registration_doc: string | null
+          created_at: string | null
+          fleet_rate: number | null
+          franchise: string | null
+          hdi_perc: string | null
+          id: string
+          insurance_company_name: string | null
+          insurance_policy_number: number | null
+          labour_rate: number | null
+          number_of_working_days: number | null
+          postal_code: number | null
+          province: string | null
+          street: string | null
+          town: string | null
+          trading_name: string | null
+          vat_cert_expiry_date: string | null
+          vat_certificate: string | null
+          vat_number: number | null
+          vehicles_type: string[] | null
+          work_name: string
+          workshop_type: string[] | null
+        }
+        Insert: {
+          account_no?: number | null
+          after_hours_number?: string | null
+          bank_letter?: string | null
+          bank_name?: string | null
+          bbbee_expire_date?: string | null
+          bbbee_level?: string | null
+          city?: string | null
+          company_registration_doc?: string | null
+          created_at?: string | null
+          fleet_rate?: number | null
+          franchise?: string | null
+          hdi_perc?: string | null
+          id?: string
+          insurance_company_name?: string | null
+          insurance_policy_number?: number | null
+          labour_rate?: number | null
+          number_of_working_days?: number | null
+          postal_code?: number | null
+          province?: string | null
+          street?: string | null
+          town?: string | null
+          trading_name?: string | null
+          vat_cert_expiry_date?: string | null
+          vat_certificate?: string | null
+          vat_number?: number | null
+          vehicles_type?: string[] | null
+          work_name: string
+          workshop_type?: string[] | null
+        }
+        Update: {
+          account_no?: number | null
+          after_hours_number?: string | null
+          bank_letter?: string | null
+          bank_name?: string | null
+          bbbee_expire_date?: string | null
+          bbbee_level?: string | null
+          city?: string | null
+          company_registration_doc?: string | null
+          created_at?: string | null
+          fleet_rate?: number | null
+          franchise?: string | null
+          hdi_perc?: string | null
+          id?: string
+          insurance_company_name?: string | null
+          insurance_policy_number?: number | null
+          labour_rate?: number | null
+          number_of_working_days?: number | null
+          postal_code?: number | null
+          province?: string | null
+          street?: string | null
+          town?: string | null
+          trading_name?: string | null
+          vat_cert_expiry_date?: string | null
+          vat_certificate?: string | null
+          vat_number?: number | null
+          vehicles_type?: string[] | null
+          work_name?: string
+          workshop_type?: string[] | null
+        }
+        Relationships: []
+      }
+      workshop_assign: {
+        Row: {
+          created_at: string
+          id: number
+          job_id: number | null
+          workshop_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          job_id?: number | null
+          workshop_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          job_id?: number | null
+          workshop_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workshop_assign_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "workshop_job"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "vehiclesc_job_allocated_fkey"
-            columns: ["job_allocated"]
+            foreignKeyName: "workshop_job_workshop_id_fkey"
+            columns: ["workshop_id"]
             isOneToOne: false
-            referencedRelation: "job_assignments"
+            referencedRelation: "workshop"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workshop_documents: {
+        Row: {
+          document_type: string
+          document_url: string
+          id: string
+          picture: string | null
+          uploaded_at: string | null
+          verified: boolean | null
+          workshop_id: string | null
+        }
+        Insert: {
+          document_type: string
+          document_url: string
+          id?: string
+          picture?: string | null
+          uploaded_at?: string | null
+          verified?: boolean | null
+          workshop_id?: string | null
+        }
+        Update: {
+          document_type?: string
+          document_url?: string
+          id?: string
+          picture?: string | null
+          uploaded_at?: string | null
+          verified?: boolean | null
+          workshop_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workshop_documents_workshop_id_fkey"
+            columns: ["workshop_id"]
+            isOneToOne: false
+            referencedRelation: "workshop"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workshop_job: {
+        Row: {
+          client_name: string | null
+          client_phone: string | null
+          created_at: string
+          description: string | null
+          id: number
+          job_type: string | null
+          jobId_workshop: string | null
+          location: string | null
+          notes: string | null
+          registration_no: string | null
+          type_of_work: string | null
+          vehicle_id: number | null
+        }
+        Insert: {
+          client_name?: string | null
+          client_phone?: string | null
+          created_at?: string
+          description?: string | null
+          id?: number
+          job_type?: string | null
+          jobId_workshop?: string | null
+          location?: string | null
+          notes?: string | null
+          registration_no?: string | null
+          type_of_work?: string | null
+          vehicle_id?: number | null
+        }
+        Update: {
+          client_name?: string | null
+          client_phone?: string | null
+          created_at?: string
+          description?: string | null
+          id?: number
+          job_type?: string | null
+          jobId_workshop?: string | null
+          location?: string | null
+          notes?: string | null
+          registration_no?: string | null
+          type_of_work?: string | null
+          vehicle_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workshop_job_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehiclesc"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workshop_tools: {
+        Row: {
+          category: string
+          document_url: string | null
+          has_tool: boolean | null
+          id: string
+          picture: string | null
+          tool_name: string
+          verified: boolean | null
+          workshop_id: string | null
+        }
+        Insert: {
+          category: string
+          document_url?: string | null
+          has_tool?: boolean | null
+          id?: string
+          picture?: string | null
+          tool_name: string
+          verified?: boolean | null
+          workshop_id?: string | null
+        }
+        Update: {
+          category?: string
+          document_url?: string | null
+          has_tool?: boolean | null
+          id?: string
+          picture?: string | null
+          tool_name?: string
+          verified?: boolean | null
+          workshop_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workshop_tools_workshop_id_fkey"
+            columns: ["workshop_id"]
+            isOneToOne: false
+            referencedRelation: "workshop"
             referencedColumns: ["id"]
           },
         ]

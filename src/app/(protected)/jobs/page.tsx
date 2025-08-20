@@ -32,48 +32,55 @@ import {
   MessageSquare,
   FileImage,
   Download,
+  RefreshCcw,
 } from "lucide-react"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
 import { nullable } from "zod"
+import { useRouter } from "next/navigation"
 
 interface Job {
-  id: number
-  job_id: string
-  title: string
-  description: string
-  status: string
-  priority: "low" | "medium" | "high" | "emergency"
-  created_at: string
-  updated_at: string
+  id: number;
+  job_id: string;
+  title: string;
+  description: string;
+  status: string;
+  priority: "low" | "medium" | "high" | "emergency";
+  created_at: string;
+  updated_at: string;
   drivers: {
-    first_name: string | null
-    surname: string | null
-    cell_number: string | null
-    job_allocated: boolean
-  }[]
+    length: number
+    first_name: string | null;
+    surname: string | null;
+    cell_number: string | null;
+    job_allocated: boolean;
+  } | null;   // Note: single object or null
+
   vehiclesc: {
-    registration_number: string | null
-    make: string | null
-    model: string | null
-  }[]
-  location: string
-  coordinates: { lat: number; lng: number }
-  technician_id: number | null
+    length: number
+    registration_number: string | null;
+    make: string | null;
+    model: string | null;
+  } | null;   // single object or null
+
+  location: string;
+  coordinates: { lat: number; lng: number };
+  technician_id: number | null;
   technicians: {
-    name: string
-    phone: string
-  } | null
-  estimatedCost?: number
-  actualCost?: number
-  clientType: "internal" | "external"
-  clientName?: string
-  approvalRequired: boolean
-  approvedBy?: string
-  approvedAt?: string
-  notes: string
-  attachments: string[]
-  completed_at: string
+    name: string;
+    phone: string;
+  } | null;
+  estimatedCost?: number;
+  actualCost?: number;
+  clientType: "internal" | "external";
+  clientName?: string;
+  approvalRequired: boolean;
+  approvedBy?: string;
+  approvedAt?: string;
+  notes: string;
+  attachments: string[];
+  completed_at: string;
+  eta: string;
 }
 
 export default function FleetJobsPage() {
@@ -88,109 +95,8 @@ export default function FleetJobsPage() {
   const [newStatus, setNewStatus] = useState("")
   const [updateNotes, setUpdateNotes] = useState("")
   const supabase = createClient()
+  const router = useRouter()
 
-  useEffect(() => {
-    const assignements = supabase.channel('custom-all-channel')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'assignements' },
-        (payload) => {
-          console.log('Change received!', payload)
-        }
-      )
-      .subscribe()
-
-    const jobAssignments = supabase.channel('custom-all-channel')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'job_assignments' },
-        (payload) => {
-          console.log('Change received!', payload)
-        }
-      )
-      .subscribe()
-    // Get user role from localStorage
-    const role = localStorage.getItem("userRole") || "call-center"
-    setUserRole(role)
-
-
-    const getJobs = async () => {
-      const { data: jobs, error } = await supabase
-        .from('job_assignments')
-        .select('*, drivers!drivers_job_allocated_fkey(*), vehiclesc(*)')
-        .neq('status', 'completed')
-        .neq('status', 'cancelled')
-        .order('created_at');
-      if (error) {
-        console.error(error)
-      } else {
-        setJobs(jobs as unknown as Job[])
-        console.log(jobs)
-      }
-    }
-    getJobs()
-    setFilteredJobs(jobs)
-
-    return () => {
-      assignements.unsubscribe()
-      jobAssignments.unsubscribe()
-    }
-
-  }, [])
-
-  useEffect(() => {
-    let filtered = jobs
-
-    // Search filter
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (job) => {
-          const searchLower = searchTerm.toLowerCase()
-
-          // Basic job fields
-          if (job.job_id?.toLowerCase().includes(searchLower) ||
-            job.description?.toLowerCase().includes(searchLower)) {
-            return true
-          }
-
-          // Driver information
-          if (job.drivers) {
-            const driverName = job.drivers?.[0]?.first_name?.toLowerCase() || ''
-            const driverSurname = job.drivers?.[0]?.surname?.toLowerCase() || ''
-            if (driverName.includes(searchLower) || driverSurname.includes(searchLower)) {
-              return true
-            }
-          }
-
-          // Vehicle information
-          if (job.vehiclesc) {
-            const regNumber = job.vehiclesc[0].registration_number || ''
-            const make = job.vehiclesc[0].make || ''
-            const model = job.vehiclesc[0].model || ''
-            if (regNumber.toLowerCase().includes(searchLower) ||
-              make.toLowerCase().includes(searchLower) ||
-              model.toLowerCase().includes(searchLower)) {
-              return true
-            }
-          }
-
-          return false
-        }
-      )
-    }
-
-    // Status filter
-    if (statusFilter !== "all") {
-      filtered = filtered.filter((job) => job.status === statusFilter)
-    }
-
-    // Priority filter
-    if (priorityFilter !== "all") {
-      filtered = filtered.filter((job) => job.priority === priorityFilter)
-    }
-
-    setFilteredJobs(filtered)
-  }, [jobs, searchTerm, statusFilter, priorityFilter])
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -256,6 +162,152 @@ export default function FleetJobsPage() {
   const canApproveJobs = userRole === "fleet-manager"
   const canUpdateStatus = userRole === "call-center" || userRole === "fleet-manager"
 
+
+
+  const getJobs = async () => {
+    const { data: jobs, error } = await supabase
+      .from('job_assignments')
+      .select(`
+      *,
+      drivers (*),
+      vehiclesc (*)
+    `)
+      .neq('status', 'completed')
+      .neq('status', 'cancelled')
+      .order('created_at', { ascending: false });
+    if (error) {
+      console.error(error)
+    } else {
+      setJobs(jobs as unknown as Job[])
+      console.log(jobs)
+    }
+  }
+
+  useEffect(() => {
+    const assignements = supabase
+      .channel("public:assignments")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "assignments" },
+        (payload) => {
+          console.log("Change received in assignments table!", payload);
+          // Handle any updates to the assignments table
+          getJobs(); // Re-fetch jobs if needed or adjust to only update certain fields
+        }
+      )
+      .subscribe();
+
+    const jobAssignments = supabase
+      .channel("public:job_assignments")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "job_assignments" }, // Only listen to insert events
+        (payload) => {
+          console.log("New job added:", payload);
+          // When a new job is inserted, add it to the jobs state
+          getJobs(); // Add the new job to the front of the list
+        }
+      )
+      .subscribe();
+    // Get user role from localStorage
+    const role = localStorage.getItem("userRole") || "call-center"
+    setUserRole(role)
+
+
+
+    getJobs();
+
+    return () => {
+      jobAssignments.unsubscribe();
+      assignements.unsubscribe();
+    };
+
+  }, [])
+
+
+  // Fetch initial data when the component mounts
+  useEffect(() => {
+    getJobs();
+  }, []);
+  // Filter jobs once data is loaded
+  // Use useEffect dependency array to trigger after jobs state is set
+  useEffect(() => {
+    if (jobs.length > 0) {
+      setFilteredJobs(jobs);  // Now set filtered jobs after jobs are updated
+    }
+  }, [jobs]); // This effect will run when jobs change
+  // setFilteredJobs(jobs)
+  useEffect(() => {
+    let filtered = jobs
+
+    // Search filter
+    if (searchTerm) {
+      filtered = filtered.filter(
+        (job) => {
+          const searchLower = searchTerm.toLowerCase()
+
+          // Basic job fields
+          if (job.job_id?.toLowerCase().includes(searchLower) ||
+            job.description?.toLowerCase().includes(searchLower)) {
+            return true
+          }
+
+          // Driver information
+          if (job.drivers) {
+            const driverName = job.drivers?.first_name?.toLowerCase() || ''
+            const driverSurname = job.drivers?.surname?.toLowerCase() || ''
+            if (driverName.includes(searchLower) || driverSurname.includes(searchLower)) {
+              return true
+            }
+          }
+
+          // Vehicle information
+          if (job.vehiclesc) {
+            const regNumber = job.vehiclesc.registration_number || ''
+            const make = job.vehiclesc.make || ''
+            const model = job.vehiclesc.model || ''
+            if (regNumber.toLowerCase().includes(searchLower) ||
+              make.toLowerCase().includes(searchLower) ||
+              model.toLowerCase().includes(searchLower)) {
+              return true
+            }
+          }
+
+          return false
+        }
+      )
+    }
+
+    // Status filter
+    if (statusFilter !== "all") {
+      filtered = filtered.filter((job) => job.status === statusFilter)
+    }
+
+    // Priority filter
+    if (priorityFilter !== "all") {
+      filtered = filtered.filter((job) => job.priority === priorityFilter)
+    }
+
+    setFilteredJobs(filtered)
+  }, [jobs, searchTerm, statusFilter, priorityFilter])
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      router.refresh(); // Refreshes the current route
+    }, 30000); // 3000 milliseconds = 3 seconds
+    // location.reload();
+    // Clean up the interval when the component unmounts
+    return () => clearInterval(interval);
+  }, [router]); // Re-run effect if router object changes
+
+  const handleRefreshClick = () => {
+    getJobs();
+  };
+
+  useEffect(() => {
+    handleRefreshClick()
+  })
+
   return (
     <>
       <div className="flex-1 space-y-4 p-4 pt-6">
@@ -298,6 +350,16 @@ export default function FleetJobsPage() {
                 <SelectItem value="low">Low</SelectItem>
               </SelectContent>
             </Select>
+
+            {/* Refresh Button */}
+            <div className="mt-4">
+              <button
+                onClick={handleRefreshClick}
+              >
+                <RefreshCcw />
+              </button>
+            </div>
+
           </div>
         </div>
 
@@ -341,17 +403,17 @@ export default function FleetJobsPage() {
 
                       <CardContent>
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                          {job.drivers && job.drivers.length > 0 ? (
+                          {job.drivers ? (
                             <div>
                               <h4 className="font-semibold mb-2 flex items-center gap-2">
                                 <User className="h-4 w-4" />
                                 Driver Information
                               </h4>
                               <p className="text-sm">
-                                <strong>Name:</strong> {job.drivers[0].first_name} {job.drivers[0].surname}
+                                <strong>Name:</strong> {job.drivers.first_name} {job.drivers.surname}
                               </p>
                               <p className="text-sm">
-                                <strong>Phone:</strong> {job.drivers[0].cell_number}
+                                <strong>Phone:</strong> {job.drivers.cell_number}
                               </p>
                               {job.clientName && (
                                 <p className="text-sm">
@@ -368,20 +430,20 @@ export default function FleetJobsPage() {
                             </div>
                           )}
                           {
-                            job.vehiclesc && job.vehiclesc.length > 0 ? (
+                            job.vehiclesc ? (
                               <div>
                                 <h4 className="font-semibold mb-2 flex items-center gap-2">
                                   <Truck className="h-4 w-4" />
                                   Vehicle Details
                                 </h4>
                                 <p className="text-sm">
-                                  <strong>Reg:</strong> {job.vehiclesc[0].registration_number || "No vehicle allocated"}
+                                  <strong>Reg:</strong> {job.vehiclesc.registration_number || "No vehicle allocated"}
                                 </p>
                                 <p className="text-sm">
-                                  <strong>Make:</strong> {job.vehiclesc[0].make || "No vehicle allocated"}
+                                  <strong>Make:</strong> {job.vehiclesc.make || "No vehicle allocated"}
                                 </p>
                                 <p className="text-sm">
-                                  <strong>Model:</strong> {job.vehiclesc[0].model || "No vehicle allocated"}
+                                  <strong>Model:</strong> {job.vehiclesc.model || "No vehicle allocated"}
                                 </p>
                               </div>
                             ) : (
@@ -432,16 +494,16 @@ export default function FleetJobsPage() {
                                 <strong>Actual:</strong> R {job.actualCost.toFixed(2)}
                               </p>
                             )}
-                            {/* {job.estimatedTime && ( */}
+
                             <p className="text-sm">
-                              <strong>Est. Time:</strong> {new Date().toLocaleTimeString()}
+                              <strong>Est. Time:</strong> {job.eta || "TBC"}
                             </p>
-                            {/* )} */}
-                            {/* {job.completionTime && ( */}
+
+
                             <p className="text-sm">
-                              <strong>Completed:</strong> {job.completed_at}
+                              <strong>Completed:</strong> {job.completed_at || "TBC"}
                             </p>
-                            {/* )} */}
+
 
                           </div>
                         </div>
@@ -465,7 +527,7 @@ export default function FleetJobsPage() {
                           </div>
                         )}
 
-                        {/* {job.attachments && job.attachments.length > 0 && (
+                        {job.attachments && job.attachments.length > 0 && (
                           <div className="mb-4">
                             <h4 className="font-semibold mb-2 flex items-center gap-2">
                               <FileImage className="h-4 w-4" />
@@ -473,10 +535,10 @@ export default function FleetJobsPage() {
                             </h4>
                             <div className="flex gap-2 flex-wrap">
                               {job.attachments.map((attachment, index) => {
-                                // const { data } = supabase.storage.from('images').getPublicUrl(attachment);
-                                // const url = data?.publicUrl;
+                                const { data } = supabase.storage.from('images').getPublicUrl(attachment);
+                                const url = data?.publicUrl;
                                 const attachments = job.attachments as unknown as string[];
-                                const url = attachments[index] as string;
+                                // const url = attachments[index] as string;
                                 console.log(url)
                                 return (
                                   <div key={index} className="flex flex-col items-center gap-1">
@@ -497,7 +559,7 @@ export default function FleetJobsPage() {
                               })}
                             </div>
                           </div>
-                        )} */}
+                        )}
 
                         {
                           job.attachments &&

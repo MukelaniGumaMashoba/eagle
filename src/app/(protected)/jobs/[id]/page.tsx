@@ -28,39 +28,85 @@ import {
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
 
+// interface Job {
+//     id: number
+//     job_id: string
+//     title: string
+//     description: string
+//     status: "pending" | "assigned" | "inprogress" | "awaiting-approval" | "approved" | "completed" | "cancelled"
+//     priority: "low" | "medium" | "high" | "emergency"
+//     created_at: string
+//     updated_at: string
+//     drivers: {
+//         first_name: string | null
+//         surname: string | null
+//         cell_number: string | null
+//         job_allocated: boolean
+//     }[]
+//     vehiclesc: {
+//         registration_number: string | null
+//         make: string | null
+//         model: string | null
+//     }[]
+//     location: string
+//     coordinates: { lat: number; lng: number }
+//     assignedTechnician?: string
+//     technicianPhone?: string
+//     estimatedCost?: number
+//     actualCost?: number
+//     clientType: "internal" | "external"
+//     clientName?: string
+//     approvalRequired: boolean
+//     approvedBy?: string
+//     approvedAt?: string
+//     notes: string
+//     attachments: string[]
+// }
+
 interface Job {
-    id: number
-    job_id: string
-    title: string
-    description: string
-    status: "pending" | "assigned" | "inprogress" | "awaiting-approval" | "approved" | "completed" | "cancelled"
-    priority: "low" | "medium" | "high" | "emergency"
-    created_at: string
-    updated_at: string
+    id: number;
+    job_id: string;
+    title: string;
+    description: string;
+    status: string;
+    priority: "low" | "medium" | "high" | "emergency";
+    created_at: string;
+    updated_at: string;
     drivers: {
-        first_name: string | null
-        surname: string | null
-        cell_number: string | null
-        job_allocated: boolean
-    }[]
+        length: number
+        first_name: string | null;
+        surname: string | null;
+        cell_number: string | null;
+        job_allocated: boolean;
+    } | null;   // Note: single object or null
+
     vehiclesc: {
-        registration_number: string | null
-        make: string | null
-        model: string | null
-    }[]
-    location: string
-    coordinates: { lat: number; lng: number }
+        length: number
+        registration_number: string | null;
+        make: string | null;
+        model: string | null;
+    } | null;   // single object or null
+
+    location: string;
+    coordinates: { lat: number; lng: number };
+    technician_id: number | null;
+    technicians: {
+        name: string;
+        phone: string;
+    } | null;
     assignedTechnician?: string
     technicianPhone?: string
-    estimatedCost?: number
-    actualCost?: number
-    clientType: "internal" | "external"
-    clientName?: string
-    approvalRequired: boolean
-    approvedBy?: string
-    approvedAt?: string
-    notes: string
-    attachments: string[]
+    estimatedCost?: number;
+    actualCost?: number;
+    clientType: "internal" | "external";
+    clientName?: string;
+    approvalRequired: boolean;
+    approvedBy?: string;
+    approvedAt?: string;
+    notes: string;
+    attachments: string[];
+    completed_at: string;
+    eta: string;
 }
 
 export default function FleetJobDetailPage() {
@@ -79,7 +125,7 @@ export default function FleetJobDetailPage() {
             try {
                 const { data: jobData, error } = await supabase
                     .from('job_assignments')
-                    .select('*, drivers!drivers_job_allocated_fkey(*), vehiclesc(*)')
+                    .select('*, drivers(*), vehiclesc(*)')
                     .eq('id', Number(params.id))
                     .single()
 
@@ -285,12 +331,12 @@ export default function FleetJobDetailPage() {
                                 <CardContent className="space-y-3">
                                     <div>
                                         <Label className="text-sm font-medium">Name</Label>
-                                        <p className="text-sm">{job.drivers?.[0]?.first_name} {job.drivers?.[0]?.surname}</p>
+                                        <p className="text-sm">{job.drivers?.first_name} {job.drivers?.surname}</p>
                                     </div>
                                     <div>
                                         <Label className="text-sm font-medium">Phone</Label>
                                         <div className="flex items-center gap-2">
-                                            <p className="text-sm">{job.drivers?.[0]?.cell_number}</p>
+                                            <p className="text-sm">{job.drivers?.cell_number}</p>
                                             <Button size="sm" variant="outline">
                                                 <Phone className="h-4 w-4" />
                                             </Button>
@@ -316,12 +362,12 @@ export default function FleetJobDetailPage() {
                                 <CardContent className="space-y-3">
                                     <div>
                                         <Label className="text-sm font-medium">Registration</Label>
-                                        <p className="text-sm font-mono">{job.vehiclesc?.[0]?.registration_number}</p>
+                                        <p className="text-sm font-mono">{job.vehiclesc?.registration_number}</p>
                                     </div>
                                     <div>
                                         <Label className="text-sm font-medium">Make & Model</Label>
                                         <p className="text-sm">
-                                            {job.vehiclesc?.[0]?.make} {job.vehiclesc?.[0]?.model}
+                                            {job.vehiclesc?.make} {job.vehiclesc?.model}
                                         </p>
                                     </div>
                                 </CardContent>
@@ -369,6 +415,9 @@ export default function FleetJobDetailPage() {
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-3">
+                                    <div>
+                                        <p>Est. Time: {job.eta || "TBC"}</p>
+                                    </div>
                                     {job.estimatedCost && (
                                         <div>
                                             <Label className="text-sm font-medium">Estimated Cost</Label>
@@ -381,7 +430,6 @@ export default function FleetJobDetailPage() {
                                             <p className="text-sm">R {job.actualCost.toFixed(2)}</p>
                                         </div>
                                     )}
-                                    {/* Removed estimatedTime and completionTime as they're not in the current Job interface */}
                                 </CardContent>
                             </Card>
                         </div>

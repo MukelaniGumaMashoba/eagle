@@ -121,6 +121,7 @@ export default function TechniciansPage() {
     const { data: techniciansData, error: techError } = await supabase
       .from('technicians')
       .select('*')
+      .eq('type', 'internal')
     if (techError) {
       console.error('Error fetching technicians:', techError)
       setTechnicians([])
@@ -174,7 +175,7 @@ export default function TechniciansPage() {
 
   useEffect(() => {
 
-    const jobAssignments = supabase.channel('custom-all-channel')
+    const jobAssignments = supabase.channel('schema-db-changes')
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'job_assignments' },
@@ -184,6 +185,10 @@ export default function TechniciansPage() {
       )
       .subscribe()
     refreshData()
+
+    return () => {
+      jobAssignments.unsubscribe;
+    }
   }, [])
 
   const getStatusColor = (status: string) => {
@@ -266,9 +271,12 @@ export default function TechniciansPage() {
         certifications: formData.certifications,
         vehicleType: formData.vehicleType,
         equipmentLevel: formData.equipmentLevel,
+        type: "internal",
+        created_by: '',
+        workshop_id: '',
       })
 
-      if (result.success) {
+      if (result && result.success) {
         toast.success("Technician added successfully!")
         setIsAddTechnicianOpen(false)
         // Reset form
@@ -294,7 +302,7 @@ export default function TechniciansPage() {
         })
         refreshData()
       } else {
-        toast.error("Failed to add technician: " + result.error)
+        toast.error("Failed to add technician: " + (result?.error ?? "Unknown error"))
       }
     } catch (error) {
       console.error('Error adding technician:', error)

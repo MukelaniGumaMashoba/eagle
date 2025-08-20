@@ -10,8 +10,10 @@ import { login } from "@/lib/action/auth"
 export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [isPending, startTransition] = useTransition();
+  const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = React.useState<string | null>(null);
+  const router = useRouter()
+  const [isPending, startTransition] = useTransition();
 
   const handleSubmit = (formData: FormData) => {
     setError(null);

@@ -55,20 +55,13 @@ interface SubMenuItem {
 // Role-based navigation configuration
 const roleNavigation: Record<string, NavItem[]> = {
   'fleet manager': [
-    { name: 'Dashboard', href: '/dashboard', Icon: ChartBar },
-    { name: 'Jobs', href: '/jobs', Icon: Briefcase },
-    { name: 'Workshop', href: '/jobWorkShop', Icon: ToolCaseIcon },
-    { name: 'Drivers', href: '/drivers', Icon: Users },
-    { name: 'Vehicles', href: '/vehicles', Icon: Car },
-    { name: 'Qoute Management', href: '/ccenter', Icon: Building2 },
-    {
-      name: 'Reports',
-      href: '/reports',
-      Icon: DockIcon,
-      hasSubMenu: true,
-      subMenu: [], // This is now valid
-    },
-    { name: 'System Settings', href: '/settings', Icon: Settings },
+    { name: 'Dashboard', href: '/dashboard', Icon: <ChartBar /> },
+    { name: 'Jobs', href: '/jobs', Icon: <Briefcase /> },
+    { name: 'Drivers', href: '/drivers', Icon: <Users /> },
+    { name: 'Vehicles', href: '/vehicles', Icon: <Car /> },
+    { name: 'Qoute Management', href: '/qoutation', Icon: <Building2 /> },
+    // { name: 'Profile', href: '/profile', Icon: <Settings2Icon /> },
+    { name: 'System Settings', href: '/settings', Icon: <Settings /> },
   ],
   'call centre': [
     { name: 'Dashboard', href: '/dashboard', Icon: ChartBar },
@@ -82,10 +75,10 @@ const roleNavigation: Record<string, NavItem[]> = {
     { name: 'System Settings', href: '/settings', Icon: Settings },
   ],
   'customer': [
-    { name: 'Dashboard', href: '/dashboard', Icon: ChartBar },
-    { name: 'Drivers', href: '/drivers', Icon: Users },
-    { name: 'Vehicles', href: '/vehicles', Icon: Car },
-    { name: 'Qoute Management', href: '/userManagement', Icon: PlusSquare },
+    { name: 'Dashboard', href: '/dashboard', Icon: <ChartBar /> },
+    { name: 'Technician', href: '/extechnicians', Icon: <Users /> },
+    { name: 'Vehicles', href: '/exvehicles', Icon: <Car /> },
+    { name: 'User Management', href: '/userManagement', Icon: <PlusSquare /> },
     // { name: 'Profile', href: '/profile', Icon: <Settings2Icon /> },
     { name: 'System Settings', href: '/settings', Icon: Settings },
 
