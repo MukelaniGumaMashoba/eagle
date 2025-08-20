@@ -46,25 +46,60 @@ export default function ExternalClientsPage() {
   const [isAddClientOpen, setIsAddClientOpen] = useState(false)
   const [isAddSubcontractorOpen, setIsAddSubcontractorOpen] = useState(false)
   const [isAddTowingOpen, setIsAddTowingOpen] = useState(false)
-  const [loading, setLoading] = useState(false)
   const [availableJobs, setAvailableJobs] = useState<any[]>([])
   const [selectedSubcontractor, setSelectedSubcontractor] = useState<any | null>(null)
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false)
   const [jobSearchTerm, setJobSearchTerm] = useState("")
   const [workshops, setWorkshops] = useState([]);
+  const [loading, setLoading] = useState(false);
   const supabase = createClient();
 
   useEffect(() => {
-
     async function fetchWorkshops() {
-      let { data, error } = await supabase
-        .from('workshop')
-        .select('*');
-      if (!error) setWorkshops(data as []);
-      else console.error('Error fetching workshops:', error);
+      setLoading(true);
+      const { data, error } = await supabase.from("workshop").select("*");
+      if (error) {
+        console.error("Error fetching workshops:", error);
+      } else {
+        // @ts-ignore
+        setWorkshops(data || [] as unknown);
+      }
+      setLoading(false);
     }
     fetchWorkshops();
   }, []);
+
+  const renderWorkshops = (filteredWorkshops: any[]) => {
+    if (loading) return <p>Loading workshops...</p>;
+    if (filteredWorkshops.length === 0) return <p>No workshops found.</p>;
+
+    return filteredWorkshops.map((w) => (
+      <Card key={w.id} className="mb-4 shadow-lg border border-gray-200 rounded-lg">
+        <CardHeader className="bg-gray-50 rounded-t-lg p-4">
+          <div className="flex flex-row justify-between">
+            <CardTitle className="text-xl font-semibold">{w.work_name}</CardTitle>
+            <div>
+              <Badge variant={
+                w.validated === "validated" ? "default" :
+                  w.validated === "pending" ? "secondary" :
+                    w.validated === "rejected" ? "destructive" : "default"
+              }>
+                {w.validated}
+              </Badge>
+            </div>
+
+          </div>
+        </CardHeader>
+        <CardContent className="p-4">
+          <p><strong>Trading Name:</strong> {w.trading_name || "N/A"}</p>
+          <p><strong>Labour Rate:</strong> R {w.labour_rate ?? "N/A"}</p>
+          <p><strong>Number of Working Days:</strong> {w.number_of_working_days ?? "N/A"}</p>
+          {/* Add more fields as needed */}
+        </CardContent>
+      </Card>
+    ));
+  };
+
 
   // Fetch all clients from Supabase and split by type
   const fetchClients = async () => {
@@ -77,14 +112,24 @@ export default function ExternalClientsPage() {
       return
     }
     // Split by type
-    // @ts-ignore
-    setClients((data || []).filter((c: any) => c.client_type === "external"))
+    setClients(
+      ((data || []) as unknown as ExternalClient[]).filter(
+        (c) => c.client_type === "external"
+      )
+    );
 
-    setSubcontractors((data || []).filter((c: any) => c.client_type === "subcontractor"))
+    setSubcontractors(
+      ((data || []) as Subcontractor[]).filter(
+        (c) => c.client_type === "subcontractor"
+      )
+    );
 
-    // @ts-ignore
-    setTowingCompanies((data || []).filter((c: any) => c.client_type === "towing"))
-    setLoading(false)
+    setTowingCompanies(
+      ((data || []) as unknown as TowingCompany[]).filter(
+        (c) => c.client_type === "towing"
+      )
+    );
+    setLoading(false);
   }
 
   // Fetch available jobs for assignment
@@ -172,6 +217,7 @@ export default function ExternalClientsPage() {
       client_type: 'external',
       vehicle_types: formData.get("vehicle_types") ? (formData.get("vehicle_types") as string).split(',').map(s => s.trim()).filter(Boolean) : [],
     };
+    // @ts-expect-error
     const { data, error } = await addExternalClient(clientData);
     if (error) {
       toast.error(`Failed to add client: ${error.message}`);
@@ -294,13 +340,50 @@ export default function ExternalClientsPage() {
           </div>
         </div>
 
-        <Tabs defaultValue="clients" className="space-y-4">
+        <Tabs defaultValue="all" className="space-y-4">
+          {/* <TabsList>
+            <TabsTrigger value="clients">Workshop</TabsTrigger>
+            <TabsTrigger value="subcontractors">Workshop Validated</TabsTrigger>
+            <TabsTrigger value="towing">Pending Workshop</TabsTrigger>
+            {/* <TabsTrigger value="subcontractors">Subcontractors</TabsTrigger> */}
+          {/* <TabsTrigger value="towing">Rejected Workshop</TabsTrigger> */}
+
+          {/* </TabsList> */}
+
           <TabsList>
-            <TabsTrigger value="clients">External Workshop</TabsTrigger>
-            <TabsTrigger value="subcontractors">Subcontractors</TabsTrigger>
-            <TabsTrigger value="towing">Towing Companies</TabsTrigger>
+            <TabsTrigger value="all">All Workshops</TabsTrigger>
+            <TabsTrigger value="validated">Validated Workshops</TabsTrigger>
+            <TabsTrigger value="pending">Pending Workshops</TabsTrigger>
+            <TabsTrigger value="rejected">Rejected Workshops</TabsTrigger>
             <TabsTrigger value="analytics">Network Analytics</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="all" className="space-y-4">
+            {renderWorkshops(workshops)}
+          </TabsContent>
+          <TabsContent value="validated" className="space-y-4">
+            {renderWorkshops(
+              workshops.filter(
+                (w: { validated?: string }) => w.validated === "validated"
+              )
+            )}
+          </TabsContent>
+
+          <TabsContent value="pending" className="space-y-4">
+            {renderWorkshops(
+              workshops.filter(
+                (w: { validated?: string }) => w.validated === "pending"
+              )
+            )}
+          </TabsContent>
+
+          <TabsContent value="rejected" className="space-y-4">
+            {renderWorkshops(
+              workshops.filter(
+                (w: { validated?: string }) => w.validated === "rejected"
+              )
+            )}
+          </TabsContent>
 
           <TabsContent value="clients" className="space-y-4">
             <div className="flex justify-between items-center">
@@ -947,19 +1030,23 @@ export default function ExternalClientsPage() {
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Clients</CardTitle>
+                  <CardTitle className="text-sm font-medium">Total Workshops</CardTitle>
                   <Building className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{clients.length}</div>
+                  <div className="text-2xl font-bold">{workshops.length}</div>
                   <p className="text-xs text-muted-foreground">
-                    {clients.filter((c) => c.status === "active").length} active
+                    {
+                      workshops.filter(
+                        (c: { validated?: string }) => c.validated === "validated"
+                      ).length
+                    } active
                   </p>
                 </CardContent>
               </Card>
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+                  <CardTitle className="text-sm font-medium">Total Cost</CardTitle>
                   <DollarSign className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
@@ -975,7 +1062,7 @@ export default function ExternalClientsPage() {
                   <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{subcontractors.length + towingCompanies.length}</div>
+                  <div className="text-2xl font-bold">{workshops.length}</div>
                   <p className="text-xs text-muted-foreground">Subcontractors & towing companies</p>
                 </CardContent>
               </Card>
@@ -986,7 +1073,7 @@ export default function ExternalClientsPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">16 min</div>
-                  <p className="text-xs text-muted-foreground">Network average</p>
+                  <p className="text-xs text-muted-foreground">Network average, 15 minutes minimum</p>
                 </CardContent>
               </Card>
             </div>
@@ -994,28 +1081,36 @@ export default function ExternalClientsPage() {
             <div className="grid gap-4 md:grid-cols-2">
               <Card>
                 <CardHeader>
-                  <CardTitle>Top Performing Clients</CardTitle>
-                  <CardDescription>Ranked by total revenue</CardDescription>
+                  <CardTitle>Top Performing Workshops</CardTitle>
+                  <CardDescription>Ranked by labour rate</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {clients
-                      .sort((a, b) => (b.total_revenue ?? 0) - (a.total_revenue ?? 0))
+                    {(workshops as Array<{
+                      id: string | number;
+                      trading_name?: string;
+                      total_jobs?: number;
+                      fleet_rate?: number;
+                      rating?: number | string;
+                      labour_rate?: number;
+                      workshop_type?: string[];
+                    }> ?? [])
+                      .sort((a, b) => (b.labour_rate ?? 0) - (a.labour_rate ?? 0))
                       .slice(0, 5)
-                      .map((client, index) => (
-                        <div key={client.id} className="flex items-center justify-between">
+                      .map((workshop, index) => (
+                        <div key={workshop.id} className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
                             <span className="font-semibold">#{index + 1}</span>
                             <div>
-                              <p className="font-medium">{client.company_name}</p>
-                              <p className="text-sm text-gray-500">{client.total_jobs} jobs</p>
+                              <p className="font-medium">{workshop.trading_name}</p>
+                              <p className="text-sm text-gray-500">{workshop.total_jobs ?? 0} jobs</p>
                             </div>
                           </div>
                           <div className="text-right">
-                            <p className="font-semibold">R {(client.total_revenue ?? 0).toLocaleString()}</p>
+                            <p className="font-semibold">R {(workshop.fleet_rate ?? 0).toLocaleString()}</p>
                             <div className="flex items-center gap-1">
                               <Star className="h-3 w-3 text-yellow-500 fill-current" />
-                              <span className="text-xs">{client.rating}</span>
+                              <span className="text-xs">{workshop.rating ?? "N/A"}</span>
                             </div>
                           </div>
                         </div>
@@ -1032,41 +1127,55 @@ export default function ExternalClientsPage() {
                 <CardContent>
                   <div className="space-y-4">
                     <div>
-                      <h4 className="font-semibold mb-2">Subcontractor Availability</h4>
+                      <h4 className="font-semibold mb-2">Workshop Availability</h4>
                       <div className="space-y-2">
                         <div className="flex justify-between">
                           <span className="text-sm">Available</span>
                           <span className="text-sm font-medium">
-                            {subcontractors.filter((s) => s.availability === true).length}
-                            {subcontractors.filter((s) => s.availability === true).length > 0 && <span>Available</span>}
+                            {
+                              workshops.filter(
+                                (c: { validated?: string }) => c.validated === "validated"
+                              ).length
+                            } active
                           </span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-sm">Busy</span>
+                          <span className="text-sm">Onboarding</span>
                           <span className="text-sm font-medium">
-                            {subcontractors.filter((s) => s.availability === true).length}
-                            {subcontractors.filter((s) => s.availability === true).length > 0 && <span>Available</span>}
+                            {
+                              workshops.filter(
+                                (c: { validated?: string }) => c.validated === "pending"
+                              ).length
+                            }
+                            : <span>progress</span>
                           </span>
                         </div>
                       </div>
                     </div>
                     <div>
-                      <h4 className="font-semibold mb-2">Towing Capacity</h4>
+                      <h4 className="font-semibold mb-2">Vehicle Types</h4>
                       <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="text-sm">Light Vehicles</span>
-                          <span className="text-sm font-medium">
-                            {towingCompanies.reduce((sum, c) => sum + (c.capacity?.lightVehicles ?? 0), 0)} units
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-sm">Heavy Vehicles</span>
-                          <span className="text-sm font-medium">
-                            {towingCompanies.reduce((sum, c) => sum + (c.capacity?.heavyVehicles ?? 0), 0)} units
-                          </span>
-                        </div>
+                        {workshops.length === 0 ? (
+                          <p>No workshops available</p>
+                        ) : (
+                          workshops.map((workshop, index) => (
+                            <div key={index} className="mb-4">
+                              <div className="flex flex-wrap gap-2 mt-1">
+                                {(Array.isArray((workshop as any)?.workshop_type) ? (workshop as any).workshop_type : []).map((type: string, idx: number) => (
+                                  <span
+                                    key={idx}
+                                    className="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded"
+                                  >
+                                    {type}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          ))
+                        )}
                       </div>
                     </div>
+
                   </div>
                 </CardContent>
               </Card>

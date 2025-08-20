@@ -24,7 +24,14 @@ interface Quotation {
     description?: string;
     markupPrice?: number; // percentage markup number
     type: "external" | "internal";
+    additional_notes: string;
 }
+
+interface Part {
+    name: string;
+    price: number;
+}
+
 
 export default function QuotationDetailPage() {
     const { id } = useParams();
@@ -34,12 +41,35 @@ export default function QuotationDetailPage() {
     const supabase = createClient();
 
     // Manage parts as strings (names)
-    const [parts, setParts] = useState<string[]>([]);
+    const [parts, setParts] = useState<Part[]>([]);
     const [newPartName, setNewPartName] = useState("");
+    const [newPartPrice, setNewPartPrice] = useState<number | "">(0);
+
     // Manage parts total cost input (price side)
     const [partsCost, setPartsCost] = useState<number>(0);
     // Markup percentage
     const [markupPrice, setMarkupPrice] = useState<number>(0);
+
+    // // const fetchQuotation = async () => {
+    // const { data, error } = await supabase
+    //     .from("quotations")
+    //     .select("*")
+    //     .eq("id", String(id))
+    //     .single();
+
+    // if (error) {
+    //     toast.error("Failed to load quotation");
+    //     console.error(error);
+
+    // }
+    // else {
+    //     setParts(data.parts_needed || []);
+    //     setPartsCost(data.partscost || 0);
+    //     setMarkupPrice(data.markupPrice || 0);
+    //     setQuotation(data as Quotation);
+    // }
+    // setLoading(false);
+    // // };
 
     const fetchQuotation = async () => {
         const { data, error } = await supabase
@@ -52,13 +82,20 @@ export default function QuotationDetailPage() {
             toast.error("Failed to load quotation");
             console.error(error);
         } else {
-            setParts(data.parts_needed || []);
+            // Convert parts_needed (string[]) to Part[] with price 0 by default
+            const partsFromDB = (data.parts_needed || []).map((name: string) => ({
+                name,
+                price: 0,
+            }));
+            setParts(partsFromDB);
+
             setPartsCost(data.partscost || 0);
             setMarkupPrice(data.markupPrice || 0);
             setQuotation(data as Quotation);
         }
         setLoading(false);
     };
+
 
     // Calculate total cost with markup applied
     const calculateTotalCost = (
@@ -77,18 +114,24 @@ export default function QuotationDetailPage() {
             toast.error("Part name is required");
             return;
         }
-        if (parts.includes(newPartName.trim())) {
+        if (newPartPrice === "" || newPartPrice <= 0) {
+            toast.error("Part price must be a positive number");
+            return;
+        }
+        if (parts.find((p) => p.name.toLowerCase() === newPartName.trim().toLowerCase())) {
             toast.error("Part already added");
             return;
         }
-        setParts([...parts, newPartName.trim()]);
+        setParts([...parts, { name: newPartName.trim(), price: newPartPrice }]);
         setNewPartName("");
+        setNewPartPrice(0);
     };
 
     // Remove part by name
     const removePart = (name: string) => {
-        setParts(parts.filter((p) => p !== name));
+        setParts(parts.filter((p) => p.name !== name));
     };
+
 
     // Save updated parts, parts cost, markup and recalc total cost
     const updateQuotation = async () => {
@@ -100,7 +143,7 @@ export default function QuotationDetailPage() {
         const { error } = await supabase
             .from("quotations")
             .update({
-                parts_needed: parts,
+                parts_needed: parts.map((p) => JSON.stringify(p)), // Store as array of JSON strings
                 partscost: partsCost,
                 markupPrice,
                 totalcost: totalCost,
@@ -114,7 +157,7 @@ export default function QuotationDetailPage() {
             toast.success("Quotation updated");
             setQuotation({
                 ...quotation,
-                parts_needed: parts,
+                parts_needed: parts.map((p) => JSON.stringify(p)), // Store as array of JSON strings to match backend
                 partscost: partsCost,
                 markupPrice,
                 totalcost: totalCost,
@@ -136,7 +179,7 @@ export default function QuotationDetailPage() {
             <div className="">
                 <Button
                     onClick={() => {
-                        redirect("/ccenter");
+                        redirect("/workshopQoute");
                     }}
                     className="px-4 py-2 text-white bg-black rounded-lg shadow-md hover:bg-gray-500 transition-all duration-300"
                 >
@@ -197,16 +240,23 @@ export default function QuotationDetailPage() {
                                 <strong>Priority:</strong> {quotation.priority}
                             </div>
                             <div>
-                                <strong>Issue:</strong> {quotation.issue}
+                                <strong>Issue:</strong> {quotation.additional_notes}
                             </div>
                         </div>
 
                         {/* Description Section */}
                         <div className="space-y-4">
                             <h2 className="text-xl font-semibold text-gray-800">Description</h2>
-                            <div>
-                                <strong>Description:</strong> {quotation.description}
+                            <div className="flex flex-row justify-evenly">
+                                <div>
+                                    <strong>Description:</strong> {quotation.issue}
+                                </div>
+                                <div>
+                                    <strong>Labour</strong> R{quotation.laborcost}
+                                </div>
                             </div>
+
+
                         </div>
 
                         {/* Parts Section */}
@@ -218,12 +268,12 @@ export default function QuotationDetailPage() {
                             {parts.length > 0 && (
                                 <ul className="list-disc list-inside">
                                     {parts.map((part) => (
-                                        <li key={part} className="flex justify-between items-center space-x-2">
-                                            <span>{part}</span>
+                                        <li key={part.name} className="flex justify-between items-center space-x-2 m-4">
+                                            <span>{part.name} - R {part.price.toFixed(2)}</span>
                                             <Button
                                                 variant="destructive"
                                                 size="sm"
-                                                onClick={() => removePart(part)}
+                                                onClick={() => removePart(part.name)}
                                                 disabled={updating}
                                             >
                                                 Remove
@@ -233,6 +283,7 @@ export default function QuotationDetailPage() {
                                 </ul>
                             )}
 
+
                             <div className="flex space-x-2 items-center mt-4">
                                 <input
                                     type="text"
@@ -241,10 +292,22 @@ export default function QuotationDetailPage() {
                                     onChange={(e) => setNewPartName(e.target.value)}
                                     className="border p-2 rounded flex-grow"
                                 />
+
+                                <input
+                                    type="number"
+                                    placeholder="Price"
+                                    min={0}
+                                    step={0.01}
+                                    value={newPartPrice}
+                                    onChange={(e) => setNewPartPrice(parseFloat(e.target.value) || 0)}
+                                    className="border p-2 rounded w-28"
+                                />
+
                                 <Button onClick={addPart} disabled={updating}>
-                                    Add Part
+                                    {loading ? "Adding..." : "Add Part."}
                                 </Button>
                             </div>
+
 
                             <div className="mt-4 flex items-center space-x-4">
                                 <label htmlFor="partsCost" className="font-semibold">

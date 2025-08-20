@@ -15,6 +15,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Dialog, DialogHeader, DialogContent, DialogTrigger, DialogTitle, DialogClose } from '@/components/ui/dialog'
 
 
 const vehicleFormSchema = z.object({
@@ -48,6 +49,14 @@ const vehicleFormSchema = z.object({
 
 type VehicleFormValues = z.infer<typeof vehicleFormSchema>
 
+
+interface Technician {
+  id: number
+  name: string,
+  phone: string,
+  email: string
+}
+
 export default function Vehicles() {
   const [vehicles, setVehicles] = useState<VehicleFormValues[]>([])
   const [isAddingVehicle, setIsAddingVehicle] = useState(false)
@@ -55,6 +64,69 @@ export default function Vehicles() {
   const supabase = createClient()
   const [search, setSearch] = useState('')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const useWorkshopId = () => {
+    const [workshopId, setWorkshopId] = useState<string | null>(null);
+    useEffect(() => {
+      const fetchWorkshopId = async () => {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const userId = sessionData?.session?.user?.id;
+        if (!userId) return;
+
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('workshop_id')
+          .eq('id', userId)
+          .single();
+
+        if (data && !error) {
+          setWorkshopId(data.workshop_id);
+        }
+      };
+
+      fetchWorkshopId();
+    }, []);
+
+    return workshopId;
+  };
+  const workshopId = useWorkshopId();
+  const [technicians, setTechnicians] = useState<Technician[]>([])
+  const [filteredTechs, setFilteredTechs] = useState<Technician[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  useEffect(() => {
+    const getTechnician = async () => {
+      // Fetch technicians
+      const { data: user, error: userError } = await supabase.auth.getUser()
+      const currentUser = user.user?.id;
+
+      if (!currentUser) {
+        setTechnicians([])
+        return;
+      }
+      const { data: techniciansData, error: techError } = await supabase
+        .from('technicians')
+        .select('*')
+        .eq('created_by', currentUser)
+
+      setTechnicians(techniciansData as [])
+
+      if (techError) {
+        console.error('Error fetching technicians:', techError)
+        setTechnicians([])
+        return
+      }
+
+    }
+    getTechnician();
+  }, []);
+
+  useEffect(() => {
+    const filtered = technicians.filter((tech) =>
+      tech.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredTechs(filtered as []);
+  }, [searchTerm, technicians]);
 
   const handleUploadFile = () => {
     if (!selectedFile) return;
@@ -184,6 +256,18 @@ export default function Vehicles() {
       low: 'bg-green-100 text-green-800'
     }
     return <Badge className={colors[priority as keyof typeof colors]}>{priority}</Badge>
+  }
+
+  async function handleAssign(regno: string, id: number) {
+    const { data: datav, error: errorv } = await supabase.from('vehiclesc').
+      update({
+        tech_id: id,
+      })
+      .eq('registration_number', regno)
+    if (!datav || errorv) {
+      console.log("Issue in assigning")
+    }
+    console.log("Success")
   }
 
   return (
@@ -697,6 +781,50 @@ export default function Vehicles() {
                     <TableCell>{vehicle.colour}</TableCell>
                     <TableCell className="capitalize">{vehicle.vehicle_type}</TableCell>
                     <TableCell>{getPriorityBadge(vehicle.vehicle_priority)}</TableCell>
+                    <TableCell>
+                      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" className="px-4 py-2">
+                            Assign
+                          </Button>
+                        </DialogTrigger>
+
+                        <DialogContent className="sm:max-w-md w-full">
+                          <DialogHeader>
+                            <DialogTitle>Assign Technician</DialogTitle>
+                            <DialogClose className="absolute right-4 top-4" />
+                          </DialogHeader>
+
+                          <Input
+                            placeholder="Search technician by name"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="mb-4"
+                          />
+
+                          <div className="max-h-60 overflow-auto space-y-2">
+                            {filteredTechs.length > 0 ? (
+                              filteredTechs.map((tech, index) => (
+                                <button
+                                  key={tech.id}
+                                  onClick={() => {
+                                    handleAssign(vehicle.registration_number, tech.id);
+                                    setDialogOpen(false);
+                                  }}
+                                  className="w-full text-left px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                                >
+                                  {tech?.name}
+                                </button>
+                              ))
+                            ) : (
+                              <p className="text-center text-sm text-gray-500 py-4">
+                                No technicians found
+                              </p>
+                            )}
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

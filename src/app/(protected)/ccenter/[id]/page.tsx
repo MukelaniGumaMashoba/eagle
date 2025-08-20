@@ -24,6 +24,7 @@ interface Quotation {
     description?: string;
     markupPrice?: number; // percentage markup number
     type: "external" | "internal";
+    additional_notes: string
 }
 
 export default function QuotationDetailPage() {
@@ -131,7 +132,7 @@ export default function QuotationDetailPage() {
     if (!quotation) return <div className="text-center mt-10">Quotation not found</div>;
 
     return (
-        <div className="w-full h-screen p-6 bg-gray-50">
+        <div className="w-full h-full p-6 bg-gray-50">
             {/* Back Button */}
             <div className="">
                 <Button
@@ -144,7 +145,7 @@ export default function QuotationDetailPage() {
                 </Button>
             </div>
 
-            <div className="max-w-7xl mx-auto pt-16">
+            <div className="max-w-7xl mx-auto pt-4">
                 <div className="mb-6">
                     <h1 className="text-4xl font-semibold text-gray-800">Repair {quotation.id}</h1>
                     <div>
@@ -197,16 +198,22 @@ export default function QuotationDetailPage() {
                                 <strong>Priority:</strong> {quotation.priority}
                             </div>
                             <div>
-                                <strong>Issue:</strong> {quotation.issue}
+                                <strong>Issue:</strong> {quotation.additional_notes}
                             </div>
                         </div>
 
                         {/* Description Section */}
                         <div className="space-y-4">
                             <h2 className="text-xl font-semibold text-gray-800">Description</h2>
-                            <div>
-                                <strong>Description:</strong> {quotation.description}
+                            <div className="flex flex-row justify-evenly">
+                                <div>
+                                    <strong>Description:</strong> {quotation.issue}
+                                </div>
+                                <div>
+                                    <strong>Labour:</strong> {quotation.laborcost}
+                                </div>
                             </div>
+
                         </div>
 
                         {/* Parts Section */}

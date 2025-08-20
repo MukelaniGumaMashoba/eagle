@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 
 export type ExternalClient = {
+  validated: string;
   id?: number;
   company_name: string;
   contact_person: string;
