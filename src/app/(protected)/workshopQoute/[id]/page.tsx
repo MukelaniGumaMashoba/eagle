@@ -302,12 +302,16 @@ export default function QuotationDetailPage() {
                                     onChange={(e) => setNewPartPrice(parseFloat(e.target.value) || 0)}
                                     className="border p-2 rounded w-28"
                                 />
-
+                                {/* if this if clicked a dialog to say add labour(hours * workshop rate) */}
                                 <Button onClick={addPart} disabled={updating}>
-                                    {loading ? "Adding..." : "Add Part."}
+                                    {loading ? "Adding..." : "Create"}
                                 </Button>
                             </div>
-
+                            <Button>
+                                Add Parts
+                            </Button>
+                            {/* remove markup for workshop */}
+                            {/* add total labour and parts and breakdown cost(a technician driving to the vehicles) and tow cost if towing and km towed */}
 
                             <div className="mt-4 flex items-center space-x-4">
                                 <label htmlFor="partsCost" className="font-semibold">

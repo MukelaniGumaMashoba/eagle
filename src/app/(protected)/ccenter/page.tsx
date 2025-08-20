@@ -183,8 +183,12 @@ export default function CostCenterPage() {
       <Tabs defaultValue="quotations" className="space-y-4">
         <TabsList>
           <TabsTrigger value="quotations">All Quotations</TabsTrigger>
-          <TabsTrigger value="pending">Pending Approval</TabsTrigger>
-          <TabsTrigger value="approved">Approved</TabsTrigger>
+          <TabsTrigger value="pending">Pending Submission</TabsTrigger>
+          <TabsTrigger value="approved">Pending Approval</TabsTrigger>
+          <TabsTrigger value="quotations">Rejected</TabsTrigger>
+          <TabsTrigger value="pending">Approved</TabsTrigger>
+          <TabsTrigger value="invoice">Invoiced</TabsTrigger>
+          <TabsTrigger value="paid">Paid</TabsTrigger>
         </TabsList>
 
         {['quotations', 'pending', 'approved'].map((tab) => (

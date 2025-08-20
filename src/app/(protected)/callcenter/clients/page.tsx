@@ -352,8 +352,8 @@ export default function ExternalClientsPage() {
 
           <TabsList>
             <TabsTrigger value="all">All Workshops</TabsTrigger>
+            <TabsTrigger value="pending">Pending Validation</TabsTrigger>
             <TabsTrigger value="validated">Validated Workshops</TabsTrigger>
-            <TabsTrigger value="pending">Pending Workshops</TabsTrigger>
             <TabsTrigger value="rejected">Rejected Workshops</TabsTrigger>
             <TabsTrigger value="analytics">Network Analytics</TabsTrigger>
           </TabsList>
@@ -1056,7 +1056,7 @@ export default function ExternalClientsPage() {
                   <p className="text-xs text-muted-foreground">From external clients</p>
                 </CardContent>
               </Card>
-              <Card>
+              {/* <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Network Partners</CardTitle>
                   <Users className="h-4 w-4 text-muted-foreground" />
@@ -1065,7 +1065,7 @@ export default function ExternalClientsPage() {
                   <div className="text-2xl font-bold">{workshops.length}</div>
                   <p className="text-xs text-muted-foreground">Subcontractors & towing companies</p>
                 </CardContent>
-              </Card>
+              </Card> */}
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Avg Response Time</CardTitle>
@@ -1121,13 +1121,16 @@ export default function ExternalClientsPage() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Network Performance</CardTitle>
-                  <CardDescription>Subcontractor and towing company metrics</CardDescription>
+                  <CardTitle>Top Performing Towing</CardTitle>
+                  <CardDescription>Towing company metrics</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div>
                       <h4 className="font-semibold mb-2">Workshop Availability</h4>
+                      <div>
+                        total no of jobs and value
+                      </div>
                       <div className="space-y-2">
                         <div className="flex justify-between">
                           <span className="text-sm">Available</span>

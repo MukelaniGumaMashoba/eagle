@@ -701,7 +701,7 @@ export default function TechniciansPage() {
                     <TabsList>
                         <TabsTrigger value="directory">Technician Directory</TabsTrigger>
                         {/* <TabsTrigger value="assignments">Job Assignments</TabsTrigger> */}
-                        <TabsTrigger value="performance">Performance</TabsTrigger>
+                        <TabsTrigger value="performance">Technician Rating</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="directory" className="space-y-4">
@@ -793,7 +793,7 @@ export default function TechniciansPage() {
                                             <Dialog open={isAssignDialogOpen && selectedTechnician?.id === technician.id} onOpenChange={setIsAssignDialogOpen}>
                                                 <DialogTrigger asChild>
                                                     <Button size="sm" className="flex-1" onClick={() => setSelectedTechnician(technician)}>
-                                                        Assign Job
+                                                        Assigned Jobs
                                                     </Button>
                                                 </DialogTrigger>
                                                 <DialogContent className="max-w-2xl">
@@ -897,14 +897,14 @@ export default function TechniciansPage() {
                                             </Dialog>
                                         </div>
                                         <div className="mt-2">
-                                            <h4 className="font-semibold text-sm">Assigned Vehicle:</h4>
+                                            <h4 className="font-semibold text-sm">Assigned Breakdown:</h4>
                                             <ul className="list-disc ml-5 text-xs">
                                                 {technician.assignedJobs && technician.assignedJobs.length > 0 ? (
                                                     technician.assignedJobs.map((job: JobAssignment) => (
                                                         <li key={job.id}>{job.job_id} - {job.description} - {job.status}</li>
                                                     ))
                                                 ) : (
-                                                    <li className="text-gray-500">No vehicle assigned to this technician.</li>
+                                                    <li className="text-gray-500">No breakdown assigned to this technician.</li>
                                                 )}
                                             </ul>
                                         </div>
