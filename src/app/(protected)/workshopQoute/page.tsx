@@ -72,6 +72,7 @@ interface Quotation {
     totalcost?: number
     created_by?: string
     jobcard_id?: number
+    type: string
 }
 
 export default function CostCenterPage() {
@@ -110,10 +111,11 @@ export default function CostCenterPage() {
           partscost,
           totalcost,
           created_by,
-          jobcard_id
+          jobcard_id,
+          type
         `)
                 .order("created_at", { ascending: false })
-                .is("markupPrice", null);
+                .eq('type', 'external')
 
             if (error) {
                 console.error("Error fetching quotations:", error)
@@ -189,8 +191,8 @@ export default function CostCenterPage() {
                                             <CardHeader>
                                                 <div className="flex justify-between items-start">
                                                     <div>
-                                                        <CardTitle className="text-lg">
-                                                            {quotation.orderno || `Quotation ${quotation.id.slice(0, 8)}`}
+                                                        <CardTitle className="text-md">
+                                                            {quotation.orderno || `Quotation ${quotation.id.slice(0, 8)}`} {quotation.type}
                                                         </CardTitle>
                                                         <CardDescription>Created on {new Date(quotation.created_at).toLocaleString()}</CardDescription>
                                                     </div>
@@ -236,7 +238,7 @@ export default function CostCenterPage() {
                                                 )}
 
                                                 <div className="flex gap-2">
-                                                    <Link href={`/ccenter/${quotation.id}`}>
+                                                    <Link href={`/workshopQoute/${quotation.id}`}>
                                                         <Button variant="outline">View Details</Button>
                                                     </Link>
                                                 </div>

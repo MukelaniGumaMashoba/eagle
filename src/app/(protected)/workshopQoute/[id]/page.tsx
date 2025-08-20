@@ -131,7 +131,7 @@ export default function QuotationDetailPage() {
     if (!quotation) return <div className="text-center mt-10">Quotation not found</div>;
 
     return (
-        <div className="w-full h-screen p-6 bg-gray-50">
+        <div className="w-full h-full p-6 bg-gray-50">
             {/* Back Button */}
             <div className="">
                 <Button
