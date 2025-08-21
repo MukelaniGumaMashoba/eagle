@@ -174,6 +174,8 @@ export default function CostCenterPage() {
                     <TabsTrigger value="quotations">All Quotations</TabsTrigger>
                     <TabsTrigger value="pending">Pending Approval</TabsTrigger>
                     <TabsTrigger value="approved">Approved</TabsTrigger>
+                    <TabsTrigger value="pending">Invoiced</TabsTrigger>
+                    <TabsTrigger value="approved">Paid</TabsTrigger>
                 </TabsList>
 
                 {['quotations', 'pending', 'approved'].map((tab) => (

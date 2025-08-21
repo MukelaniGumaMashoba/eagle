@@ -15,47 +15,41 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Dialog, DialogHeader, DialogContent, DialogTrigger, DialogTitle, DialogClose, DialogDescription } from '@/components/ui/dialog'
-import Vehicles from '../vehicles/page'
+import { Dialog, DialogHeader, DialogContent, DialogTrigger, DialogTitle, DialogClose } from '@/components/ui/dialog'
 
 
-// Define the Zod schema for validation of breakdowns form data
-const breakdownFormSchema = z.object({
-    id: z.number().int().min(1, 'Registration number is required'),
-    order_no: z.string().optional(),
-    status: z.enum(["requested", "in_progress", "completed"]).optional().default("requested"),
-    emergency_type: z.enum(["vehicle", "medical"]).optional(),
-    location: z.string().optional(),
-    registration: z.string().min(1, 'Registration number is required'),
+const vehicleFormSchema = z.object({
+    registration_number: z.string().min(1, 'Registration number is required'),
+    engine_number: z.string().min(1, 'Engine number is required'),
+    vin_number: z.string().min(1, 'VIN number is required'),
     make: z.string().min(1, 'Make is required'),
     model: z.string().min(1, 'Model is required'),
-    year: z.string().min(1, 'Manufactured year is required'),
-    vin: z.string().optional(),
-    breakdown_location: z.string().optional(),
-    client_type: z.enum(["internal", "external"]).optional(),
-    external_client_id: z.string().optional(),
-    service_history: z.string().optional(), // JSON string
-    breakdown_type: z.enum(["standby", "tow"], { required_error: 'Vehicle type is required' }),
-    job_id: z.number().int().optional(),
-    tow_capacity: z.string().min(1, 'Tow capacity is required'),
-    tow_weight: z.number().int().optional(),
-    engine_number: z.string().optional(),
-    registration_date: z.string().optional(),
-    license_expiry_date: z.string().optional(),
-    inspected: z.boolean().optional(),
-    tech_id: z.number().int().optional(),
-    updated_at: z.string().optional(),
-    vin_number: z.string().min(1, 'VIN number is required'),
     sub_model: z.string().optional(),
+    manufactured_year: z.string().min(1, 'Manufactured year is required'),
+    vehicle_type: z.enum(['vehicle', 'trailer', 'commercial', 'tanker', 'truck', 'specialized'], { required_error: 'Vehicle type is required' }),
+    registration_date: z.string().min(1, 'Registration date is required'),
+    license_expiry_date: z.string().min(1, 'License expiry date is required'),
+    purchase_price: z.string().min(1, 'Purchase price is required'),
+    retail_price: z.string().min(1, 'Retail price is required'),
+    vehicle_priority: z.enum(['high', 'medium', 'low'], { required_error: 'Vehicle priority is required' }),
     fuel_type: z.enum(['petrol', 'diesel', 'electric', 'hybrid', 'lpg'], { required_error: 'Fuel type is required' }),
     transmission_type: z.enum(['manual', 'automatic', 'cvt'], { required_error: 'Transmission type is required' }),
     tank_capacity: z.string().optional(),
+    register_number: z.string().optional(),
+    take_on_kilometers: z.string().min(1, 'Take on kilometers is required'),
+    service_intervals: z.string().min(1, 'Service intervals is required'),
+    boarding_km_hours: z.string().optional(),
+    expected_boarding_date: z.string().optional(),
+    cost_centres: z.string().optional(),
     colour: z.string().min(1, 'Colour is required'),
-    created_by: z.string().optional(),
+    created_by: z.string().uuid().optional(),
     created_at: z.string().optional(),
-});
+    updated_at: z.string().optional(),
+    type: z.string().optional(),
+    workshop_id: z.string().uuid().optional(),
+})
 
-type breakdownValues = z.infer<typeof breakdownFormSchema>
+type VehicleFormValues = z.infer<typeof vehicleFormSchema>
 
 interface Technician {
     id: number
@@ -65,15 +59,13 @@ interface Technician {
 }
 
 export default function ExVehicles() {
-    const [breakdowns, setBreakdowns] = useState<breakdownValues[]>([])
-    const [isAddingBreakdown, setIsAddingBreakdown] = useState(false)
-    const [selectedVehicleReg, setSelectedVehicleReg] = useState("");
-
+    const [vehicles, setVehicles] = useState<VehicleFormValues[]>([])
+    const [isAddingVehicle, setIsAddingVehicle] = useState(false)
     const router = useRouter()
     const supabase = createClient()
+    const [search, setSearch] = useState('')
     const [selectedFile, setSelectedFile] = useState<File | null>(null)
-    const [search, setSearch] = useState("");
-    const [user, setUser] = useState<{ id: string; workshop_id: string } | null>(null);
+    const [user, setUser] = useState<{ id: string; workshop_id: string } | null>(null)
     const useWorkshopId = () => {
         const [workshopId, setWorkshopId] = useState<string | null>(null);
         useEffect(() => {
@@ -143,13 +135,13 @@ export default function ExVehicles() {
             if (!workshopId) return;
 
             const { data, error } = await supabase
-                .from('breakdowns')
+                .from('vehiclesc')
                 .select('*')
                 .eq('workshop_id', workshopId);
 
             if (data && !error) {
                 // @ts-ignore
-                setBreakdowns(data);
+                setVehicles(data);
             }
         };
 
@@ -163,23 +155,23 @@ export default function ExVehicles() {
         toast.info(`Uploading: ${selectedFile.name}`)
     }
 
-    // Filter breakdowns based on search
-    const filteredVehicles = breakdowns.filter(breakdowns => {
+    // Filter vehicles based on search
+    const filteredVehicles = vehicles.filter(vehicle => {
         const searchLower = search.toLowerCase();
         return (
-            breakdowns.make.toLowerCase().includes(searchLower) ||
-            breakdowns.model.toLowerCase().includes(searchLower) ||
-            breakdowns.registration.toLowerCase().includes(searchLower) ||
-            breakdowns.breakdown_type.toLowerCase().includes(searchLower)
+            vehicle.make.toLowerCase().includes(searchLower) ||
+            vehicle.model.toLowerCase().includes(searchLower) ||
+            vehicle.registration_number.toLowerCase().includes(searchLower) ||
+            vehicle.vehicle_type.toLowerCase().includes(searchLower)
         )
     })
 
     // Row background color by type
     const getRowBg = (type: string) => {
         switch (type) {
-            case 'tow':
+            case 'vehicle':
                 return 'bg-blue-50';
-            case 'standby':
+            case 'trailer':
                 return 'bg-purple-50';
             case 'truck':
                 return 'bg-yellow-50';
@@ -218,11 +210,11 @@ export default function ExVehicles() {
         const fetchVehicles = async () => {
             if (!user?.workshop_id) {
                 console.error("User workshop is undefined, cannot fetch vehicles.");
-                setBreakdowns([]);
+                setVehicles([]);
                 return;
             }
             const { data: vehicles, error } = await supabase
-                .from('breakdowns')
+                .from('vehiclesc')
                 .select('*')
                 .eq('workshop_id', user?.workshop_id);
 
@@ -230,13 +222,13 @@ export default function ExVehicles() {
                 console.error("the error is", error.name, error.message);
             } else {
                 // @ts-ignore
-                setBreakdowns(vehicles || [])
+                setVehicles(vehicles || [])
             }
         }
-        const breakdowns = supabase.channel('schema-db-changes')
+        const vehiclesc = supabase.channel('schema-db-changes')
             .on(
                 'postgres_changes',
-                { event: '*', schema: 'public', table: 'breakdowns' },
+                { event: '*', schema: 'public', table: 'vehiclesc' },
                 (payload) => {
                     console.log('Change received!', payload)
                 }
@@ -245,39 +237,79 @@ export default function ExVehicles() {
         // fetchVehicles()
 
         return () => {
-            breakdowns.unsubscribe;
+            vehiclesc.unsubscribe;
         }
     }, [])
-    const breakdownId = `BR-${Math.floor(Math.random() * 300 + 1)}-${new Date().getFullYear()}`;
 
-    const form = useForm({
-        resolver: zodResolver(breakdownFormSchema),
+
+    const form = useForm<VehicleFormValues>({
+        resolver: zodResolver(vehicleFormSchema),
         defaultValues: {
-            id: undefined,
-            order_no: breakdownId,
-            status: 'requested',
-            emergency_type: undefined,
-            location: '',
-            registration: '',
+            registration_number: '',
+            engine_number: '',
+            vin_number: '',
             make: '',
             model: '',
-            year: undefined,
-            vin: '',
-            breakdown_location: '',
-            client_type: 'external',
-            external_client_id: '',
-            service_history: '[]',
-            breakdown_type: 'standby',
-            job_id: undefined,
-            tow_capacity: undefined,
-            tow_weight: undefined,
-            inspected: false,
-            tech_id: undefined,
+            sub_model: '',
+            manufactured_year: '',
+            vehicle_type: 'vehicle',
+            registration_date: new Date().toISOString(),
+            license_expiry_date: new Date().toISOString(),
+            purchase_price: '',
+            retail_price: '',
+            vehicle_priority: 'medium',
+            fuel_type: 'petrol',
+            transmission_type: 'manual',
+            tank_capacity: '',
+            register_number: '',
+            take_on_kilometers: '',
+            service_intervals: '',
+            boarding_km_hours: '',
+            expected_boarding_date: new Date().toISOString(),
+            cost_centres: '',
+            colour: '',
+            created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
+            type: 'external',
         },
-    });
+    })
 
-    const handleAddVehicle = async (vehicleData: breakdownValues) => {
+
+    // const onSubmit = async (data: VehicleFormValues) => {
+    //     if (!user) {
+    //         toast.error("User not authenticated");
+    //         return;
+    //     }
+
+    //     const enrichedData = {
+    //         ...data,
+    //         created_by: user.id,
+    //         workshop_id: user.workshop_id,
+    //     };
+
+
+    //     await handleAddVehicle(enrichedData);
+    //     console.log("Submitted vehicle data:", enrichedData);
+    // };
+
+    // const handleAddVehicle = async (data: VehicleFormValues) => {
+    //     const { data: vehicle, error } = await supabase
+    //         .from('vehiclesc')
+    //         // @ts-expect-error
+    //         .insert(data)
+    //     if (error) {
+    //         console.error(error.message)
+    //     } else {
+    //         console.log(vehicle)
+    //         toast.success('Vehicle added successfully')
+    //         form.reset()
+    //         setIsAddingVehicle(false)
+    //         router.refresh()
+    //     }
+    // }
+
+
+    const handleAddVehicle = async (vehicleData: VehicleFormValues) => {
         // Ensure correct types for numeric fields and fix insert call
         const insertPayload = {
             ...vehicleData,
@@ -286,7 +318,7 @@ export default function ExVehicles() {
         };
 
         const { data: vehicle, error } = await supabase
-            .from('breakdowns')
+            .from('vehiclesc')
             // @ts-expect-error
             .insert(insertPayload)
             .select();
@@ -298,21 +330,20 @@ export default function ExVehicles() {
             console.log("Inserted vehicle:", vehicle?.[0]?.created_by, vehicle?.[0]?.workshop_id);
             toast.success('Vehicle added successfully');
             form.reset();
-            setIsAddingBreakdown(false);
+            setIsAddingVehicle(false);
             router.refresh();
         }
     };
 
-    const onSubmit = async (data: breakdownValues) => {
+    const onSubmit = async (data: VehicleFormValues) => {
         if (!user || !user.id || !user.workshop_id) {
             toast.error("User not authenticated or missing workshop info");
             return;
         }
 
-        const enrichedData: breakdownValues = {
+        const enrichedData: VehicleFormValues = {
             ...data,
             created_by: user.id,
-            // @ts-expect-error
             workshop_id: user.workshop_id,
         };
 
@@ -322,7 +353,7 @@ export default function ExVehicles() {
     };
 
     const getVehicleTypeIcon = (type: string) => {
-        return type === 'tow' ? <Car className="w-4 h-4" /> : <Truck className="w-4 h-4" />
+        return type === 'vehicle' ? <Car className="w-4 h-4" /> : <Truck className="w-4 h-4" />
     }
 
     const getPriorityBadge = (priority: string) => {
@@ -334,49 +365,28 @@ export default function ExVehicles() {
         return <Badge className={colors[priority as keyof typeof colors]}>{priority}</Badge>
     }
 
-    // async function handleAssign(registration: string, id: number) {
-    //     const { data: datav, error: errorv } = await supabase.from('breakdowns').
-    //         update({
-    //             tech_id: id,
-    //         })
-    //         .eq('registration', registration)
-
-    //     console.log("updating" + datav)
-    //     if (!datav || errorv) {
-    //         console.log("Issue in assigning" + errorv?.message)
-    //     }
-    //     else {
-    //         alert("Success")
-    //     }
-    // }
-
-    async function handleAssign(breakdownId: number, techId: number) {
-        const { data: datav, error: errorv } = await supabase
-            .from('breakdowns')
-            .update({ tech_id: techId })
-            .eq('id', breakdownId)
-            .select()
-            .single()
-
-        if (errorv) {
-            console.log("Issue in assigning: " + errorv.message);
-            alert("Failed to assign technician: " + errorv.message);
-            return;
+    async function handleAssign(regno: string, id: number) {
+        const { data: datav, error: errorv } = await supabase.from('vehiclesc').
+            update({
+                tech_id: id,
+            })
+            .eq('registration_number', regno)
+        if (!datav || errorv) {
+            console.log("Issue in assigning")
         }
-        console.log("Technician assigned successfully:", datav);
+        console.log("Success")
     }
-
 
     return (
         <div className="space-y-6">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Breakdowns</h1>
-                    <p className="text-gray-600 mt-1">Manage your breakdowns and trailer fleet</p>
+                    <h1 className="text-3xl font-bold text-gray-900">Vehicles</h1>
+                    <p className="text-gray-600 mt-1">Manage your vehicle and trailer fleet</p>
                 </div>
                 <Button
-                    onClick={() => setIsAddingBreakdown(true)}
+                    onClick={() => setIsAddingVehicle(true)}
                     className="bg-blue-600 hover:bg-blue-700"
                 >
                     <Plus className="w-4 h-4 mr-2" />
@@ -391,7 +401,7 @@ export default function ExVehicles() {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm font-medium text-gray-600">Total Fleet</p>
-                                <p className="text-2xl font-bold text-gray-900">{breakdowns.length}</p>
+                                <p className="text-2xl font-bold text-gray-900">{vehicles.length}</p>
                             </div>
                             <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
                                 <span className="text-blue-600 text-sm font-semibold">🚗</span>
@@ -403,9 +413,9 @@ export default function ExVehicles() {
                     <CardContent className="p-4">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-gray-600">Total Breakdowns</p>
+                                <p className="text-sm font-medium text-gray-600">Vehicles</p>
                                 <p className="text-2xl font-bold text-green-600">
-                                    {breakdowns.filter(v => v.breakdown_type === 'standby').length}
+                                    {vehicles.filter(v => v.vehicle_type === 'vehicle').length}
                                 </p>
                             </div>
                             <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
@@ -418,9 +428,9 @@ export default function ExVehicles() {
                     <CardContent className="p-4">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-gray-600">Tow</p>
+                                <p className="text-sm font-medium text-gray-600">Trailers</p>
                                 <p className="text-2xl font-bold text-purple-600">
-                                    {breakdowns.filter(v => v.breakdown_type === 'tow').length}
+                                    {vehicles.filter(v => v.vehicle_type === 'trailer').length}
                                 </p>
                             </div>
                             <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
@@ -433,20 +443,20 @@ export default function ExVehicles() {
                     <CardContent className="p-4">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-gray-600">Stand By</p>
-                                <p className="text-2xl font-bold text-purple-600">
-                                    {breakdowns.filter(v => v.breakdown_type === 'standby').length}
+                                <p className="text-sm font-medium text-gray-600">High Priority</p>
+                                <p className="text-2xl font-bold text-red-600">
+                                    {vehicles.filter(v => v.vehicle_priority === 'high').length}
                                 </p>
                             </div>
-                            <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                                <Truck className="w-4 h-4 text-purple-600" />
+                            <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                                <span className="text-red-600 text-sm font-semibold">⚠</span>
                             </div>
                         </div>
                     </CardContent>
                 </Card>
             </div>
             {/* Add Vehicle Form */}
-            {isAddingBreakdown && (
+            {isAddingVehicle && (
                 <Card>
                     <CardHeader>
                         <CardTitle>Add New Vehicle</CardTitle>
@@ -481,7 +491,7 @@ export default function ExVehicles() {
                                     {/* Vehicle Type Selection */}
                                     <FormField
                                         control={form.control}
-                                        name="breakdown_type"
+                                        name="vehicle_type"
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>Vehicle Type *</FormLabel>
@@ -492,16 +502,40 @@ export default function ExVehicles() {
                                                         </SelectTrigger>
                                                     </FormControl>
                                                     <SelectContent>
-                                                        <SelectItem value="stand-by">
+                                                        <SelectItem value="vehicle">
                                                             <div className="flex items-center gap-2">
                                                                 <Car className="w-4 h-4" />
-                                                                standby
+                                                                Vehicle
                                                             </div>
                                                         </SelectItem>
-                                                        <SelectItem value="tow">
+                                                        <SelectItem value="commercial">
                                                             <div className="flex items-center gap-2">
                                                                 <Truck className="w-4 h-4" />
-                                                                Tow
+                                                                Commercial
+                                                            </div>
+                                                        </SelectItem>
+                                                        <SelectItem value="tanker">
+                                                            <div className="flex items-center gap-2">
+                                                                <TruckElectricIcon className="w-4 h-4" />
+                                                                Truck
+                                                            </div>
+                                                        </SelectItem>
+                                                        <SelectItem value="truck">
+                                                            <div className="flex items-center gap-2">
+                                                                <Truck className="w-4 h-4" />
+                                                                Tanker
+                                                            </div>
+                                                        </SelectItem>
+                                                        <SelectItem value="specialized">
+                                                            <div className="flex items-center gap-2">
+                                                                <Truck className="w-4 h-4" />
+                                                                Specialized
+                                                            </div>
+                                                        </SelectItem>
+                                                        <SelectItem value="trailer">
+                                                            <div className="flex items-center gap-2">
+                                                                <Truck className="w-4 h-4" />
+                                                                Trailer
                                                             </div>
                                                         </SelectItem>
                                                     </SelectContent>
@@ -513,7 +547,7 @@ export default function ExVehicles() {
 
                                     <FormField
                                         control={form.control}
-                                        name="registration"
+                                        name="registration_number"
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>Registration Number *</FormLabel>
@@ -569,7 +603,7 @@ export default function ExVehicles() {
 
                                     <FormField
                                         control={form.control}
-                                        name="year"
+                                        name="manufactured_year"
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>Manufactured Year *</FormLabel>
@@ -628,16 +662,95 @@ export default function ExVehicles() {
                                             </FormItem>
                                         )}
                                     />
+                                    <FormField
+                                        control={form.control}
+                                        name="boarding_km_hours"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Boarding KM/Hours</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="e.g., 1000" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
 
                                     <FormField
                                         control={form.control}
-                                        name="tow_capacity"
+                                        name="expected_boarding_date"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel>Tow Capacity (L)</FormLabel>
+                                                <FormLabel>Expected Boarding Date</FormLabel>
+                                                <FormControl>
+                                                    <Input type="date" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    <FormField
+                                        control={form.control}
+                                        name="cost_centres"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Cost Centres</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="e.g., Admin Dept" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    <FormField
+                                        control={form.control}
+                                        name="register_number"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Register Number</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="e.g., ZN123456" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    <FormField
+                                        control={form.control}
+                                        name="tank_capacity"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Tank Capacity (L)</FormLabel>
                                                 <FormControl>
                                                     <Input placeholder="e.g., 80" {...field} />
                                                 </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+
+
+                                    <FormField
+                                        control={form.control}
+                                        name="vehicle_priority"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Priority *</FormLabel>
+                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                    <FormControl>
+                                                        <SelectTrigger>
+                                                            <SelectValue placeholder="Select priority" />
+                                                        </SelectTrigger>
+                                                    </FormControl>
+                                                    <SelectContent>
+                                                        <SelectItem value="low">Low</SelectItem>
+                                                        <SelectItem value="medium">Medium</SelectItem>
+                                                        <SelectItem value="high">High</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
@@ -656,11 +769,67 @@ export default function ExVehicles() {
                                             </FormItem>
                                         )}
                                     />
+
+                                    <FormField
+                                        control={form.control}
+                                        name="purchase_price"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Purchase Price *</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="R 500,000" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    <FormField
+                                        control={form.control}
+                                        name="retail_price"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Retail Price *</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="R 550,000" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    <FormField
+                                        control={form.control}
+                                        name="take_on_kilometers"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Take On Kilometers *</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="50,000" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    <FormField
+                                        control={form.control}
+                                        name="service_intervals"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Service Intervals *</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="15,000 km" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
                                 </div>
 
                                 <div className="flex gap-4">
                                     <Button
-                                        onClick={() => handleAddVehicle({ ...form.getValues(), status: "requested" })}
+                                        onClick={() => handleAddVehicle(form.getValues())}
                                         type="submit" className="bg-blue-600 hover:bg-blue-700">
                                         <FileText className="w-4 h-4 mr-2" />
                                         Save Vehicle
@@ -668,7 +837,7 @@ export default function ExVehicles() {
                                     <Button
                                         type="button"
                                         variant="outline"
-                                        onClick={() => setIsAddingBreakdown(false)}
+                                        onClick={() => setIsAddingVehicle(false)}
                                     >
                                         Cancel
                                     </Button>
@@ -680,7 +849,7 @@ export default function ExVehicles() {
             )}
 
             {/* Vehicle List */}
-            {breakdowns.length > 0 && (
+            {vehicles.length > 0 && (
                 <Card>
                     <CardHeader>
                         <CardTitle>Fleet Overview</CardTitle>
@@ -703,77 +872,69 @@ export default function ExVehicles() {
                                     <TableHead>Fuel</TableHead>
                                     <TableHead>Color</TableHead>
                                     <TableHead>Type</TableHead>
-                                    <TableHead>Tow Capacity</TableHead>
+                                    <TableHead>Priority</TableHead>
                                     <TableCell>Assigned Technician</TableCell>
                                     <TableHead>Assign Technician</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {filteredVehicles.map((vehicle, index) => (
-                                    <TableRow key={vehicle.id} className={getRowBg(vehicle?.breakdown_type)}>
+                                    <TableRow key={index} className={getRowBg(vehicle.vehicle_type)}>
                                         <TableCell className="flex items-center gap-2">
-                                            {getVehicleTypeIcon(vehicle?.breakdown_type)}
+                                            {getVehicleTypeIcon(vehicle.vehicle_type)}
                                             <span>{vehicle.make} {vehicle.model}</span>
                                         </TableCell>
-                                        <TableCell>{vehicle.registration}</TableCell>
-                                        <TableCell>{vehicle.year}</TableCell>
+                                        <TableCell>{vehicle.registration_number}</TableCell>
+                                        <TableCell>{vehicle.manufactured_year}</TableCell>
                                         <TableCell>{vehicle.fuel_type}</TableCell>
                                         <TableCell>{vehicle.colour}</TableCell>
-                                        <TableCell className="capitalize">{vehicle.breakdown_type}</TableCell>
-                                        <TableCell>{vehicle.tow_capacity}</TableCell>
-                                        <TableCell>
-                                            {technicians.find(tech => tech.id === vehicle.tech_id)?.name || "Unassigned"}
-                                        </TableCell>
+                                        <TableCell className="capitalize">{vehicle.vehicle_type}</TableCell>
+                                        <TableCell>{getPriorityBadge(vehicle.vehicle_priority)}</TableCell>
 
+                                        <TableCell>{vehicle.created_by}</TableCell>
                                         <TableCell>
-                                            <div className="flex flex-row gap-3">
-                                                <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                                                    <DialogTrigger asChild>
-                                                        <Button
-                                                            variant="outline"
-                                                            className="px-4 py-2"
-                                                            onClick={() => {
-                                                                setSelectedVehicleReg(vehicle.registration);
-                                                                setDialogOpen(true);
-                                                            }}
-                                                        >
-                                                            Assign
-                                                        </Button>
-                                                    </DialogTrigger>
-                                                    <DialogContent className="sm:max-w-md w-full">
+                                            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                                                <DialogTrigger asChild>
+                                                    <Button variant="outline" className="px-4 py-2">
+                                                        Assign
+                                                    </Button>
+                                                </DialogTrigger>
+
+                                                <DialogContent className="sm:max-w-md w-full">
+                                                    <DialogHeader>
                                                         <DialogTitle>Assign Technician</DialogTitle>
-                                                        <DialogDescription>
-                                                            Assign technician for vehicle with registration: <strong>{selectedVehicleReg}</strong>
-                                                        </DialogDescription>
-                                                        {/* technician search & list */}
-                                                        <Input
-                                                            placeholder="Search technician by name"
-                                                            value={searchTerm}
-                                                            onChange={(e) => setSearchTerm(e.target.value)}
-                                                            className="mb-4"
-                                                        />
-                                                        <div className="max-h-60 overflow-auto space-y-2">
-                                                            {filteredTechs.length > 0 ? (
-                                                                filteredTechs.map((tech, index) => (
-                                                                    <button
-                                                                        key={index}
-                                                                        onClick={() => {
-                                                                            handleAssign(vehicle.id, tech.id);
-                                                                            setDialogOpen(false);
-                                                                        }}
-                                                                        className="w-full text-left px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition"
-                                                                    >
-                                                                        {tech.name}
-                                                                    </button>
-                                                                ))
-                                                            ) : (
-                                                                <p className="text-center text-sm text-gray-500 py-4">No technicians found</p>
-                                                            )}
-                                                        </div>
-                                                    </DialogContent>
-                                                </Dialog>
-                                                <Button variant="default">View</Button>
-                                            </div>
+                                                        <DialogClose className="absolute right-4 top-4" />
+                                                    </DialogHeader>
+
+                                                    <Input
+                                                        placeholder="Search technician by name"
+                                                        value={searchTerm}
+                                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                                        className="mb-4"
+                                                    />
+
+                                                    <div className="max-h-60 overflow-auto space-y-2">
+                                                        {filteredTechs.length > 0 ? (
+                                                            filteredTechs.map((tech, index) => (
+                                                                <button
+                                                                    key={tech.id}
+                                                                    onClick={() => {
+                                                                        handleAssign(vehicle.registration_number, tech.id);
+                                                                        setDialogOpen(false);
+                                                                    }}
+                                                                    className="w-full text-left px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                                                                >
+                                                                    {tech?.name}
+                                                                </button>
+                                                            ))
+                                                        ) : (
+                                                            <p className="text-center text-sm text-gray-500 py-4">
+                                                                No technicians found
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </DialogContent>
+                                            </Dialog>
                                         </TableCell>
                                     </TableRow>
                                 ))}
@@ -781,8 +942,7 @@ export default function ExVehicles() {
                         </Table>
                     </CardContent>
                 </Card>
-            )
-            }
-        </div >
+            )}
+        </div>
     )
 }
