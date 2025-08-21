@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
+import { Dialog, DialogClose, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 interface Quotation {
     id: string;
@@ -44,6 +46,8 @@ export default function QuotationDetailPage() {
     const [parts, setParts] = useState<Part[]>([]);
     const [newPartName, setNewPartName] = useState("");
     const [newPartPrice, setNewPartPrice] = useState<number | "">(0);
+    const [labourCost, setLabourCost] = useState<string>("");
+
 
     // Manage parts total cost input (price side)
     const [partsCost, setPartsCost] = useState<number>(0);
@@ -138,15 +142,13 @@ export default function QuotationDetailPage() {
         if (!quotation) return;
         setUpdating(true);
 
-        const totalCost = calculateTotalCost(quotation.laborcost || 0, partsCost, markupPrice);
+        // Fix: Calculate total cost correctly (labor + partsCost, then apply markup)
+        const baseTotal = (quotation.laborcost || 0) + labourCost;
 
         const { error } = await supabase
             .from("quotations")
             .update({
-                parts_needed: parts.map((p) => JSON.stringify(p)), // Store as array of JSON strings
-                partscost: partsCost,
-                markupPrice,
-                totalcost: totalCost,
+                laborcost: Number(baseTotal),
             })
             .eq("id", quotation.id);
 
@@ -157,10 +159,6 @@ export default function QuotationDetailPage() {
             toast.success("Quotation updated");
             setQuotation({
                 ...quotation,
-                parts_needed: parts.map((p) => JSON.stringify(p)), // Store as array of JSON strings to match backend
-                partscost: partsCost,
-                markupPrice,
-                totalcost: totalCost,
             });
         }
         setUpdating(false);
@@ -172,6 +170,36 @@ export default function QuotationDetailPage() {
 
     if (loading) return <div className="text-center mt-10">Loading...</div>;
     if (!quotation) return <div className="text-center mt-10">Quotation not found</div>;
+
+    const updateLabour = async () => {
+        if (!quotation) return;
+        // Ensure labourCost is a string or number, and quotation.laborcost is a number
+        const newLabourCost = parseInt(labourCost);
+        if (isNaN(newLabourCost)) {
+            toast.error("Invalid labour cost");
+            return;
+        }
+
+        const { error } = await supabase
+            .from("quotations")
+            .update({
+                laborcost: newLabourCost,
+            })
+            .eq("id", quotation.id);
+
+        if (error) {
+            toast.error("Failed to update labour cost");
+            console.error(error);
+        } else {
+            toast.success("Labour cost updated");
+            setQuotation({
+                ...quotation,
+                laborcost: newLabourCost,
+            });
+        }
+    };
+        
+    
 
     return (
         <div className="w-full h-full p-6 bg-gray-50">
@@ -303,15 +331,44 @@ export default function QuotationDetailPage() {
                                     className="border p-2 rounded w-28"
                                 />
                                 {/* if this if clicked a dialog to say add labour(hours * workshop rate) */}
-                                <Button onClick={addPart} disabled={updating}>
-                                    {loading ? "Adding..." : "Create"}
-                                </Button>
+
+                                <Dialog>
+                                    <DialogTrigger>
+                                        <Button>
+                                            {loading ? "Creating..." : "Create"}
+                                        </Button>
+                                    </DialogTrigger>
+                                    <DialogContent>
+                                        <Input placeholder="Labour hours" />
+                                        <DialogClose>
+                                            <Button>
+                                                Save
+                                            </Button>
+                                        </DialogClose>
+                                    </DialogContent>
+                                </Dialog>
                             </div>
-                            <Button>
-                                Add Parts
+                            <Button onClick={addPart} disabled={updating}>
+                                {loading ? "Adding..." : "Add Parts"}
                             </Button>
                             {/* remove markup for workshop */}
                             {/* add total labour and parts and breakdown cost(a technician driving to the vehicles) and tow cost if towing and km towed */}
+
+                            <div className="mt-4 flex items-center space-x-4">
+                                <label htmlFor="partsCost" className="font-semibold">
+                                    Total Labour Cost (R):
+                                </label>
+                                <input
+                                    type="number"
+                                    id="partsCost"
+                                    min={0}
+                                    step={0.01}
+                                    value={labourCost}
+                                    onChange={(e) => setLabourCost(e.target.value)}
+                                    className="border rounded p-2 w-40"
+                                    disabled={updating}
+                                />
+                            </div>
 
                             <div className="mt-4 flex items-center space-x-4">
                                 <label htmlFor="partsCost" className="font-semibold">
@@ -330,9 +387,9 @@ export default function QuotationDetailPage() {
                             </div>
 
                             <div className="mt-4 flex items-center space-x-4">
-                                <label htmlFor="markupPrice" className="font-semibold">
+                                {/* <label htmlFor="markupPrice" className="font-semibold">
                                     Markup (%):
-                                </label>
+                                </label> */}
                                 <input
                                     type="number"
                                     id="markupPrice"
@@ -343,6 +400,7 @@ export default function QuotationDetailPage() {
                                     onChange={(e) => setMarkupPrice(parseFloat(e.target.value) || 0)}
                                     className="border rounded p-2 w-24"
                                     disabled={updating}
+                                    hidden
                                 />
                             </div>
                         </div>
