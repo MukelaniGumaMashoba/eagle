@@ -73,7 +73,8 @@ interface JobAssignment {
     status: string
     assigned_technician?: string
     created_at: string
-    updated_at?: string
+    updated_at?: string,
+    technician_id: number
 }
 
 export default function TechniciansPage() {
@@ -85,6 +86,7 @@ export default function TechniciansPage() {
     const [selectedJob, setSelectedJob] = useState<JobAssignment | null>(null)
     const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false)
     const [isAddTechnicianOpen, setIsAddTechnicianOpen] = useState(false)
+    const [breakdown, setBreakdown] = useState([]);
 
     // Form state for adding technician
     const [formData, setFormData] = useState({
@@ -173,8 +175,6 @@ export default function TechniciansPage() {
         const { data: jobs, error: jobsError } = await supabase
             .from('job_assignments')
             .select('*')
-            .eq('status', 'Breakdown Request')
-            .is('technician_id', null)
         if (jobsError) {
             console.error('Error fetching available jobs:', jobsError)
         } else {
@@ -798,8 +798,8 @@ export default function TechniciansPage() {
                                                 </DialogTrigger>
                                                 <DialogContent className="max-w-2xl">
                                                     <DialogHeader>
-                                                        <DialogTitle>Assign Job to {technician.name}</DialogTitle>
-                                                        <DialogDescription>Select a job to assign to this technician</DialogDescription>
+                                                        <DialogTitle>Assigned Jobs to {technician.name}</DialogTitle>
+                                                        <DialogDescription>Job to Assign to this technician</DialogDescription>
                                                     </DialogHeader>
                                                     {/* Job search input */}
                                                     <Input
@@ -811,9 +811,12 @@ export default function TechniciansPage() {
                                                     {/* Scrollable jobs list */}
                                                     <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
                                                         {(availableJobs.filter(job =>
-                                                            job.job_id.toLowerCase().includes(jobSearchTerm.toLowerCase()) ||
-                                                            job.description.toLowerCase().includes(jobSearchTerm.toLowerCase()) ||
-                                                            job.location.toLowerCase().includes(jobSearchTerm.toLowerCase())
+                                                            String(job.technician_id) === String(technician.id) &&
+                                                            (
+                                                                job.job_id?.toLowerCase().includes(jobSearchTerm.toLowerCase()) ||
+                                                                job.description?.toLowerCase().includes(jobSearchTerm.toLowerCase()) ||
+                                                                job.location?.toLowerCase().includes(jobSearchTerm.toLowerCase())
+                                                            )
                                                         )).map((job) => {
                                                             return (
                                                                 <Card key={job.id} className="hover:bg-gray-50">
@@ -839,7 +842,7 @@ export default function TechniciansPage() {
                                                                                 <p>Estimated time not available</p>
                                                                             </div>
                                                                         </div>
-                                                                        <CardFooter className="mt-2">
+                                                                        {/* <CardFooter className="mt-2">
                                                                             <Button variant={"outline"} className="bg-transparent"
                                                                                 onClick={async () => {
                                                                                     if (!technician) {
@@ -887,7 +890,7 @@ export default function TechniciansPage() {
                                                                             >
                                                                                 Assign
                                                                             </Button>
-                                                                        </CardFooter>
+                                                                        </CardFooter> */}
                                                                     </CardContent>
                                                                 </Card>
                                                             )
