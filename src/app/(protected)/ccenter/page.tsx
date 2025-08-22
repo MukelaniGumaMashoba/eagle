@@ -152,7 +152,7 @@ export default function CostCenterPage() {
   const getTypeColor = (type: string) => {
     switch (type) {
       case "internal":
-        return "bg-green-200"
+        return "bg-green-100"
       case "external":
         return "bg-blue-100"
       default:
@@ -185,13 +185,13 @@ export default function CostCenterPage() {
           <TabsTrigger value="quotations">All Quotations</TabsTrigger>
           <TabsTrigger value="pending">Pending Submission</TabsTrigger>
           <TabsTrigger value="approved">Pending Approval</TabsTrigger>
-          <TabsTrigger value="quotations">Rejected</TabsTrigger>
-          <TabsTrigger value="pending">Approved</TabsTrigger>
-          <TabsTrigger value="invoice">Invoiced</TabsTrigger>
+          <TabsTrigger value="rejected">Rejected</TabsTrigger>
+          <TabsTrigger value="approved">Approved</TabsTrigger>
+          <TabsTrigger value="invoiced">Invoiced</TabsTrigger>
           <TabsTrigger value="paid">Paid</TabsTrigger>
         </TabsList>
 
-        {['quotations', 'pending', 'approved'].map((tab) => (
+        {['quotations', 'pending', 'approved', 'rejected', 'invoiced', 'paid'].map((tab) => (
           <TabsContent key={tab} value={tab} className="space-y-4">
             <div className="grid gap-4">
               {loading ? (

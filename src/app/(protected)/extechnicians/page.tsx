@@ -899,7 +899,7 @@ export default function TechniciansPage() {
                                                 </DialogContent>
                                             </Dialog>
                                         </div>
-                                        <div className="mt-2">
+                                        {/* <div className="mt-2">
                                             <h4 className="font-semibold text-sm">Assigned Breakdown:</h4>
                                             <ul className="list-disc ml-5 text-xs">
                                                 {technician.assignedJobs && technician.assignedJobs.length > 0 ? (
@@ -910,7 +910,7 @@ export default function TechniciansPage() {
                                                     <li className="text-gray-500">No breakdown assigned to this technician.</li>
                                                 )}
                                             </ul>
-                                        </div>
+                                        </div> */}
                                         {/* <div className="mt-2">
                                             <h4 className="font-semibold text-sm">Assigned Jobs:</h4>
                                             <ul className="list-disc ml-5 text-xs">

@@ -32,10 +32,13 @@ import {
   Clock,
   AlertTriangle,
   FileText,
+  Eye,
+  Building2,
 } from "lucide-react"
 import { toast } from "sonner"
 
 import { addExternalClient, addSubcontractor, addTowingCompany, ExternalClient, Subcontractor, TowingCompany } from "@/lib/action/addClient";
+import Link from "next/link"
 
 export default function ExternalClientsPage() {
   const [clients, setClients] = useState<ExternalClient[]>([])
@@ -53,6 +56,34 @@ export default function ExternalClientsPage() {
   const [workshops, setWorkshops] = useState([]);
   const [loading, setLoading] = useState(false);
   const supabase = createClient();
+  const [status, setStatus] = useState<'validated' | 'pending' | 'rejected'>('pending');
+  const [error, setError] = useState<string | null>(null);
+
+  interface WorkshopStatusDialogProps {
+    status: 'validated' | 'pending' | 'rejected';
+    workshopid: number;
+    isOpen: boolean;
+    onClose: (success?: boolean) => void;
+    updateWorkshopStatus: (id: number, status: string) => Promise<void>;
+    workshop: any;
+  }
+  const handleSubmit = async (status: string, workshopId: string) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { data, error } = await supabase
+        .from("workshop")
+        .update({ validated: status })
+        .eq("id", workshopId);
+      console.log("updated: " + data)
+    } catch (err: any) {
+      setError("Failed to update status: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   useEffect(() => {
     async function fetchWorkshops() {
@@ -77,10 +108,11 @@ export default function ExternalClientsPage() {
       <Card key={w.id} className="mb-4 shadow-lg border border-gray-200 rounded-lg">
         <CardHeader className="bg-gray-50 rounded-t-lg p-4">
           <div className="flex flex-row justify-between">
+            <Building2 />
             <CardTitle className="text-xl font-semibold">{w.work_name}</CardTitle>
             <div>
               <Badge variant={
-                w.validated === "validated" ? "default" :
+                w.validated === "validated" ? "outline" :
                   w.validated === "pending" ? "secondary" :
                     w.validated === "rejected" ? "destructive" : "default"
               }>
@@ -94,7 +126,59 @@ export default function ExternalClientsPage() {
           <p><strong>Trading Name:</strong> {w.trading_name || "N/A"}</p>
           <p><strong>Labour Rate:</strong> R {w.labour_rate ?? "N/A"}</p>
           <p><strong>Number of Working Days:</strong> {w.number_of_working_days ?? "N/A"}</p>
-          {/* Add more fields as needed */}
+          <p><strong>Location:</strong> {w.street}, {w.city}</p>
+
+          <div className="mt-4">
+            <strong>Workshop Type: </strong>{Array.isArray(w.workshop_type) && w.workshop_type.map((type: string, idx: number) => (
+              <Badge key={idx} variant="secondary" className="text-xs">
+                {type}
+              </Badge>
+            ))}
+          </div>
+          <div className="flex flex-row justify-end gap-3">
+            <Link href={`/callcenter/clients/${w.id}`}>
+              <Button variant="outline" size="sm">
+                <Eye className="h-4 w-4 mr-2" />
+                View Application
+              </Button>
+            </Link>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button>Edit</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Edit the workshop</DialogTitle>
+                </DialogHeader>
+
+                <div className="flex flex-col gap-3">
+                  <Button
+                    onClick={() => handleSubmit("validated", w.id)}
+                    disabled={loading}
+                    variant="default"
+                  >
+                    Validated
+                  </Button>
+
+                  <Button
+                    onClick={() => handleSubmit("rejected", w.id)}
+                    disabled={loading}
+                    variant="destructive"
+                  >
+                    Block
+                  </Button>
+
+                  <Button
+                    onClick={() => handleSubmit("pending", w.id)}
+                    disabled={loading}
+                    variant="secondary"
+                  >
+                    Under Review
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
         </CardContent>
       </Card>
     ));
@@ -169,7 +253,6 @@ export default function ExternalClientsPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "active":
       case "available":
         return "bg-green-100 text-green-800"
       case "inactive":
@@ -1095,9 +1178,17 @@ export default function ExternalClientsPage() {
                       labour_rate?: number;
                       workshop_type?: string[];
                     }> ?? [])
-                      .sort((a, b) => (b.labour_rate ?? 0) - (a.labour_rate ?? 0))
+                      .sort((a: { labour_rate?: number }, b: { labour_rate?: number }) => (b.labour_rate ?? 0) - (a.labour_rate ?? 0))
                       .slice(0, 5)
-                      .map((workshop, index) => (
+                      .map((workshop: {
+                        id: string | number;
+                        trading_name?: string;
+                        total_jobs?: number;
+                        fleet_rate?: number;
+                        rating?: number | string;
+                        labour_rate?: number;
+                        workshop_type?: string[];
+                      }, index: number) => (
                         <div key={workshop.id} className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
                             <span className="font-semibold">#{index + 1}</span>

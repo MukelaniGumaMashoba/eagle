@@ -19,7 +19,7 @@ interface Quotation {
     partscost?: number; // total parts cost number
     totalcost?: number;
     priority?: string;
-    status: "pending" | "approved" | "rejected" | "pending-inspection" | "paid";
+    status: "pending" | "approved" | "rejected" | "pending-inspection" | "paid" | "pending-approval";
     created_at: string;
     description?: string;
     markupPrice?: number; // percentage markup number
@@ -119,6 +119,7 @@ export default function QuotationDetailPage() {
                 partscost: partsCost,
                 markupPrice,
                 totalcost: totalCost,
+                status: "pending-approval"
             });
         }
         setUpdating(false);
@@ -147,7 +148,7 @@ export default function QuotationDetailPage() {
 
             <div className="max-w-7xl mx-auto pt-4">
                 <div className="mb-6">
-                    <h1 className="text-4xl font-semibold text-gray-800">Repair {quotation.id}</h1>
+                    <h1 className="text-xl font-semibold text-gray-800">Repair {quotation.id}</h1>
                     <div>
                         <strong>Quote Type: </strong>
                         <Badge variant={quotation.type === "external" ? "secondary" : "default"}>

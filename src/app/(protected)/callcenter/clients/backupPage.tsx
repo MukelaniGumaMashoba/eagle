@@ -65,7 +65,7 @@ export default function ExternalClientsPage() {
     // Split by type
     // @ts-ignore
     setClients((data || []).filter((c: any) => c.client_type === "external"))
-
+    // @ts-expect-error
     setSubcontractors((data || []).filter((c: any) => c.client_type === "subcontractor"))
 
     // @ts-ignore
@@ -158,6 +158,7 @@ export default function ExternalClientsPage() {
       client_type: 'external',
       vehicle_types: formData.get("vehicle_types") ? (formData.get("vehicle_types") as string).split(',').map(s => s.trim()).filter(Boolean) : [],
     };
+    // @ts-expect-error
     const { data, error } = await addExternalClient(clientData);
     if (error) {
       toast.error(`Failed to add client: ${error.message}`);

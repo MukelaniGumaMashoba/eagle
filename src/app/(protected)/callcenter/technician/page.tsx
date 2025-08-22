@@ -62,6 +62,7 @@ interface Technician {
   vehicleType: string
   equipmentLevel: "basic" | "advanced" | "specialist"
   assignedJobs?: JobAssignment[]
+  type: 'internal' | 'external'
 }
 
 interface JobAssignment {
@@ -74,6 +75,7 @@ interface JobAssignment {
   assigned_technician?: string
   created_at: string
   updated_at?: string
+  technician_id: number
 }
 
 export default function TechniciansPage() {
@@ -121,7 +123,6 @@ export default function TechniciansPage() {
     const { data: techniciansData, error: techError } = await supabase
       .from('technicians')
       .select('*')
-      .eq('type', 'internal')
     if (techError) {
       console.error('Error fetching technicians:', techError)
       setTechnicians([])
@@ -163,8 +164,6 @@ export default function TechniciansPage() {
     const { data: jobs, error: jobsError } = await supabase
       .from('job_assignments')
       .select('*')
-      .eq('status', 'Breakdown Request')
-      .is('technician_id', null)
     if (jobsError) {
       console.error('Error fetching available jobs:', jobsError)
     } else {
@@ -706,18 +705,21 @@ export default function TechniciansPage() {
                         </div>
                         <div>
                           <CardTitle className="text-lg">{technician.name}</CardTitle>
-                          <div>
-                            <p>{technician.id}</p>
+                          <div className="flex flex-row gap-4">
+                            <p>{technician.id} </p> : <p>{technician.type.toUpperCase()}</p>
                           </div>
                           <div className="flex items-center gap-1">
                             <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                            {/* <span className="text-sm text-gray-600">{technician.rating}</span> */}
+                            <span className="text-sm text-gray-600">{technician?.rating}</span>
+
                           </div>
                         </div>
                       </div>
+
                       <Badge className={getStatusColor(technician.availability)}>
                         {technician.availability}
                       </Badge>
+
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -783,13 +785,13 @@ export default function TechniciansPage() {
                       <Dialog open={isAssignDialogOpen && selectedTechnician?.id === technician.id} onOpenChange={setIsAssignDialogOpen}>
                         <DialogTrigger asChild>
                           <Button size="sm" className="flex-1" onClick={() => setSelectedTechnician(technician)}>
-                            Assign Job
+                            Assigned Jobs
                           </Button>
                         </DialogTrigger>
                         <DialogContent className="max-w-2xl">
                           <DialogHeader>
-                            <DialogTitle>Assign Job to {technician.name}</DialogTitle>
-                            <DialogDescription>Select a job to assign to this technician</DialogDescription>
+                            <DialogTitle>Assigned Jobs to {technician.name}</DialogTitle>
+                            <DialogDescription>View all job to assign to this technician</DialogDescription>
                           </DialogHeader>
                           {/* Job search input */}
                           <Input
@@ -801,9 +803,12 @@ export default function TechniciansPage() {
                           {/* Scrollable jobs list */}
                           <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
                             {(availableJobs.filter(job =>
-                              job.job_id.toLowerCase().includes(jobSearchTerm.toLowerCase()) ||
-                              job.description.toLowerCase().includes(jobSearchTerm.toLowerCase()) ||
-                              job.location.toLowerCase().includes(jobSearchTerm.toLowerCase())
+                              String(job.technician_id) === String(technician.id) &&
+                              (
+                                job.job_id?.toLowerCase().includes(jobSearchTerm.toLowerCase()) ||
+                                job.description?.toLowerCase().includes(jobSearchTerm.toLowerCase()) ||
+                                job.location?.toLowerCase().includes(jobSearchTerm.toLowerCase())
+                              )
                             )).map((job) => {
                               return (
                                 <Card key={job.id} className="hover:bg-gray-50">
@@ -829,55 +834,55 @@ export default function TechniciansPage() {
                                         <p>Estimated time not available</p>
                                       </div>
                                     </div>
-                                    <CardFooter className="mt-2">
-                                      <Button variant={"outline"} className="bg-transparent"
-                                        onClick={async () => {
-                                          if (!technician) {
-                                            toast.error("No technician selected");
-                                            return;
-                                          }
-                                          if (!job) {
-                                            toast.error("No job selected");
-                                            return;
-                                          }
-                                          try {
-                                            const { data: existingAssignments, error: fetchError } = await supabase
-                                              .from('assignements')
-                                              .select('driver_id')
-                                              .eq('job_id', job.id)
-                                              .single();
+                                    {/* <CardFooter className="mt-2">
+                                                                            <Button variant={"outline"} className="bg-transparent"
+                                                                                onClick={async () => {
+                                                                                    if (!technician) {
+                                                                                        toast.error("No technician selected");
+                                                                                        return;
+                                                                                    }
+                                                                                    if (!job) {
+                                                                                        toast.error("No job selected");
+                                                                                        return;
+                                                                                    }
+                                                                                    try {
+                                                                                        const { data: existingAssignments, error: fetchError } = await supabase
+                                                                                            .from('assignements')
+                                                                                            .select('driver_id')
+                                                                                            .eq('job_id', job.id)
+                                                                                            .single();
 
-                                            if (fetchError) {
-                                              console.error('Error fetching existing assignment:', fetchError);
-                                            }
-                                            const { error } = await supabase
-                                              .from('assignements')
-                                              .upsert([
-                                                {
-                                                  job_id: job.id,
-                                                  tech_id: technician.id,
-                                                  driver_id: existingAssignments?.driver_id || null,
-                                                }
-                                              ])
-                                              .eq('job_id', job.id)
-                                            if (error) {
-                                              toast.error("Error assigning job: " + error.message);
-                                            } else {
-                                              toast.success("Job assigned successfully");
-                                              // Remove the assigned job from availableJobs immediately
-                                              setAvailableJobs(prev => prev.filter(j => j.id !== job.id));
-                                              refreshData();
-                                              setIsAssignDialogOpen(false);
-                                            }
-                                          } catch (error) {
-                                            console.error("Error assigning job:", error);
-                                            toast.error("Error assigning job");
-                                          }
-                                        }}
-                                      >
-                                        Assign
-                                      </Button>
-                                    </CardFooter>
+                                                                                        if (fetchError) {
+                                                                                            console.error('Error fetching existing assignment:', fetchError);
+                                                                                        }
+                                                                                        const { error } = await supabase
+                                                                                            .from('assignements')
+                                                                                            .upsert([
+                                                                                                {
+                                                                                                    job_id: job.id,
+                                                                                                    tech_id: technician.id,
+                                                                                                    driver_id: existingAssignments?.driver_id || null,
+                                                                                                }
+                                                                                            ])
+                                                                                            .eq('job_id', job.id)
+                                                                                        if (error) {
+                                                                                            toast.error("Error assigning job: " + error.message);
+                                                                                        } else {
+                                                                                            toast.success("Job assigned successfully");
+                                                                                            // Remove the assigned job from availableJobs immediately
+                                                                                            setAvailableJobs(prev => prev.filter(j => j.id !== job.id));
+                                                                                            refreshData();
+                                                                                            setIsAssignDialogOpen(false);
+                                                                                        }
+                                                                                    } catch (error) {
+                                                                                        console.error("Error assigning job:", error);
+                                                                                        toast.error("Error assigning job");
+                                                                                    }
+                                                                                }}
+                                                                            >
+                                                                                Assign
+                                                                            </Button>
+                                                                        </CardFooter> */}
                                   </CardContent>
                                 </Card>
                               )
@@ -886,7 +891,19 @@ export default function TechniciansPage() {
                         </DialogContent>
                       </Dialog>
                     </div>
-                    <div className="mt-2">
+                    {/* <div className="mt-2">
+                      <h4 className="font-semibold text-sm">Assigned Breakdown:</h4>
+                      <ul className="list-disc ml-5 text-xs">
+                        {technician.assignedJobs && technician.assignedJobs.length > 0 ? (
+                          technician.assignedJobs.map((job: JobAssignment) => (
+                            <li key={job.id}>{job.job_id} - {job.description} - {job.status}</li>
+                          ))
+                        ) : (
+                          <li className="text-gray-500">No breakdown assigned to this technician.</li>
+                        )}
+                      </ul>
+                    </div> */}
+                    {/* <div className="mt-2">
                       <h4 className="font-semibold text-sm">Assigned Jobs:</h4>
                       <ul className="list-disc ml-5 text-xs">
                         {technician.assignedJobs && technician.assignedJobs.length > 0 ? (
@@ -897,7 +914,7 @@ export default function TechniciansPage() {
                           <li className="text-gray-500">No jobs assigned to this technician.</li>
                         )}
                       </ul>
-                    </div>
+                    </div> */}
                   </CardContent>
                 </Card>
               ))}
