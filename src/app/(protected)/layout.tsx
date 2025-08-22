@@ -15,7 +15,7 @@ interface ProtectedLayoutProps {
 const roleNavigation = {
   'fleet manager': [
     { name: 'Dashboard', href: '/dashboard', Icon: <ChartBar /> },
-    { name: 'Jobs', href: '/jobs', Icon: <Briefcase /> },
+    { name: 'Jobs', href: '/jobsFleet', Icon: <Briefcase /> },
     { name: 'Drivers', href: '/drivers', Icon: <Users /> },
     { name: 'Vehicles', href: '/vehicles', Icon: <Car /> },
     { name: 'Qoute Management', href: '/qoutation', Icon: <Building2 /> },

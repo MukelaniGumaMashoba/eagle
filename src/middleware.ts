@@ -4,19 +4,19 @@ import { createClient } from '@/lib/supabase/server'
 const roles = [
   {
     name: 'call centre',
-    path: ['/dashboard', '/profile', '/login', '/signup', '/','/ccenter', '/logout','jobs'],
+    path: ['/dashboard', '/profile', '/login', '/signup', '/', '/ccenter', '/logout', 'jobs'],
   },
   {
     name: 'fleet manager',
-    path: ['/fleetManager','/jobs', '/dashboard', '/drivers', '/vehicles', '/technician', '/profile', '/logs', '/login', '/signup', '/', '/logout', '/qoutation'],
+    path: ['/fleetManager', '/jobsFleet', '/dashboard', '/drivers', '/vehicles', '/technician', '/profile', '/logs', '/login', '/signup', '/', '/logout', '/qoutation'],
   },
   {
     name: 'customer',
-    path: ['/dashboard', '/profile', '/editCustomer', '/customer', '/login', '/signup', '/', '/logout', '/ccenter', '/exvehicles','/extechnicians'],
+    path: ['/dashboard', '/profile', '/editCustomer', '/customer', '/login', '/signup', '/', '/logout', '/ccenter', '/exvehicles', '/extechnicians'],
   },
   {
     name: 'cost centre',
-    path: ['/dashboard', '/ccenter','/jobs', '/profile', '/quotation', '/notification', '/login', '/signup', '/', '/logout', '/userManagement'],
+    path: ['/dashboard', '/ccenter', '/jobs', '/profile', '/quotation', '/notification', '/login', '/signup', '/', '/logout', '/userManagement'],
   },
 ]
 

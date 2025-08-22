@@ -681,7 +681,7 @@ export default function FleetJobsPage() {
                             </Link>
                           </div>
 
-                          <div>
+                          {/* <div>
                             {!job.technician_id && (
                               <Button
                                 onClick={() => {
@@ -692,7 +692,7 @@ export default function FleetJobsPage() {
                                 Assign Technician
                               </Button>
                             )}
-                          </div>
+                          </div> */}
 
                           {job.status === "awaiting-approval" && canApproveJobs && (
                             <div className="flex gap-2">
