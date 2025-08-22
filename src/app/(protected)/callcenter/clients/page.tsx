@@ -394,6 +394,11 @@ export default function ExternalClientsPage() {
     return matchesSearch && matchesStatus;
   })
 
+  const total = workshops.length;
+  const validatedCount = workshops.filter((w: any) => w.validated === "validated").length;
+  const pendingCount = workshops.filter((w: any) => w.validated === "pending").length;
+  const rejectedCount = workshops.filter((w: any) => w.validated === "rejected").length;
+
   return (
     <>
       <div className="flex-1 space-y-4 p-4 pt-6">
@@ -423,6 +428,45 @@ export default function ExternalClientsPage() {
           </div>
         </div>
 
+        <div className="p-6 space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Card className="p-4 text-center shadow-lg rounded-xl border border-gray-200">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold">Total Workshops</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold">{total}</p>
+              </CardContent>
+            </Card>
+
+            <Card className="p-4 text-center shadow-lg rounded-xl border border-gray-200">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold">Validated</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Badge variant="outline" className="text-2xl font-bold">{validatedCount}</Badge>
+              </CardContent>
+            </Card>
+
+            <Card className="p-4 text-center shadow-lg rounded-xl border border-gray-200">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold">Pending Validation</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Badge variant="secondary" className="text-2xl font-bold">{pendingCount}</Badge>
+              </CardContent>
+            </Card>
+
+            <Card className="p-4 text-center shadow-lg rounded-xl border border-gray-200">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold">Rejected</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Badge variant="destructive" className="text-2xl font-bold">{rejectedCount}</Badge>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
         <Tabs defaultValue="all" className="space-y-4">
           {/* <TabsList>
             <TabsTrigger value="clients">Workshop</TabsTrigger>
@@ -444,6 +488,7 @@ export default function ExternalClientsPage() {
           <TabsContent value="all" className="space-y-4">
             {renderWorkshops(workshops)}
           </TabsContent>
+
           <TabsContent value="validated" className="space-y-4">
             {renderWorkshops(
               workshops.filter(
