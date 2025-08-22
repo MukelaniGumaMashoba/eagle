@@ -59,6 +59,7 @@ export default function QuotationDetailPage() {
     // Markup percentage
     const [markupPrice, setMarkupPrice] = useState<number>(0);
 
+
     // // const fetchQuotation = async () => {
     // const { data, error } = await supabase
     //     .from("quotations")
@@ -107,16 +108,10 @@ export default function QuotationDetailPage() {
 
 
     // Calculate total cost with markup applied
-    const calculateTotalCost = (
-        labor: number = 0,
-        partsCostVal: number,
-        markup: number
-    ) => {
-        const baseTotal = labor + partsCostVal;
-        const markupAmount = (baseTotal * markup) / 100;
-        return baseTotal + markupAmount;
+    const calculateTotalCost = () => {
+        const baseTotal = laborHours + partsCost;
+        return baseTotal + (baseTotal * markupPrice) / 100;
     };
-
     // Add a new part name
     const addPart = () => {
         if (!newPartName.trim()) {
@@ -151,20 +146,53 @@ export default function QuotationDetailPage() {
     };
 
     // Save updated parts, parts cost, markup and recalc total cost
+    // const updateQuotation = async () => {
+    //     if (!quotation) return;
+    //     setUpdating(true);
+
+    //     const totalCost = calculateTotalCost();
+
+    //     const { error } = await supabase
+    //         .from("quotations")
+    //         .update({
+    //             parts_needed: parts.map((p) => JSON.stringify(p)), // Store as array of JSON strings
+    //             partscost: partsCost,
+    //             markupPrice,
+    //             laborCost,
+    //             totalcost: totalCost,
+    //         })
+    //         .eq("id", quotation.id);
+
+    //     if (error) {
+    //         toast.error("Failed to update quotation");
+    //         console.error(error);
+    //     } else {
+    //         toast.success("Quotation updated");
+    //         setQuotation({
+    //             ...quotation,
+    //             parts_needed: parts.map((p) => JSON.stringify(p)), // Store as array of JSON strings to match backend
+    //             partscost: partsCost,
+    //             markupPrice,
+    //             totalcost: totalCost,
+    //         });
+    //     }
+    //     setUpdating(false);
+    // };
     const updateQuotation = async () => {
         if (!quotation) return;
         setUpdating(true);
 
-        const totalCost = calculateTotalCost(quotation.laborcost || 0, partsCost, markupPrice);
+        const totalCost = calculateTotalCost();
 
         const { error } = await supabase
             .from("quotations")
             .update({
                 parts_needed: parts.map((p) => JSON.stringify(p)), // Store as array of JSON strings
                 partscost: partsCost,
+                laborcost: laborHours,
                 markupPrice,
-                laborCost,
                 totalcost: totalCost,
+                status: "pending-approval"
             })
             .eq("id", quotation.id);
 
@@ -172,21 +200,36 @@ export default function QuotationDetailPage() {
             toast.error("Failed to update quotation");
             console.error(error);
         } else {
-            toast.success("Quotation updated");
+            toast.success("Quotation updated successfully");
             setQuotation({
                 ...quotation,
                 parts_needed: parts.map((p) => JSON.stringify(p)), // Store as array of JSON strings to match backend
+                laborcost: laborHours,
                 partscost: partsCost,
-                markupPrice,
                 totalcost: totalCost,
             });
         }
+
         setUpdating(false);
     };
+
+    // Modal save function
+    const saveLaborCost = () => {
+        if (!quotation) return;
+        const calculatedLaborCost = laborHours * laborRate; // calculate immediately
+        setQuotation({
+            ...quotation,
+            laborcost: calculatedLaborCost, // update quotation state
+        });
+        setModalOpen(false); // close modal
+    };
+
 
     useEffect(() => {
         if (id) fetchQuotation();
     }, [id]);
+
+
 
     if (loading) return <div className="text-center mt-10">Loading...</div>;
     if (!quotation) return <div className="text-center mt-10">Quotation not found</div>;
@@ -336,12 +379,10 @@ export default function QuotationDetailPage() {
                                         </DialogHeader>
                                         <div className="space-y-4">
                                             <Label>Labour Hours</Label>
-                                            <Input
-                                                type="number"
-                                                placeholder="Labor Hours"
-                                                value={laborHours}
-                                                onChange={(e) => setLaborHours(parseFloat(e.target.value) || 0)}
-                                            />
+                                            <Input type="number" value={laborHours} onChange={(e) => setLaborHours(parseFloat(e.target.value) || 0)} />
+                                            <Label>Labour Rate</Label>
+                                            <Input type="number" value={laborRate} onChange={(e) => setLaborRate(parseFloat(e.target.value) || 0)} />
+
 
                                             <div>
                                                 <label>Workshop Rate</label>
@@ -422,13 +463,9 @@ export default function QuotationDetailPage() {
                             <div>
                                 <strong>Labor Cost:</strong> R {quotation.laborcost?.toFixed(2)}
                             </div>
-                            <div>
-                                <strong>Parts Cost:</strong> R {partsCost.toFixed(2)}
-                            </div>
-                            <div>
-                                <strong>Total Cost:</strong> R{" "}
-                                {calculateTotalCost(quotation.laborcost || 0, partsCost, markupPrice).toFixed(2)}
-                            </div>
+                            <div><strong>Parts Cost: </strong> R{partsCost.toFixed(2)}</div>
+                            <div><strong>Total Cost: </strong> R{calculateTotalCost().toFixed(2)}</div>
+
                         </div>
 
                         {/* Created At Section */}
