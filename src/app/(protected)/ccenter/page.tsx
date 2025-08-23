@@ -72,6 +72,7 @@ interface Quotation {
   totalcost?: number
   created_by?: string
   jobcard_id?: number
+  type: string
 }
 
 export default function CostCenterPage() {
@@ -110,7 +111,8 @@ export default function CostCenterPage() {
           partscost,
           totalcost,
           created_by,
-          jobcard_id
+          jobcard_id,
+          type
         `)
         .order("created_at", { ascending: false })
         .is("markupPrice", null);
@@ -147,6 +149,17 @@ export default function CostCenterPage() {
     }
   }
 
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case "internal":
+        return "bg-green-100"
+      case "external":
+        return "bg-blue-100"
+      default:
+        return "bg-white"
+    }
+  }
+
   return (
     <div className="flex-1 space-y-4 p-4 pt-6">
       <div className="flex items-center justify-between">
@@ -170,11 +183,15 @@ export default function CostCenterPage() {
       <Tabs defaultValue="quotations" className="space-y-4">
         <TabsList>
           <TabsTrigger value="quotations">All Quotations</TabsTrigger>
-          <TabsTrigger value="pending">Pending Approval</TabsTrigger>
+          <TabsTrigger value="pending">Pending Submission</TabsTrigger>
+          <TabsTrigger value="pending-approval">Pending Approval</TabsTrigger>
+          <TabsTrigger value="rejected">Rejected</TabsTrigger>
           <TabsTrigger value="approved">Approved</TabsTrigger>
+          <TabsTrigger value="invoiced">Invoiced</TabsTrigger>
+          <TabsTrigger value="paid">Paid</TabsTrigger>
         </TabsList>
 
-        {['quotations', 'pending', 'approved'].map((tab) => (
+        {['quotations', 'pending', 'approved', 'rejected', 'invoiced', 'paid','pending-approval'].map((tab) => (
           <TabsContent key={tab} value={tab} className="space-y-4">
             <div className="grid gap-4">
               {loading ? (
@@ -185,12 +202,12 @@ export default function CostCenterPage() {
                 quotations
                   .filter(q => tab === 'quotations' || q.status === tab)
                   .map((quotation) => (
-                    <Card key={quotation.id}>
+                    <Card key={quotation.id} className={getTypeColor(quotation.type)}>
                       <CardHeader>
                         <div className="flex justify-between items-start">
                           <div>
-                            <CardTitle className="text-lg">
-                              {quotation.orderno || `Quotation ${quotation.id.slice(0, 8)}`}
+                            <CardTitle className="text-md">
+                              {quotation.orderno || `Quotation ${quotation.id.slice(0, 8)}`} : {quotation.type.toUpperCase()} QOUTE
                             </CardTitle>
                             <CardDescription>Created on {new Date(quotation.created_at).toLocaleString()}</CardDescription>
                           </div>

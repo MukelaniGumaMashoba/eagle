@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { redirect, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -116,6 +116,11 @@ export default function RegisterPage() {
             className="bg-blue-600 hover:bg-blue-700"
             onClick={() => document.getElementById("contact-form")?.scrollIntoView()}
           >
+            Register Company
+          </Button>
+          <Button size="lg" variant="outline" onClick={()=>{
+            redirect("/register/workshop")
+          }}>
             Register Workshop
           </Button>
         </div>

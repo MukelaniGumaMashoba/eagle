@@ -15,7 +15,7 @@ interface ProtectedLayoutProps {
 const roleNavigation = {
   'fleet manager': [
     { name: 'Dashboard', href: '/dashboard', Icon: <ChartBar /> },
-    { name: 'Jobs', href: '/jobs', Icon: <Briefcase /> },
+    { name: 'Jobs', href: '/jobsFleet', Icon: <Briefcase /> },
     { name: 'Drivers', href: '/drivers', Icon: <Users /> },
     { name: 'Vehicles', href: '/vehicles', Icon: <Car /> },
     { name: 'Qoute Management', href: '/qoutation', Icon: <Building2 /> },
@@ -26,17 +26,18 @@ const roleNavigation = {
     { name: 'Dashboard', href: '/dashboard', Icon: <ChartBar /> },
     { name: 'Jobs', href: '/jobs', Icon: <Briefcase /> },
     { name: 'Call Center', href: '/callcenter', Icon: <Phone /> },
-    { name: 'Technicians', href: '/callcenter/technician', Icon: <Wrench /> },
+    { name: 'Technicians Assignment', href: '/callcenter/technician', Icon: <Wrench /> },
     { name: 'Technician Vehicles', href: '/callcenter/breakdowns', Icon: <Truck /> },
-    { name: 'Subcontractors', href: '/callcenter/clients', Icon: <Users /> },
+    { name: 'Workshops', href: '/callcenter/clients', Icon: <Users /> },
     { name: 'Qoute Management', href: '/ccenter', Icon: <Building2 /> },
     // { name: 'Profile', href: '/profile', Icon: <Settings2Icon /> },
     { name: 'System Settings', href: '/settings', Icon: <Settings /> },
   ],
   'customer': [
     { name: 'Dashboard', href: '/dashboard', Icon: <ChartBar /> },
-    { name: 'Technician', href: '/extechnicians', Icon: <Users /> },
-    { name: 'Vehicles', href: '/exvehicles', Icon: <Car /> },
+    { name: 'Technicians Assignment', href: '/extechnicians', Icon: <Users /> },
+    { name: 'Workshop Vehicles', href: '/exvehicles', Icon: <Car /> },
+    { name: 'Qoute Management', href: '/workshopQoute', Icon: <Building2 /> },
     { name: 'User Management', href: '/userManagement', Icon: <PlusSquare /> },
     // { name: 'Profile', href: '/profile', Icon: <Settings2Icon /> },
     { name: 'System Settings', href: '/settings', Icon: <Settings /> },
@@ -147,7 +148,7 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
           {/* Footer */}
           <div className="p-4 border-t">
             <div className="mb-2 text-xs text-gray-500 text-center">
-              Role: {userRole}
+              Role: {userRole ? `${userRole}` : "No User"}
             </div>
             <Button
               onClick={handleLogout}

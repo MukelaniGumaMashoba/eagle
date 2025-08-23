@@ -73,7 +73,8 @@ interface JobAssignment {
     status: string
     assigned_technician?: string
     created_at: string
-    updated_at?: string
+    updated_at?: string,
+    technician_id: number
 }
 
 export default function TechniciansPage() {
@@ -85,6 +86,7 @@ export default function TechniciansPage() {
     const [selectedJob, setSelectedJob] = useState<JobAssignment | null>(null)
     const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false)
     const [isAddTechnicianOpen, setIsAddTechnicianOpen] = useState(false)
+    const [breakdown, setBreakdown] = useState([]);
 
     // Form state for adding technician
     const [formData, setFormData] = useState({
@@ -120,9 +122,18 @@ export default function TechniciansPage() {
 
     const refreshData = async () => {
         // Fetch technicians
+        const { data: user, error: userError } = await supabase.auth.getUser()
+        const currentUser = user.user?.id;
+
+        if (!currentUser) {
+            setTechnicians([])
+            return;
+        }
+
         const { data: techniciansData, error: techError } = await supabase
             .from('technicians')
             .select('*')
+            .eq('created_by', currentUser)
         if (techError) {
             console.error('Error fetching technicians:', techError)
             setTechnicians([])
@@ -164,8 +175,6 @@ export default function TechniciansPage() {
         const { data: jobs, error: jobsError } = await supabase
             .from('job_assignments')
             .select('*')
-            .eq('status', 'Breakdown Request')
-            .is('technician_id', null)
         if (jobsError) {
             console.error('Error fetching available jobs:', jobsError)
         } else {
@@ -692,7 +701,7 @@ export default function TechniciansPage() {
                     <TabsList>
                         <TabsTrigger value="directory">Technician Directory</TabsTrigger>
                         {/* <TabsTrigger value="assignments">Job Assignments</TabsTrigger> */}
-                        <TabsTrigger value="performance">Performance</TabsTrigger>
+                        <TabsTrigger value="performance">Technician Rating</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="directory" className="space-y-4">
@@ -784,13 +793,13 @@ export default function TechniciansPage() {
                                             <Dialog open={isAssignDialogOpen && selectedTechnician?.id === technician.id} onOpenChange={setIsAssignDialogOpen}>
                                                 <DialogTrigger asChild>
                                                     <Button size="sm" className="flex-1" onClick={() => setSelectedTechnician(technician)}>
-                                                        Assign Job
+                                                        Assigned Jobs
                                                     </Button>
                                                 </DialogTrigger>
                                                 <DialogContent className="max-w-2xl">
                                                     <DialogHeader>
-                                                        <DialogTitle>Assign Job to {technician.name}</DialogTitle>
-                                                        <DialogDescription>Select a job to assign to this technician</DialogDescription>
+                                                        <DialogTitle>Assigned Jobs to {technician.name}</DialogTitle>
+                                                        <DialogDescription>Job to Assign to this technician</DialogDescription>
                                                     </DialogHeader>
                                                     {/* Job search input */}
                                                     <Input
@@ -802,9 +811,12 @@ export default function TechniciansPage() {
                                                     {/* Scrollable jobs list */}
                                                     <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
                                                         {(availableJobs.filter(job =>
-                                                            job.job_id.toLowerCase().includes(jobSearchTerm.toLowerCase()) ||
-                                                            job.description.toLowerCase().includes(jobSearchTerm.toLowerCase()) ||
-                                                            job.location.toLowerCase().includes(jobSearchTerm.toLowerCase())
+                                                            String(job.technician_id) === String(technician.id) &&
+                                                            (
+                                                                job.job_id?.toLowerCase().includes(jobSearchTerm.toLowerCase()) ||
+                                                                job.description?.toLowerCase().includes(jobSearchTerm.toLowerCase()) ||
+                                                                job.location?.toLowerCase().includes(jobSearchTerm.toLowerCase())
+                                                            )
                                                         )).map((job) => {
                                                             return (
                                                                 <Card key={job.id} className="hover:bg-gray-50">
@@ -830,7 +842,7 @@ export default function TechniciansPage() {
                                                                                 <p>Estimated time not available</p>
                                                                             </div>
                                                                         </div>
-                                                                        <CardFooter className="mt-2">
+                                                                        {/* <CardFooter className="mt-2">
                                                                             <Button variant={"outline"} className="bg-transparent"
                                                                                 onClick={async () => {
                                                                                     if (!technician) {
@@ -878,7 +890,7 @@ export default function TechniciansPage() {
                                                                             >
                                                                                 Assign
                                                                             </Button>
-                                                                        </CardFooter>
+                                                                        </CardFooter> */}
                                                                     </CardContent>
                                                                 </Card>
                                                             )
@@ -887,7 +899,19 @@ export default function TechniciansPage() {
                                                 </DialogContent>
                                             </Dialog>
                                         </div>
-                                        <div className="mt-2">
+                                        {/* <div className="mt-2">
+                                            <h4 className="font-semibold text-sm">Assigned Breakdown:</h4>
+                                            <ul className="list-disc ml-5 text-xs">
+                                                {technician.assignedJobs && technician.assignedJobs.length > 0 ? (
+                                                    technician.assignedJobs.map((job: JobAssignment) => (
+                                                        <li key={job.id}>{job.job_id} - {job.description} - {job.status}</li>
+                                                    ))
+                                                ) : (
+                                                    <li className="text-gray-500">No breakdown assigned to this technician.</li>
+                                                )}
+                                            </ul>
+                                        </div> */}
+                                        {/* <div className="mt-2">
                                             <h4 className="font-semibold text-sm">Assigned Jobs:</h4>
                                             <ul className="list-disc ml-5 text-xs">
                                                 {technician.assignedJobs && technician.assignedJobs.length > 0 ? (
@@ -898,7 +922,7 @@ export default function TechniciansPage() {
                                                     <li className="text-gray-500">No jobs assigned to this technician.</li>
                                                 )}
                                             </ul>
-                                        </div>
+                                        </div> */}
                                     </CardContent>
                                 </Card>
                             ))}

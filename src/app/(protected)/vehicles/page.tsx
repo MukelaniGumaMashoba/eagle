@@ -15,9 +15,12 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Dialog, DialogHeader, DialogContent, DialogTrigger, DialogTitle, DialogClose, DialogDescription } from '@/components/ui/dialog'
+import Link from 'next/link'
 
 
 const vehicleFormSchema = z.object({
+  id: z.number().int().min(1, 'Registration number is required'),
   registration_number: z.string().min(1, 'Registration number is required'),
   engine_number: z.string().min(1, 'Engine number is required'),
   vin_number: z.string().min(1, 'VIN number is required'),
@@ -44,17 +47,90 @@ const vehicleFormSchema = z.object({
   created_by: z.string().optional(),
   created_at: z.string().optional(),
   updated_at: z.string().optional(),
+  tech_id: z.number().int().optional(),
 })
 
 type VehicleFormValues = z.infer<typeof vehicleFormSchema>
 
+
+interface Technician {
+  id: number
+  name: string,
+  phone: string,
+  email: string
+}
+
 export default function Vehicles() {
   const [vehicles, setVehicles] = useState<VehicleFormValues[]>([])
   const [isAddingVehicle, setIsAddingVehicle] = useState(false)
+  const [selectedVehicleReg, setSelectedVehicleReg] = useState("");
   const router = useRouter()
   const supabase = createClient()
   const [search, setSearch] = useState('')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const useWorkshopId = () => {
+    const [workshopId, setWorkshopId] = useState<string | null>(null);
+    useEffect(() => {
+      const fetchWorkshopId = async () => {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const userId = sessionData?.session?.user?.id;
+        if (!userId) return;
+
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('workshop_id')
+          .eq('id', userId)
+          .single();
+
+        if (data && !error) {
+          setWorkshopId(data.workshop_id);
+        }
+      };
+
+      fetchWorkshopId();
+    }, []);
+
+    return workshopId;
+  };
+  const workshopId = useWorkshopId();
+  const [technicians, setTechnicians] = useState<Technician[]>([])
+  const [filteredTechs, setFilteredTechs] = useState<Technician[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  useEffect(() => {
+    const getTechnician = async () => {
+      // Fetch technicians
+      const { data: user, error: userError } = await supabase.auth.getUser()
+      const currentUser = user.user?.id;
+
+      if (!currentUser) {
+        setTechnicians([])
+        return;
+      }
+      const { data: techniciansData, error: techError } = await supabase
+        .from('technicians')
+        .select('*')
+        .eq('type', 'internal')
+
+      setTechnicians(techniciansData as [])
+
+      if (techError) {
+        console.error('Error fetching technicians:', techError)
+        setTechnicians([])
+        return
+      }
+
+    }
+    getTechnician();
+  }, []);
+
+  useEffect(() => {
+    const filtered = technicians.filter((tech) =>
+      tech.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredTechs(filtered as []);
+  }, [searchTerm, technicians]);
 
   const handleUploadFile = () => {
     if (!selectedFile) return;
@@ -95,7 +171,7 @@ export default function Vehicles() {
 
   useEffect(() => {
     const fetchVehicles = async () => {
-      const { data: vehicles, error } = await supabase.from('vehiclesc').select('*')
+      const { data: vehicles, error } = await supabase.from('vehiclesc').select('*').or('type.is.null,type.eq.internal');
       if (error) {
         console.error("the error is", error.name, error.message)
       } else {
@@ -185,6 +261,34 @@ export default function Vehicles() {
     }
     return <Badge className={colors[priority as keyof typeof colors]}>{priority}</Badge>
   }
+
+  // async function handleAssign(regno: string, id: number) {
+  //   const { data: datav, error: errorv } = await supabase.from('vehiclesc').
+  //     update({
+  //       tech_id: id,
+  //     })
+  //     .eq('registration_number', regno)
+  //   if (!datav || errorv) {
+  //     console.log("Issue in assigning")
+  //   }
+  //   console.log("Success")
+  // }
+
+  async function handleAssign(vehicleId: number, techId: number) {
+    const { data: datav, error: errorv } = await supabase
+      .from('vehiclesc')
+      .update({ tech_id: techId })
+      .eq('id', vehicleId)
+      .select();
+
+    if (errorv) {
+      console.log("Issue in assigning: " + errorv.message);
+      alert("Failed to assign technician: " + errorv.message);
+      return;
+    }
+    console.log("Technician assigned successfully:", datav);
+  }
+
 
   return (
     <div className="space-y-6">
@@ -682,11 +786,13 @@ export default function Vehicles() {
                   <TableHead>Color</TableHead>
                   <TableHead>Type</TableHead>
                   <TableHead>Priority</TableHead>
+                  <TableHead>Assigned Technician</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredVehicles.map((vehicle, index) => (
-                  <TableRow key={index} className={getRowBg(vehicle.vehicle_type)}>
+                  <TableRow key={vehicle.id} className={getRowBg(vehicle?.vehicle_type)}>
                     <TableCell className="flex items-center gap-2">
                       {getVehicleTypeIcon(vehicle.vehicle_type)}
                       <span>{vehicle.make} {vehicle.model}</span>
@@ -697,6 +803,64 @@ export default function Vehicles() {
                     <TableCell>{vehicle.colour}</TableCell>
                     <TableCell className="capitalize">{vehicle.vehicle_type}</TableCell>
                     <TableCell>{getPriorityBadge(vehicle.vehicle_priority)}</TableCell>
+                    <TableCell>
+                      {technicians.find(tech => tech.id === vehicle.tech_id)?.name || " "}
+                    </TableCell>
+
+                    <TableCell>
+                      <div className="flex flex-row gap-3">
+                        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                          <DialogTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className="px-4 py-2"
+                              onClick={() => {
+                                setSelectedVehicleReg(vehicle.registration_number);
+                                setDialogOpen(true);
+                              }}
+                            >
+                              Assign
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="sm:max-w-md w-full">
+                            <DialogTitle>Assign Technician</DialogTitle>
+                            <DialogDescription>
+                              Assign technician for vehicle with registration: <strong>{selectedVehicleReg}</strong>
+                            </DialogDescription>
+                            {/* technician search & list */}
+                            <Input
+                              placeholder="Search technician by name"
+                              value={searchTerm}
+                              onChange={(e) => setSearchTerm(e.target.value)}
+                              className="mb-4"
+                            />
+                            <div className="max-h-60 overflow-auto space-y-2">
+                              {filteredTechs.length > 0 ? (
+                                filteredTechs.map((tech, index) => (
+                                  <button
+                                    key={index}
+                                    onClick={() => {
+                                      handleAssign(vehicle.id, tech.id);
+                                      setDialogOpen(false);
+                                    }}
+                                    className="w-full text-left px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                                  >
+                                    {tech.name}
+                                  </button>
+                                ))
+                              ) : (
+                                <p className="text-center text-sm text-gray-500 py-4">No technicians found</p>
+                              )}
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+
+                        <Link href={`/vehicles/${vehicle.id}`}>
+                          <Button variant="default">View</Button>
+                        </Link>
+
+                      </div>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

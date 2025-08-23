@@ -127,23 +127,27 @@ export type Database = {
       }
       breakdowns: {
         Row: {
-          actual_cost: number | null
           breakdown_location: string | null
           breakdown_type: string | null
           client_type: string | null
+          colour: string | null
           coordinates: Json | null
           coverage_type: string | null
           created_at: string | null
+          created_by: string | null
           driver_name: string | null
           driver_phone: string | null
           emergency_type: string | null
-          estimated_cost: number | null
+          engine_number: string | null
           external_client_id: string | null
+          fuel_type: string | null
           id: number
           image_urls: string | null
+          inspected: boolean | null
           insurance_provider: string | null
           issue_description: string | null
           job_id: number | null
+          license_expiry_date: string | null
           location: string | null
           make: string | null
           model: string | null
@@ -153,32 +157,43 @@ export type Database = {
           owner_phone: string | null
           phone: string | null
           policy_number: string | null
-          priority: string | null
           registration: string | null
+          registration_date: string | null
           reported_at: string | null
           service_history: Json | null
           status: string | null
+          sub_model: string | null
+          tech_id: number | null
+          tow_capacity: number | null
+          tow_weight: number | null
+          transmission_type: string | null
+          updated_at: string | null
           vin: string | null
+          workshop_id: string | null
           year: number | null
         }
         Insert: {
-          actual_cost?: number | null
           breakdown_location?: string | null
           breakdown_type?: string | null
           client_type?: string | null
+          colour?: string | null
           coordinates?: Json | null
           coverage_type?: string | null
           created_at?: string | null
+          created_by?: string | null
           driver_name?: string | null
           driver_phone?: string | null
           emergency_type?: string | null
-          estimated_cost?: number | null
+          engine_number?: string | null
           external_client_id?: string | null
+          fuel_type?: string | null
           id?: number
           image_urls?: string | null
+          inspected?: boolean | null
           insurance_provider?: string | null
           issue_description?: string | null
           job_id?: number | null
+          license_expiry_date?: string | null
           location?: string | null
           make?: string | null
           model?: string | null
@@ -188,32 +203,43 @@ export type Database = {
           owner_phone?: string | null
           phone?: string | null
           policy_number?: string | null
-          priority?: string | null
           registration?: string | null
+          registration_date?: string | null
           reported_at?: string | null
           service_history?: Json | null
           status?: string | null
+          sub_model?: string | null
+          tech_id?: number | null
+          tow_capacity?: number | null
+          tow_weight?: number | null
+          transmission_type?: string | null
+          updated_at?: string | null
           vin?: string | null
+          workshop_id?: string | null
           year?: number | null
         }
         Update: {
-          actual_cost?: number | null
           breakdown_location?: string | null
           breakdown_type?: string | null
           client_type?: string | null
+          colour?: string | null
           coordinates?: Json | null
           coverage_type?: string | null
           created_at?: string | null
+          created_by?: string | null
           driver_name?: string | null
           driver_phone?: string | null
           emergency_type?: string | null
-          estimated_cost?: number | null
+          engine_number?: string | null
           external_client_id?: string | null
+          fuel_type?: string | null
           id?: number
           image_urls?: string | null
+          inspected?: boolean | null
           insurance_provider?: string | null
           issue_description?: string | null
           job_id?: number | null
+          license_expiry_date?: string | null
           location?: string | null
           make?: string | null
           model?: string | null
@@ -223,12 +249,19 @@ export type Database = {
           owner_phone?: string | null
           phone?: string | null
           policy_number?: string | null
-          priority?: string | null
           registration?: string | null
+          registration_date?: string | null
           reported_at?: string | null
           service_history?: Json | null
           status?: string | null
+          sub_model?: string | null
+          tech_id?: number | null
+          tow_capacity?: number | null
+          tow_weight?: number | null
+          transmission_type?: string | null
+          updated_at?: string | null
           vin?: string | null
+          workshop_id?: string | null
           year?: number | null
         }
         Relationships: [
@@ -237,6 +270,20 @@ export type Database = {
             columns: ["job_id"]
             isOneToOne: false
             referencedRelation: "job_assignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "breakdowns_tech_id_fkey"
+            columns: ["tech_id"]
+            isOneToOne: false
+            referencedRelation: "technicians"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "breakdowns_workshop_id_fkey"
+            columns: ["workshop_id"]
+            isOneToOne: false
+            referencedRelation: "workshop"
             referencedColumns: ["id"]
           },
         ]
@@ -1016,6 +1063,7 @@ export type Database = {
           job_type: string | null
           jobcard_id: number | null
           laborcost: number | null
+          labourcost: number | null
           markupPrice: number | null
           orderno: string | null
           paid: boolean | null
@@ -1047,6 +1095,7 @@ export type Database = {
           job_type?: string | null
           jobcard_id?: number | null
           laborcost?: number | null
+          labourcost?: number | null
           markupPrice?: number | null
           orderno?: string | null
           paid?: boolean | null
@@ -1078,6 +1127,7 @@ export type Database = {
           job_type?: string | null
           jobcard_id?: number | null
           laborcost?: number | null
+          labourcost?: number | null
           markupPrice?: number | null
           orderno?: string | null
           paid?: boolean | null
@@ -1111,6 +1161,42 @@ export type Database = {
             columns: ["jobcard_id"]
             isOneToOne: false
             referencedRelation: "job_card"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      technician_vassign: {
+        Row: {
+          created_at: string
+          id: number
+          tech_id: number | null
+          vehicle_id: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          tech_id?: number | null
+          vehicle_id?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          tech_id?: number | null
+          vehicle_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "technician_vassign_tech_id_fkey"
+            columns: ["tech_id"]
+            isOneToOne: false
+            referencedRelation: "technicians"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "technician_vassign_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehiclesc"
             referencedColumns: ["id"]
           },
         ]
@@ -1364,6 +1450,7 @@ export type Database = {
           sub_model: string | null
           take_on_kilometers: number
           tank_capacity: number | null
+          tech_id: number | null
           transmission_type: string | null
           type: string | null
           updated_at: string | null
@@ -1396,6 +1483,7 @@ export type Database = {
           sub_model?: string | null
           take_on_kilometers: number
           tank_capacity?: number | null
+          tech_id?: number | null
           transmission_type?: string | null
           type?: string | null
           updated_at?: string | null
@@ -1428,6 +1516,7 @@ export type Database = {
           sub_model?: string | null
           take_on_kilometers?: number
           tank_capacity?: number | null
+          tech_id?: number | null
           transmission_type?: string | null
           type?: string | null
           updated_at?: string | null
@@ -1442,6 +1531,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vehiclesc_tech_id_fkey"
+            columns: ["tech_id"]
+            isOneToOne: false
+            referencedRelation: "technicians"
             referencedColumns: ["id"]
           },
         ]
@@ -1470,6 +1566,7 @@ export type Database = {
           street: string | null
           town: string | null
           trading_name: string | null
+          validated: string | null
           vat_cert_expiry_date: string | null
           vat_certificate: string | null
           vat_number: number | null
@@ -1500,6 +1597,7 @@ export type Database = {
           street?: string | null
           town?: string | null
           trading_name?: string | null
+          validated?: string | null
           vat_cert_expiry_date?: string | null
           vat_certificate?: string | null
           vat_number?: number | null
@@ -1530,6 +1628,7 @@ export type Database = {
           street?: string | null
           town?: string | null
           trading_name?: string | null
+          validated?: string | null
           vat_cert_expiry_date?: string | null
           vat_certificate?: string | null
           vat_number?: number | null

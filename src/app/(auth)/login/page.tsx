@@ -81,7 +81,7 @@ export default function LoginPage() {
             {isPending ? "Signing in..." : "Sign in"}
           </Button>
         </CardFooter>
-      </form>
+      </form >
     </>
   )
 }
