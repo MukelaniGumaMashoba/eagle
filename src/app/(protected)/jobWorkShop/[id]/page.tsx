@@ -210,7 +210,7 @@ export default function FleetJobDetailPage() {
     return (
         <>
 
-            <Link href="/jobs">
+            <Link href="/jobWorkShop">
                 <Button variant="ghost" size="sm">
                     <ArrowLeft className="h-4 w-4 mr-2" />
                     Back to Jobs

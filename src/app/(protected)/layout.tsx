@@ -148,7 +148,7 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
           {/* Footer */}
           <div className="p-4 border-t">
             <div className="mb-2 text-xs text-gray-500 text-center">
-              Role: {userRole}
+              Role: {userRole ? `${userRole}` : "No User"}
             </div>
             <Button
               onClick={handleLogout}

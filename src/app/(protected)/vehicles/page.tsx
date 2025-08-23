@@ -16,6 +16,7 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Dialog, DialogHeader, DialogContent, DialogTrigger, DialogTitle, DialogClose, DialogDescription } from '@/components/ui/dialog'
+import Link from 'next/link'
 
 
 const vehicleFormSchema = z.object({
@@ -853,7 +854,11 @@ export default function Vehicles() {
                             </div>
                           </DialogContent>
                         </Dialog>
-                        <Button variant="default">View</Button>
+
+                        <Link href={`/vehicles/${vehicle.id}`}>
+                          <Button variant="default">View</Button>
+                        </Link>
+
                       </div>
                     </TableCell>
                   </TableRow>

@@ -17,6 +17,7 @@ import { toast } from 'sonner'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Dialog, DialogHeader, DialogContent, DialogTrigger, DialogTitle, DialogClose, DialogDescription } from '@/components/ui/dialog'
 import Vehicles from '../vehicles/page'
+import Link from 'next/link'
 
 
 // Define the Zod schema for validation of breakdowns form data
@@ -772,7 +773,10 @@ export default function ExVehicles() {
                                                         </div>
                                                     </DialogContent>
                                                 </Dialog>
-                                                <Button variant="default">View</Button>
+                                                <Link href={`/exvehicles/${vehicle.id}`}>
+                                                    <Button variant="default">View</Button>
+                                                </Link>
+
                                             </div>
                                         </TableCell>
                                     </TableRow>

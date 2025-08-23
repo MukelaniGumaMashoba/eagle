@@ -10,6 +10,7 @@ import { MapPin, Phone, Building2, Banknote, FileText, Car, ArrowLeftCircle } fr
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { toast } from "sonner";
 
 interface Workshop {
     id: string;
@@ -48,6 +49,26 @@ export default function WorkshopDetailsPage() {
     const supabase = createClient();
     const [workshop, setWorkshop] = useState<Workshop | null>(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    const handleSubmit = async (status: string, workshopId: string) => {
+        setLoading(true);
+        setError(null);
+
+        try {
+            const { data, error } = await supabase
+                .from("workshop")
+                .update({ validated: status })
+                .eq("id", workshopId);
+            console.log("updated: " + data)
+            toast.success("Successfully updated workshop");
+        } catch (err: any) {
+            setError("Failed to update status: " + err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
 
     useEffect(() => {
         const fetchWorkshop = async () => {
@@ -195,6 +216,32 @@ export default function WorkshopDetailsPage() {
                     <p>{workshop.province} - {workshop.postal_code}</p>
                 </CardContent>
             </Card>
+
+            <div className="flex flex-row gap-3">
+                <Button
+                    onClick={() => handleSubmit("validated", workshop.id)}
+                    disabled={loading}
+                    variant="default"
+                >
+                    Validated
+                </Button>
+
+                <Button
+                    onClick={() => handleSubmit("rejected", workshop.id)}
+                    disabled={loading}
+                    variant="destructive"
+                >
+                    Block
+                </Button>
+
+                <Button
+                    onClick={() => handleSubmit("pending", workshop.id)}
+                    disabled={loading}
+                    variant="secondary"
+                >
+                    Under Review
+                </Button>
+            </div>
         </div>
     );
 }

@@ -76,9 +76,10 @@ export default function ExternalClientsPage() {
         .from("workshop")
         .update({ validated: status })
         .eq("id", workshopId);
-      console.log("updated: " + data)
+      console.log("updated:", data);
+      toast.success("Successfully updated workshop");
     } catch (err: any) {
-      setError("Failed to update status: " + err.message);
+      setError("Failed to update status: " + (err?.message || err));
     } finally {
       setLoading(false);
     }
@@ -137,14 +138,14 @@ export default function ExternalClientsPage() {
           </div>
           <div className="flex flex-row justify-end gap-3">
             <Link href={`/callcenter/clients/${w.id}`}>
-              <Button variant="outline" size="sm">
-                <Eye className="h-4 w-4 mr-2" />
+              <Button variant="outline">
+                <Eye className="h-6 w-4 mr-2" />
                 View Application
               </Button>
             </Link>
             <Dialog>
               <DialogTrigger asChild>
-                <Button>Edit</Button>
+                <Button>Quick Edit</Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>

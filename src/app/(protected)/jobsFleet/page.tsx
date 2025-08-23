@@ -67,10 +67,7 @@ interface Job {
   location: string;
   coordinates: { lat: number; lng: number };
   technician_id: number | null;
-  technicians: {
-    name: string;
-    phone: string;
-  } | null;
+  technicians?: Technician;
   estimatedCost?: number;
   actualCost?: number;
   clientType: "internal" | "external";
@@ -86,9 +83,9 @@ interface Job {
 
 interface Technician {
   id: number,
-  first_name: string;
+  name: string;
   surname: string;
-  cell_phone: string;
+  phone: string;
   location: string;
   rating: string;
   specialties: string[],
@@ -130,6 +127,8 @@ export default function FleetJobsPage() {
         return "bg-green-100 text-green-800"
       case "cancelled":
         return "bg-red-100 text-red-800"
+      case "Breakdown Request":
+        return "bg-red-500 text-white"
       default:
         return "bg-gray-100 text-gray-800"
     }
@@ -193,7 +192,8 @@ export default function FleetJobsPage() {
       .select(`
       *,
       drivers (*),
-      vehiclesc (*)
+      vehiclesc (*),
+      technicians:technician_id(*)
     `)
       .neq('status', 'completed')
       .neq('status', 'cancelled')
@@ -215,9 +215,9 @@ export default function FleetJobsPage() {
     } else {
       const mappedTechnicians = data.map(tech => ({
         id: tech.id,
-        first_name: tech.name,
+        name: tech.name,
         surname: tech.name,
-        cell_phone: tech.phone,
+        phone: tech.phone,
         location: tech.location,
         rating: tech.rating?.toString() ?? "",
         specialties: tech.specialties
@@ -549,10 +549,10 @@ export default function FleetJobsPage() {
                             {job.technicians ? (
                               <>
                                 <p className="text-sm">
-                                  <strong>Tech:</strong> {job.technicians.name}
+                                  <strong>Tech:</strong> {job.technicians?.name}
                                 </p>
                                 <p className="text-sm">
-                                  <strong>Phone:</strong> {job.technicians.phone}
+                                  <strong>Phone:</strong> {job.technicians?.phone}
                                 </p>
                               </>
                             ) : (
@@ -573,7 +573,7 @@ export default function FleetJobsPage() {
                             </p>
 
                             <p className="text-sm">
-                              <strong>Job Created Time:</strong> {job.created_at || "TBC"}
+                              <strong>Job Created Time: </strong>{new Date(job.created_at).toLocaleDateString()}{" "}{new Date(job.created_at).toLocaleTimeString()}
                             </p>
                             <p className="text-sm">
                               <strong>Time Completed:</strong> {job.completed_at || "TBC"}
@@ -673,7 +673,7 @@ export default function FleetJobsPage() {
 
                         <div className="flex justify-between items-center">
                           <div className="flex gap-2">
-                            <Link href={`/jobs/${job.id}`}>
+                            <Link href={`/jobsFleet/${job.id}`}>
                               <Button variant="outline" size="sm">
                                 <Eye className="h-4 w-4 mr-2" />
                                 View Details
@@ -730,7 +730,7 @@ export default function FleetJobsPage() {
 
           <TabsContent value="kanban" className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {["pending", "inprogress", "awaiting-approval", "completed"].map((status) => (
+              {["pending", "inprogress", "awaiting-approval", "completed", "Breakdown Request"].map((status) => (
                 <Card key={status}>
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-medium capitalize">
@@ -824,7 +824,7 @@ export default function FleetJobsPage() {
               <CardContent>
                 <div className="space-y-4">
                   {[
-                    "pending",
+                    "Breakdown Request",
                     "assigned",
                     "inprogress",
                     "awaiting-approval",
@@ -888,11 +888,11 @@ export default function FleetJobsPage() {
                   >
                     <div>
                       <p className="font-bold">
-                        {tech.first_name}
+                        {tech.name}
                       </p>
                       <p className="text-sm text-muted-foreground">
                         <strong>Location:</strong> {tech.location} <br />
-                        <strong>Phone:</strong> {tech.cell_phone} <br />
+                        <strong>Phone:</strong> {tech.phone} <br />
                         <strong>Rating:</strong> {tech.rating}
                       </p>
                       <div className="text-sm text-muted-foreground">
@@ -901,7 +901,7 @@ export default function FleetJobsPage() {
                     </div>
                     <Button
                       size="sm"
-                      onClick={() => assignTechnicianToJob(tech.id, `${tech.first_name}`)}
+                      onClick={() => assignTechnicianToJob(tech.id, `${tech.name}`)}
                     >
                       Assign
                     </Button>

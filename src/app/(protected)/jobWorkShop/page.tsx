@@ -957,7 +957,7 @@ export default function FleetJobsPage() {
 
                         <div className="flex justify-start items-start gap-3">
                           <div className="flex gap-2">
-                            <Link href={`/jobs/${job.id}`}>
+                            <Link href={`/jobWorkshop/${job.id}`}>
                               <Button variant="outline" size="sm">
                                 <Eye className="h-4 w-4 mr-2" />
                                 View Details
