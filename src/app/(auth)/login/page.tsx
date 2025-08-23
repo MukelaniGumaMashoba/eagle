@@ -15,14 +15,38 @@ export default function LoginPage() {
   const router = useRouter()
   const [isPending, startTransition] = useTransition();
 
+  // const handleSubmit = (formData: FormData) => {
+  //   setError(null);
+  //   startTransition(async () => {
+  //     try {
+  //       await login(formData);
+  //     } catch (err: any) {
+  //       console.error(err);
+  //     }
+  //   });
+  // };
+
   const handleSubmit = (formData: FormData) => {
     setError(null);
+    setIsLoading(true);
+
     startTransition(async () => {
       try {
-        await login(formData);
+        const result = await login(formData);
+
+        if (!result.success) {
+          setError(result.message ?? "An unknown error occurred."); // ✅ Show error in UI
+          setIsLoading(false);
+          return;
+        }
+
+        // ✅ Redirect only on success
+        router.push("/");
       } catch (err: any) {
-        setError("Login failed. Please try again.");
-        console.error(err);
+        console.error("Unexpected error:", err);
+        setError("Something went wrong. Please try again.");
+      } finally {
+        setIsLoading(false);
       }
     });
   };
