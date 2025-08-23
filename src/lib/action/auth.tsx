@@ -14,7 +14,8 @@ export async function login(formData: FormData) {
   const { error, data: resData } = await supabase.auth.signInWithPassword(data);
   if (error) {
     console.log(error);
-    redirect(`/login?message=${error.message}`);
+    // redirect(`/login?message=${error.message}`);
+    return { success: false, message: error.message }; // ✅ Return instead of redirect
   }
 
   console.log(resData.user.user_metadata.role);
@@ -24,7 +25,8 @@ export async function login(formData: FormData) {
   cookieStore.set('role', resData.user.user_metadata.role)
 
   revalidatePath("/", "layout");
-  redirect("/");
+  // redirect("/");
+  return { success: true }; // ✅ Let frontend handle redirect
 }
 
 export async function signup(formData: FormData) {

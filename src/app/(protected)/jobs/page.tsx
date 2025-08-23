@@ -239,7 +239,8 @@ export default function FleetJobsPage() {
       .from('job_assignments')
       .update({
         technician_id: technicianId,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
+        status: "assigned"
       })
       .eq('id', selectedJobForTech.id);
 
