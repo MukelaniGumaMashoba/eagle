@@ -68,6 +68,9 @@ export default function Vehicles() {
   const supabase = createClient()
   const [search, setSearch] = useState('')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [selectedVehicleId, setSelectedVehicleId] = useState<number | null>(null);
+
+
   const useWorkshopId = () => {
     const [workshopId, setWorkshopId] = useState<string | null>(null);
     useEffect(() => {
@@ -816,11 +819,13 @@ export default function Vehicles() {
                               className="px-4 py-2"
                               onClick={() => {
                                 setSelectedVehicleReg(vehicle.registration_number);
+                                setSelectedVehicleId(vehicle.id); // NEW: store actual ID
                                 setDialogOpen(true);
                               }}
                             >
                               Assign
                             </Button>
+
                           </DialogTrigger>
                           <DialogContent className="sm:max-w-md w-full">
                             <DialogTitle>Assign Technician</DialogTitle>
@@ -838,10 +843,12 @@ export default function Vehicles() {
                               {filteredTechs.length > 0 ? (
                                 filteredTechs.map((tech, index) => (
                                   <button
-                                    key={index}
+                                    key={tech.id}
                                     onClick={() => {
-                                      handleAssign(vehicle.id, tech.id);
-                                      setDialogOpen(false);
+                                      if (selectedVehicleId) {
+                                        handleAssign(selectedVehicleId, tech.id);
+                                        setDialogOpen(false);
+                                      }
                                     }}
                                     className="w-full text-left px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition"
                                   >

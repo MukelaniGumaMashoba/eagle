@@ -21,6 +21,7 @@ const roleNavigation = {
     { name: 'Qoute Management', href: '/qoutation', Icon: <Building2 /> },
     // { name: 'Profile', href: '/profile', Icon: <Settings2Icon /> },
     { name: 'System Settings', href: '/settings', Icon: <Settings /> },
+    { name: 'User Management', href: '/userManagement', Icon: <PlusSquare /> },
   ],
   'call centre': [
     { name: 'Dashboard', href: '/dashboard', Icon: <ChartBar /> },
@@ -38,7 +39,7 @@ const roleNavigation = {
     { name: 'Technicians Assignment', href: '/extechnicians', Icon: <Users /> },
     { name: 'Workshop Vehicles', href: '/exvehicles', Icon: <Car /> },
     { name: 'Qoute Management', href: '/workshopQoute', Icon: <Building2 /> },
-    { name: 'User Management', href: '/userManagement', Icon: <PlusSquare /> },
+    // { name: 'User Management', href: '/userManagement', Icon: <PlusSquare /> },
     // { name: 'Profile', href: '/profile', Icon: <Settings2Icon /> },
     { name: 'System Settings', href: '/settings', Icon: <Settings /> },
   ],

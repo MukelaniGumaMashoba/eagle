@@ -155,9 +155,9 @@ export default function CostCenterPage() {
                 <h2 className="text-3xl font-bold tracking-tight">Quotation Management</h2>
                 <Dialog open={isCreateQuotationOpen} onOpenChange={setIsCreateQuotationOpen}>
                     <DialogTrigger asChild>
-                        <Button>
+                        {/* <Button>
                             <Plus className="h-4 w-4 mr-2" /> Create Quotation
-                        </Button>
+                        </Button> */}
                     </DialogTrigger>
                     <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
@@ -174,11 +174,11 @@ export default function CostCenterPage() {
                     <TabsTrigger value="quotations">All Quotations</TabsTrigger>
                     <TabsTrigger value="pending">Pending Approval</TabsTrigger>
                     <TabsTrigger value="approved">Approved</TabsTrigger>
-                    <TabsTrigger value="pending">Invoiced</TabsTrigger>
-                    <TabsTrigger value="approved">Paid</TabsTrigger>
+                    <TabsTrigger value="invoiced">Invoiced</TabsTrigger>
+                    <TabsTrigger value="paid">Paid</TabsTrigger>
                 </TabsList>
 
-                {['quotations', 'pending', 'approved'].map((tab) => (
+                {['quotations', 'pending', 'approved', 'paid', 'invoiced'].map((tab) => (
                     <TabsContent key={tab} value={tab} className="space-y-4">
                         <div className="grid gap-4">
                             {loading ? (
