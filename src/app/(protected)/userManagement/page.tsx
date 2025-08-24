@@ -22,6 +22,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Settings, MapPin, Plus, Edit, Trash2 } from "lucide-react"
 import { toast } from "sonner"
+import { signup } from "@/lib/action/auth"
+import { CreateUser } from "@/lib/action/createUser"
 
 interface User {
     id: string
@@ -268,7 +270,7 @@ export default function SettingsPage() {
                                             Create a new user account with appropriate role and permissions.
                                         </DialogDescription>
                                     </DialogHeader>
-                                    <form onSubmit={handleAddUser} className="space-y-4">
+                                    <form action={CreateUser}>
                                         <div>
                                             <Label htmlFor="name">Full Name</Label>
                                             <Input id="name" name="name" required />
@@ -278,8 +280,8 @@ export default function SettingsPage() {
                                             <Input id="email" name="email" type="email" required />
                                         </div>
                                         <div>
-                                            <Label htmlFor="call center">Call Center/Cost Center</Label>
-                                            <Input id="cost center" name="cost center" />
+                                            <Label htmlFor="phone">Phone Number</Label>
+                                            <Input id="phone" name="phone" required />
                                         </div>
                                         <div>
                                             <Label htmlFor="role">Role</Label>
@@ -288,11 +290,10 @@ export default function SettingsPage() {
                                                     <SelectValue placeholder="Select a role" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="admin">Administrator</SelectItem>
-                                                    <SelectItem value="fleet-manager">Fleet Manager</SelectItem>
-                                                    <SelectItem value="call-center">Call Center</SelectItem>
-                                                    <SelectItem value="cost-center">Cost Center</SelectItem>
-                                                    <SelectItem value="customer">Customer</SelectItem>
+                                                    {/* <SelectItem value="admin">Administrator</SelectItem> */}
+                                                    <SelectItem value="fleet manager">Fleet Manager</SelectItem>
+                                                    <SelectItem value="call centre">Call Center</SelectItem>
+                                                    <SelectItem value="cost centre">Cost Center</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>

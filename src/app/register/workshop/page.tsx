@@ -21,10 +21,18 @@ import {
   ChevronLeft,
   ChevronRight,
   Upload,
+  Users,
+  User,
 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
+import { createWorkshopWithAdmin } from "@/lib/action/createUser"
 
 interface WorkshopFormData {
+  adminEmail: string
+  adminPhone: string
+  adminLastName: string
+  adminFirstName: string
+  adminRole: string
   // 1. Workshop Details
   work_name: string
   trading_name: string
@@ -81,6 +89,7 @@ interface WorkshopData {
   vat_cert_expiry_date?: string | null;
   bbbee_level?: string;
   hdi_perc?: string;
+  vehicle_type?: string;
   bbbee_expire_date?: string | null;
   insurance_policy_number?: number;
   insurance_company_name?: string;
@@ -133,6 +142,7 @@ export default function WorkshopRegistrationPage() {
     { id: 5, title: "Vehicle Types", description: "Specify vehicle types handled", icon: <Car className="h-2 w-2" /> },
     { id: 6, title: "Banking Details", description: "Bank account information", icon: <Award className="h-2 w-2" /> },
     { id: 7, title: "Physical Address", description: "Workshop physical location", icon: <Building2 className="h-2 w-2" /> },
+    { id: 8, title: "Admin Registration", description: "Create user that will be able to control workshop", icon: <User className="h-2 w-2" /> },
   ]
 
   const [formData, setFormData] = useState<WorkshopFormData>({
@@ -164,6 +174,11 @@ export default function WorkshopRegistrationPage() {
     city: "",
     town: "",
     postal_code: 0,
+    adminEmail: "",
+    adminPhone: "",
+    adminLastName: "",
+    adminFirstName: "",
+    adminRole: ""
   })
 
   // Helpers
@@ -573,6 +588,69 @@ export default function WorkshopRegistrationPage() {
             </div>
           </>
         )
+      case 8:
+        return (
+          <div className="space-y-6">
+            <div className="text-center mb-6">
+              <Users className="h-12 w-12 text-blue-600 mx-auto mb-4" />
+              <h2 className="text-2xl font-bold">Admin User Setup</h2>
+              <p className="text-gray-600">Create the primary administrator account</p>
+            </div>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="adminFirstName">First Name *</Label>
+                <Input
+                  id="adminFirstName"
+                  required
+                  value={formData.adminFirstName}
+                  onChange={(e) => setFormData({ ...formData, adminFirstName: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label htmlFor="adminLastName">Last Name *</Label>
+                <Input
+                  id="adminLastName"
+                  required
+                  value={formData.adminLastName}
+                  onChange={(e) => setFormData({ ...formData, adminLastName: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="adminEmail">Email Address *</Label>
+                <Input
+                  id="adminEmail"
+                  type="email"
+                  required
+                  value={formData.adminEmail}
+                  onChange={(e) => setFormData({ ...formData, adminEmail: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label htmlFor="adminPhone">Phone Number</Label>
+                <Input
+                  id="adminPhone"
+                  type="tel"
+                  value={formData.adminPhone}
+                  onChange={(e) => setFormData({ ...formData, adminPhone: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="adminRole">Role/Title</Label>
+              <Input
+                id="adminRole"
+                placeholder="customer"
+                value={"customer"}
+                onChange={(e) => setFormData({ ...formData, adminRole: e.target.value })}
+              />
+            </div>
+          </div>
+        )
+
       default:
         return null
     }
@@ -596,14 +674,63 @@ export default function WorkshopRegistrationPage() {
     return workshop;
   }
 
+
+
   // On submit
   const handleSubmit = (e: React.FormEvent, workshopData: WorkshopData) => {
-    e.preventDefault()
-    insertWorkshop(workshopData)
-    localStorage.setItem("workshopRegistrationData", JSON.stringify(formData))
+    e.preventDefault();
 
+    // Insert the workshop, then add the admin info after successful insert
+    (async () => {
+      try {
+        const workshop = await insertWorkshop(workshopData);
+
+        // Prepare admin info using formData and the inserted workshop's id
+        const { data: userData, error: userError } = await supabase.auth.signUp({
+          email: formData.adminEmail,
+          password: formData.adminPhone, // temporary password = phone
+          options: {
+            data: {
+              name: formData.adminFirstName,
+              phone: formData.adminPhone,
+              role: formData.adminRole || "customer",
+            },
+          },
+        });
+
+        if (userError) {
+          alert("Failed to create admin user: " + userError.message);
+          return;
+        }
+
+        const userId = userData.user?.id;
+        if (!userId) {
+          alert("User ID not returned after creation");
+          return;
+        }
+
+        // ✅ Insert admin info into profiles table using the userId
+        const { error: adminError } = await supabase.from("profiles").insert({
+          id: userId, // required because profiles.id = auth.users.id
+          full_name: formData.adminFirstName,
+          email: formData.adminEmail,
+          phone_number: formData.adminPhone,
+          role: formData.adminRole || "customer",
+          workshop_id: workshop.id,
+        });
+
+        if (adminError) {
+          alert("Failed to insert admin info: " + adminError.message);
+        }
+
+        // Save form data to localStorage
+        localStorage.setItem("workshopRegistrationData", JSON.stringify(formData));
+      } catch (err) {
+        // Handle error (optional: show notification)
+        console.error("Error during registration:", err);
+      }
+    })();
   }
-
   // Form submit handler wrapper
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault()

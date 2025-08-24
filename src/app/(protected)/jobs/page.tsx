@@ -244,13 +244,32 @@ export default function FleetJobsPage() {
       })
       .eq('id', selectedJobForTech.id);
 
-    if (error) {
+    const { data: existingAssignments, error: fetchError } = await supabase
+      .from('assignements')
+      .select('driver_id')
+      .eq('job_id', selectedJobForTech.id)
+      .single();
+
+    if (fetchError) {
+      console.error('Error fetching existing assignment:', fetchError);
+    }
+    const { error: assignmentError } = await supabase
+      .from('assignements')
+      .upsert([
+        {
+          job_id: selectedJobForTech.id,
+          tech_id: technicianId,
+          driver_id: existingAssignments?.driver_id || null,
+        }
+      ])
+      .eq('job_id', selectedJobForTech.id)
+
+    if (error || assignmentError) {
       toast.error('Failed to assign technician.');
       console.error(error);
     } else {
       toast.success(`Assigned ${technicianName} to job.`);
       setIsTechDialogOpen(false);
-      // Optionally refresh jobs here if you keep jobs state elsewhere
     }
   };
 

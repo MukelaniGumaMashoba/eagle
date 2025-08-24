@@ -24,6 +24,9 @@ export default function Drivers() {
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
     const supabase = createClient()
+    const [searchTerm, setSearchTerm] = useState('');
+    const [licenseFilter, setLicenseFilter] = useState<'all' | 'sa' | 'foreign'>('all');
+
 
 
     const handleDeleteDriver = async (driverId: number) => {
@@ -95,6 +98,26 @@ export default function Drivers() {
             setIsLoading(false)
         }
     }
+
+    const filteredDrivers = drivers.filter((driver) => {
+        // Match search term (case-insensitive)
+        const matchesSearch = (
+            driver.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            driver.surname?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            driver.id_or_passport_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            driver.email_address?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            driver.cell_number?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+
+        // Match filter
+        const matchesFilter =
+            licenseFilter === 'all' ||
+            (licenseFilter === 'sa' && driver.sa_issued) ||
+            (licenseFilter === 'foreign' && !driver.sa_issued);
+
+        return matchesSearch && matchesFilter;
+    });
+
 
     const handleViewDriver = (driver: Driver) => {
         setSelectedDriver(driver)
@@ -474,13 +497,32 @@ export default function Drivers() {
                             <input
                                 type="text"
                                 placeholder="Search drivers..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
                                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
                         </div>
-                        <Button variant="outline" className="flex items-center gap-2">
-                            <Filter className="w-4 h-4" />
-                            Filter
-                        </Button>
+                        <div className="flex gap-2">
+                            <Button
+                                variant={licenseFilter === 'all' ? 'default' : 'outline'}
+                                onClick={() => setLicenseFilter('all')}
+                            >
+                                All
+                            </Button>
+                            <Button
+                                variant={licenseFilter === 'sa' ? 'default' : 'outline'}
+                                onClick={() => setLicenseFilter('sa')}
+                            >
+                                SA Issued
+                            </Button>
+                            <Button
+                                variant={licenseFilter === 'foreign' ? 'default' : 'outline'}
+                                onClick={() => setLicenseFilter('foreign')}
+                            >
+                                Foreign
+                            </Button>
+                        </div>
+
                     </div>
                 </CardContent>
             </Card>
@@ -520,7 +562,7 @@ export default function Drivers() {
                                         </TableCell>
                                     </TableRow>
                                 ) : (
-                                    drivers.map((driver) => (
+                                    filteredDrivers.map((driver) => (
                                         <TableRow key={driver.id} className="hover:bg-gray-50 transition-colors">
                                             <TableCell>
                                                 <div>

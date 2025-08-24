@@ -59,28 +59,6 @@ export default function QuotationDetailPage() {
     // Markup percentage
     const [markupPrice, setMarkupPrice] = useState<number>(0);
 
-
-    // // const fetchQuotation = async () => {
-    // const { data, error } = await supabase
-    //     .from("quotations")
-    //     .select("*")
-    //     .eq("id", String(id))
-    //     .single();
-
-    // if (error) {
-    //     toast.error("Failed to load quotation");
-    //     console.error(error);
-
-    // }
-    // else {
-    //     setParts(data.parts_needed || []);
-    //     setPartsCost(data.partscost || 0);
-    //     setMarkupPrice(data.markupPrice || 0);
-    //     setQuotation(data as Quotation);
-    // }
-    // setLoading(false);
-    // // };
-
     const fetchQuotation = async () => {
         const { data, error } = await supabase
             .from("quotations")
@@ -145,39 +123,6 @@ export default function QuotationDetailPage() {
         setModalOpen(false)
     };
 
-    // Save updated parts, parts cost, markup and recalc total cost
-    // const updateQuotation = async () => {
-    //     if (!quotation) return;
-    //     setUpdating(true);
-
-    //     const totalCost = calculateTotalCost();
-
-    //     const { error } = await supabase
-    //         .from("quotations")
-    //         .update({
-    //             parts_needed: parts.map((p) => JSON.stringify(p)), // Store as array of JSON strings
-    //             partscost: partsCost,
-    //             markupPrice,
-    //             laborCost,
-    //             totalcost: totalCost,
-    //         })
-    //         .eq("id", quotation.id);
-
-    //     if (error) {
-    //         toast.error("Failed to update quotation");
-    //         console.error(error);
-    //     } else {
-    //         toast.success("Quotation updated");
-    //         setQuotation({
-    //             ...quotation,
-    //             parts_needed: parts.map((p) => JSON.stringify(p)), // Store as array of JSON strings to match backend
-    //             partscost: partsCost,
-    //             markupPrice,
-    //             totalcost: totalCost,
-    //         });
-    //     }
-    //     setUpdating(false);
-    // };
     const updateQuotation = async () => {
         if (!quotation) return;
         setUpdating(true);

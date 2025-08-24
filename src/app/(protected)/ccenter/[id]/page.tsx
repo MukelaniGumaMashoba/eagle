@@ -211,7 +211,7 @@ export default function QuotationDetailPage() {
                                     <strong>Description:</strong> {quotation.issue}
                                 </div>
                                 <div>
-                                    <strong>Labour:</strong> {quotation.laborcost}
+                                    <strong>Labour:</strong>R {quotation.laborcost}
                                 </div>
                             </div>
 
