@@ -641,11 +641,13 @@ export default function WorkshopRegistrationPage() {
 
             <div>
               <Label htmlFor="adminRole">Role/Title</Label>
+              <Input readOnly placeholder="workshop" />
               <Input
                 id="adminRole"
                 placeholder="customer"
                 value={"customer"}
                 onChange={(e) => setFormData({ ...formData, adminRole: e.target.value })}
+                hidden
               />
             </div>
           </div>

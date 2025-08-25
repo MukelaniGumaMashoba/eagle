@@ -17,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { MapPin, Phone, Clock, AlertTriangle, Search, Car, User, UserCircle2 } from "lucide-react"
 import { toast } from "sonner"
 import { createClient } from "@/lib/supabase/client"
+import MapView from "@/components/map/display-map"
 
 interface Breakdown {
   id: string
@@ -48,6 +49,14 @@ interface Technician {
   specialties: string[]
   type: string
 }
+
+interface TechnicianLocation {
+  address: string
+  lat: number
+  lng: number
+  name?: string
+}
+
 
 export default function CallCenterPage() {
   const [breakdowns, setBreakdowns] = useState<Breakdown[]>([])
@@ -82,65 +91,6 @@ export default function CallCenterPage() {
     }
     getTechnicians()
     getBreakdowns()
-
-    // Mock data - in real app, fetch from API
-    // setBreakdowns([
-    //   {
-    //     id: "1",
-    //     order_no: "OR.128651312",
-    //     driverName: "John Smith",
-    //     driverPhone: "+27 82 123 4567",
-    //     vehicleReg: "ABC 123 GP",
-    //     location: "N1 Highway, Johannesburg",
-    //     coordinates: { lat: -26.2041, lng: 28.0473 },
-    //     description: "Engine overheating, steam coming from radiator",
-    //     status: "pending",
-    //     priority: "high",
-    //     createdAt: "2025-01-15 14:30",
-    //   },
-    //   {
-    //     id: "2",
-    //     order_no: "OR.128651313",
-    //     driverName: "Sarah Johnson",
-    //     driverPhone: "+27 83 987 6543",
-    //     vehicleReg: "XYZ 789 GP",
-    //     location: "M1 Highway, Sandton",
-    //     coordinates: { lat: -26.1076, lng: 28.0567 },
-    //     description: "Flat tire, no spare available",
-    //     status: "dispatched",
-    //     priority: "medium",
-    //     createdAt: "2025-01-15 15:45",
-    //     assignedTech: "Mike Wilson",
-    //     estimatedTime: "45 minutes",
-    //   },
-    // ])
-
-    // setTechnicians([
-    //   {
-    //     id: "1",
-    //     name: "Mike Wilson",
-    //     phone: "+27 84 111 2222",
-    //     location: "Sandton",
-    //     status: false,
-    //     specialties: ["Engine Repair", "Tire Service"],
-    //   },
-    //   {
-    //     id: "2",
-    //     name: "David Brown",
-    //     phone: "+27 85 333 4444",
-    //     location: "Johannesburg CBD",
-    //     status: true,
-    //     specialties: ["Electrical", "Battery Service"],
-    //   },
-    //   {
-    //     id: "3",
-    //     name: "Lisa Davis",
-    //     phone: "+27 86 555 6666",
-    //     location: "Randburg",
-    //     status: true,
-    //     specialties: ["Towing", "Recovery"],
-    //   },
-    // ])
   }, [])
 
   const getStatusColor = (status: string) => {
@@ -212,6 +162,50 @@ export default function CallCenterPage() {
       breakdown.driver_name ||
       breakdown.registration,
   )
+
+
+  const [coords, setCoords] = useState([]) // Array of all coordinates
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      const { data, error } = await supabase
+        .from('breakdowns')
+        .select('*, technicians:tech_id(location)')
+
+      if (error) {
+        console.error(error)
+        return
+      }
+
+      if (data && data.length > 0) {
+        const coordsArray = await Promise.all(
+          data.map(async (item) => {
+            const loc = item.technicians?.location
+            if (!loc) {
+              return null
+            }
+            const res = await fetch(
+              `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+                loc
+              )}.json?access_token=${process.env.NEXT_PUBLIC_MAPBOX_TOKEN}`
+            )
+            const geoData = await res.json()
+            if (geoData.features && geoData.features.length) {
+              return geoData.features[0].center // [lng, lat]
+            }
+            return null
+          })
+        )
+
+        // Filter out any nulls in case of failed geocoding
+        // @ts-expect-error
+        setCoords(coordsArray.filter((c): c is [number, number] => c !== null) as [number, number][])
+      }
+    }
+
+    fetchLocations()
+  }, [])
+
 
   return (
     <>
@@ -343,7 +337,7 @@ export default function CallCenterPage() {
                         Call Driver
                       </Button>
 
-                      {breakdown.status === "requested" && (
+                      {/* {breakdown.status === "requested" && (
                         <Dialog
                           open={isDispatchDialogOpen}
                           onOpenChange={setIsDispatchDialogOpen}
@@ -410,7 +404,7 @@ export default function CallCenterPage() {
                             </div>
                           </DialogContent>
                         </Dialog>
-                      )}
+                      )} */}
                     </div>
                   </CardContent>
                 </Card>
@@ -470,11 +464,8 @@ export default function CallCenterPage() {
               </CardHeader>
               <CardContent>
                 <div className="h-96 bg-gray-100 rounded-lg flex items-center justify-center">
-                  <div className="text-center">
-                    <MapPin className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-500">Interactive map would be integrated here</p>
-                    <p className="text-sm text-gray-400 mt-2">Showing {breakdowns.length} active breakdowns</p>
-                  </div>
+                  {/* Fix: Use a default center or compute from technicians if technicianCoordinates is undefined */}
+                  <MapView />
                 </div>
               </CardContent>
             </Card>
