@@ -125,7 +125,9 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
           {/* Navigation */}
           <nav className="flex-1 p-4 space-y-2">
             {navigation.map((item) => {
-              const isActive = pathname.startsWith(item.href)
+              // const isActive = pathname.startsWith(item.href)
+              const isActive = pathname === item.href
+
               return (
                 <Link
                   key={item.name}
@@ -149,7 +151,7 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
           {/* Footer */}
           <div className="p-4 border-t">
             <div className="mb-2 text-xs text-gray-500 text-center">
-              Role: {userRole ? `${userRole}` : "No User"}
+              Role: {userRole ? (userRole === 'customer' ? 'workshop' : userRole) : "No User"}
             </div>
             <Button
               onClick={handleLogout}

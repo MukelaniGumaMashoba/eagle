@@ -1031,10 +1031,13 @@ export default function TechniciansPage() {
                                     <CardTitle className="text-sm font-medium">Jobs Completed</CardTitle>
                                     <CheckCircle className="h-4 w-4 text-muted-foreground" />
                                 </CardHeader>
-                                {/* <CardContent>
-                    <div className="text-2xl font-bold">{technicians.reduce((sum, t) => sum + t.completedJobs, 0)}</div>
-                    <p className="text-xs text-muted-foreground">Total completed jobs</p>
-                  </CardContent> */}
+                                <CardContent>
+                                    <div className="text-2xl font-bold">
+                                        {/* {technicians.reduce((sum, t) => sum + t.phone, 0)} */}
+                                        4
+                                    </div>
+                                    <p className="text-xs text-muted-foreground">Total completed jobs</p>
+                                </CardContent>
                             </Card>
                             <Card>
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -1060,8 +1063,8 @@ export default function TechniciansPage() {
                                             <TableHead>Rank</TableHead>
                                             <TableHead>Name</TableHead>
                                             <TableHead>Rating</TableHead>
-                                            <TableHead>Completed Jobs</TableHead>
-                                            <TableHead>Response Time</TableHead>
+                                            {/* <TableHead>Completed Jobs</TableHead> */}
+                                            {/* <TableHead>Response Time</TableHead> */}
                                             <TableHead>Status</TableHead>
                                         </TableRow>
                                     </TableHeader>

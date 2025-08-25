@@ -1052,8 +1052,8 @@ export default function TechniciansPage() {
                       <TableHead>Rank</TableHead>
                       <TableHead>Name</TableHead>
                       <TableHead>Rating</TableHead>
-                      <TableHead>Completed Jobs</TableHead>
-                      <TableHead>Response Time</TableHead>
+                      {/* <TableHead>Completed Jobs</TableHead> */}
+                      {/* <TableHead>Response Time</TableHead> */}
                       <TableHead>Status</TableHead>
                     </TableRow>
                   </TableHeader>

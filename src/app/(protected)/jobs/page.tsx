@@ -436,7 +436,7 @@ export default function FleetJobsPage() {
                 <SelectItem value="pending">Pending</SelectItem>
                 <SelectItem value="assigned">Assigned</SelectItem>
                 <SelectItem value="inprogress">In Progress</SelectItem>
-                <SelectItem value="awaiting-approval">Awaiting Approval</SelectItem>
+                <SelectItem value="Breakdown Request">Breakdown Request</SelectItem>
                 <SelectItem value="approved">Approved</SelectItem>
                 <SelectItem value="completed">Completed</SelectItem>
                 <SelectItem value="cancelled">Cancelled</SelectItem>
