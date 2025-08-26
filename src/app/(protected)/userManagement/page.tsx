@@ -24,10 +24,11 @@ import { Settings, MapPin, Plus, Edit, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { signup } from "@/lib/action/auth"
 import { CreateUser } from "@/lib/action/createUser"
+import { createClient } from "@/lib/supabase/client"
 
 interface User {
     id: string
-    name: string
+    full_name: string
     email: string
     role: "call-center" | "fleet-manager" | "cost-center" | "customer" | "admin"
     status: "active" | "inactive"
@@ -59,38 +60,53 @@ export default function SettingsPage() {
     const [isAddUserOpen, setIsAddUserOpen] = useState(false)
     const [isEditRoleOpen, setIsEditRoleOpen] = useState(false)
     const [selectedRole, setSelectedRole] = useState<Role | null>(null)
+    const supabase = createClient();
 
     useEffect(() => {
+
+        const fetchUsers = async () => {
+            const {data, error} = await supabase.from('profiles')
+            .select('*')
+            .is('workshop_id', null)
+            if (error) {
+                console.error('Error fetching users:', error);
+                setUsers([]);
+            } else {
+                setUsers(data as []);
+            }
+        }
+
+        fetchUsers();
         // Mock data
-        setUsers([
-            {
-                id: "1",
-                name: "John Admin",
-                email: "admin@company.com",
-                role: "admin",
-                status: "active",
-                lastLogin: "2025-01-15 09:30",
-                permissions: ["all"],
-            },
-            {
-                id: "2",
-                name: "Sarah Manager",
-                email: "sarah@company.com",
-                role: "fleet-manager",
-                status: "active",
-                lastLogin: "2025-01-15 08:45",
-                permissions: ["manage_vehicles", "manage_drivers", "approve_jobs"],
-            },
-            {
-                id: "3",
-                name: "Mike Operator",
-                email: "mike@company.com",
-                role: "call-center",
-                status: "active",
-                lastLogin: "2025-01-15 10:15",
-                permissions: ["view_breakdowns", "dispatch_technicians"],
-            },
-        ])
+        // setUsers([
+        //     {
+        //         id: "1",
+        //         name: "John Admin",
+        //         email: "admin@company.com",
+        //         role: "admin",
+        //         status: "active",
+        //         lastLogin: "2025-01-15 09:30",
+        //         permissions: ["all"],
+        //     },
+        //     {
+        //         id: "2",
+        //         name: "Sarah Manager",
+        //         email: "sarah@company.com",
+        //         role: "fleet-manager",
+        //         status: "active",
+        //         lastLogin: "2025-01-15 08:45",
+        //         permissions: ["manage_vehicles", "manage_drivers", "approve_jobs"],
+        //     },
+        //     {
+        //         id: "3",
+        //         name: "Mike Operator",
+        //         email: "mike@company.com",
+        //         role: "call-center",
+        //         status: "active",
+        //         lastLogin: "2025-01-15 10:15",
+        //         permissions: ["view_breakdowns", "dispatch_technicians"],
+        //     },
+        // ])
 
         setRoles([
             {
@@ -183,7 +199,7 @@ export default function SettingsPage() {
 
         const newUser: User = {
             id: Date.now().toString(),
-            name: formData.get("name") as string,
+            full_name: formData.get("name") as string,
             email: formData.get("email") as string,
             role: formData.get("role") as any,
             status: "active",
@@ -194,7 +210,7 @@ export default function SettingsPage() {
 
         setUsers((prev) => [...prev, newUser])
         setIsAddUserOpen(false)
-        toast.success(`User ${newUser.name} has been added to the system.`)
+        toast.success(`User ${newUser.full_name} has been added to the system.`)
     }
 
     const handleUpdateSetting = (settingId: string, newValue: string) => {
@@ -313,22 +329,22 @@ export default function SettingsPage() {
                                             <TableHead>Name</TableHead>
                                             <TableHead>Email</TableHead>
                                             <TableHead>Role</TableHead>
-                                            <TableHead>Status</TableHead>
-                                            <TableHead>Last Login</TableHead>
+                                            {/* <TableHead>Status</TableHead> */}
+                                            {/* <TableHead>Last Login</TableHead> */}
                                             <TableHead>Actions</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
                                         {users.map((user) => (
                                             <TableRow key={user.id}>
-                                                <TableCell className="font-medium">{user.name}</TableCell>
+                                                <TableCell className="font-medium">{user.full_name}</TableCell>
                                                 <TableCell>{user.email}</TableCell>
                                                 <TableCell>
                                                     <Badge className={getRoleBadgeColor(user.role)}>
                                                         {user.role.replace("-", " ").toUpperCase()}
                                                     </Badge>
                                                 </TableCell>
-                                                <TableCell>
+                                                {/* <TableCell>
                                                     <div className="flex items-center gap-2">
                                                         <Switch
                                                             checked={user.status === "active"}
@@ -338,8 +354,8 @@ export default function SettingsPage() {
                                                             {user.status}
                                                         </span>
                                                     </div>
-                                                </TableCell>
-                                                <TableCell>{user.lastLogin}</TableCell>
+                                                </TableCell> */}
+                                                {/* <TableCell>{user.lastLogin}</TableCell> */}
                                                 <TableCell>
                                                     <div className="flex gap-2">
                                                         <Button variant="outline" size="sm">

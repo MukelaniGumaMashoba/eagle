@@ -456,7 +456,7 @@ export default function CallCenterPage() {
             </div>
           </TabsContent>
 
-          <TabsContent value="map" className="space-y-4">
+          <TabsContent value="map" className="m-3">
             <Card>
               <CardHeader>
                 <CardTitle>Breakdown Locations</CardTitle>
