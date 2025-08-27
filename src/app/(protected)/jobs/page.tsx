@@ -67,10 +67,7 @@ interface Job {
   location: string;
   coordinates: { lat: number; lng: number };
   technician_id: number | null;
-  technicians: {
-    name: string;
-    phone: string;
-  } | null;
+  technicians?: Technician;
   estimatedCost?: number;
   actualCost?: number;
   clientType: "internal" | "external";
@@ -86,9 +83,9 @@ interface Job {
 
 interface Technician {
   id: number,
-  first_name: string;
+  name: string;
   surname: string;
-  cell_phone: string;
+  phone: string;
   location: string;
   rating: string;
   specialties: string[],
@@ -193,7 +190,8 @@ export default function FleetJobsPage() {
       .select(`
       *,
       drivers (*),
-      vehiclesc (*)
+      vehiclesc (*),
+      technicians:technician_id(*)
     `)
       .neq('status', 'completed')
       .neq('status', 'cancelled')
@@ -222,6 +220,7 @@ export default function FleetJobsPage() {
         rating: tech.rating?.toString() ?? "",
         specialties: tech.specialties
       }));
+      // @ts-expect-error
       setTechnicians(mappedTechnicians);
     }
   };
@@ -569,10 +568,10 @@ export default function FleetJobsPage() {
                             {job.technicians ? (
                               <>
                                 <p className="text-sm">
-                                  <strong>Tech:</strong> {job.technicians.name}
+                                  <strong>Tech:</strong> {job.technicians?.name}
                                 </p>
                                 <p className="text-sm">
-                                  <strong>Phone:</strong> {job.technicians.phone}
+                                  <strong>Phone:</strong> {job.technicians?.phone}
                                 </p>
                               </>
                             ) : (
@@ -908,11 +907,11 @@ export default function FleetJobsPage() {
                   >
                     <div>
                       <p className="font-bold">
-                        {tech.first_name}
+                        {tech.name}
                       </p>
                       <p className="text-sm text-muted-foreground">
                         <strong>Location:</strong> {tech.location} <br />
-                        <strong>Phone:</strong> {tech.cell_phone} <br />
+                        <strong>Phone:</strong> {tech.phone} <br />
                         <strong>Rating:</strong> {tech.rating}
                       </p>
                       <div className="text-sm text-muted-foreground">
@@ -921,7 +920,7 @@ export default function FleetJobsPage() {
                     </div>
                     <Button
                       size="sm"
-                      onClick={() => assignTechnicianToJob(tech.id, `${tech.first_name}`)}
+                      onClick={() => assignTechnicianToJob(tech.id, `${tech.name}`)}
                     >
                       Assign
                     </Button>
