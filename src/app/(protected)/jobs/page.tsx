@@ -907,7 +907,7 @@ export default function FleetJobsPage() {
                   >
                     <div>
                       <p className="font-bold">
-                        {tech.name}
+                        <strong>Name: {tech.name} {tech.surname}</strong>
                       </p>
                       <p className="text-sm text-muted-foreground">
                         <strong>Location:</strong> {tech.location} <br />
