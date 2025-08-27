@@ -1432,6 +1432,7 @@ export type Database = {
           cost_centres: string | null
           created_at: string | null
           created_by: string | null
+          driver_id: number | null
           engine_number: string | null
           expected_boarding_date: string | null
           fuel_type: string | null
@@ -1465,6 +1466,7 @@ export type Database = {
           cost_centres?: string | null
           created_at?: string | null
           created_by?: string | null
+          driver_id?: number | null
           engine_number?: string | null
           expected_boarding_date?: string | null
           fuel_type?: string | null
@@ -1498,6 +1500,7 @@ export type Database = {
           cost_centres?: string | null
           created_at?: string | null
           created_by?: string | null
+          driver_id?: number | null
           engine_number?: string | null
           expected_boarding_date?: string | null
           fuel_type?: string | null
@@ -1531,6 +1534,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vehiclesc_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
             referencedColumns: ["id"]
           },
           {

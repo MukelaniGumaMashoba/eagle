@@ -48,6 +48,7 @@ const vehicleFormSchema = z.object({
   created_at: z.string().optional(),
   updated_at: z.string().optional(),
   tech_id: z.number().int().optional(),
+  driver_id: z.number().int().optional(),
 })
 
 type VehicleFormValues = z.infer<typeof vehicleFormSchema>
@@ -60,6 +61,15 @@ interface Technician {
   email: string
 }
 
+interface Driver {
+  id: number
+  first_name: string
+  surname: string
+  cell_number: string
+  email_address?: string | null
+}
+
+
 export default function Vehicles() {
   const [vehicles, setVehicles] = useState<VehicleFormValues[]>([])
   const [isAddingVehicle, setIsAddingVehicle] = useState(false)
@@ -69,7 +79,31 @@ export default function Vehicles() {
   const [search, setSearch] = useState('')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [selectedVehicleId, setSelectedVehicleId] = useState<number | null>(null);
+  const [drivers, setDrivers] = useState<Driver[]>([])
+  const [filteredDrivers, setFilteredDrivers] = useState<Driver[]>([])
+  const [searchTerm, setSearchTerm] = useState('')
 
+  useEffect(() => {
+    const getDrivers = async () => {
+      const { data, error } = await supabase
+        .from('drivers')
+        .select('*')
+      if (error) {
+        console.error('Error fetching drivers:', error)
+        setDrivers([])
+        return
+      }
+      setDrivers(data as [])
+    }
+    getDrivers()
+  }, [])
+
+  useEffect(() => {
+    const filtered = drivers.filter(driver =>
+      `${driver.first_name} ${driver.surname}`.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    setFilteredDrivers(filtered)
+  }, [searchTerm, drivers])
 
   const useWorkshopId = () => {
     const [workshopId, setWorkshopId] = useState<string | null>(null);
@@ -98,7 +132,6 @@ export default function Vehicles() {
   const workshopId = useWorkshopId();
   const [technicians, setTechnicians] = useState<Technician[]>([])
   const [filteredTechs, setFilteredTechs] = useState<Technician[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
@@ -265,17 +298,22 @@ export default function Vehicles() {
     return <Badge className={colors[priority as keyof typeof colors]}>{priority}</Badge>
   }
 
-  // async function handleAssign(regno: string, id: number) {
-  //   const { data: datav, error: errorv } = await supabase.from('vehiclesc').
-  //     update({
-  //       tech_id: id,
-  //     })
-  //     .eq('registration_number', regno)
-  //   if (!datav || errorv) {
-  //     console.log("Issue in assigning")
-  //   }
-  //   console.log("Success")
-  // }
+  async function handleAssignDriver(vehicleId: number, driverId: number) {
+    const { data, error } = await supabase
+      .from('vehiclesc')
+      .update({ driver_id: driverId })
+      .eq('id', vehicleId)
+      .select()
+
+    if (error) {
+      console.error("Issue in assigning driver:", error.message)
+      alert("Failed to assign driver: " + error.message)
+      return
+    }
+    console.log("Driver assigned successfully:", data)
+    // Optionally refresh or update state if needed
+  }
+
 
   async function handleAssign(vehicleId: number, techId: number) {
     const { data: datav, error: errorv } = await supabase
@@ -789,7 +827,7 @@ export default function Vehicles() {
                   <TableHead>Color</TableHead>
                   <TableHead>Type</TableHead>
                   <TableHead>Priority</TableHead>
-                  <TableHead>Assigned Technician</TableHead>
+                  <TableHead>Assigned Driver</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -806,9 +844,44 @@ export default function Vehicles() {
                     <TableCell>{vehicle.colour}</TableCell>
                     <TableCell className="capitalize">{vehicle.vehicle_type}</TableCell>
                     <TableCell>{getPriorityBadge(vehicle.vehicle_priority)}</TableCell>
-                    <TableCell>
+                    {/* <TableCell>
                       {technicians.find(tech => tech.id === vehicle.tech_id)?.name || " "}
+                    </TableCell> */}
+                    <TableCell className="flex items-center gap-2">
+                      {drivers.find(driver => driver.id === vehicle.driver_id) ? (
+                        <>
+                          <span>
+                            {drivers.find(driver => driver.id === vehicle.driver_id)?.first_name} {drivers.find(driver => driver.id === vehicle.driver_id)?.surname}
+                          </span>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="ml-2"
+                            onClick={async () => {
+                              // Clear driver assignment
+                              const { error } = await supabase
+                                .from('vehiclesc')
+                                .update({ driver_id: null })
+                                .eq('id', vehicle.id);
+
+                              if (error) {
+                                alert('Failed to unassign driver: ' + error.message);
+                                console.error(error);
+                              } else {
+                                toast.success('Driver unassigned successfully');
+                                router.refresh(); // refresh list to show update
+                              }
+                            }}
+                          >
+                            Unassign
+                          </Button>
+                        </>
+                      ) : (
+                        <span>Not Assigned</span>
+                      )}
                     </TableCell>
+
+
 
                     <TableCell>
                       <div className="flex flex-row gap-3">
@@ -828,19 +901,19 @@ export default function Vehicles() {
 
                           </DialogTrigger>
                           <DialogContent className="sm:max-w-md w-full">
-                            <DialogTitle>Assign Technician</DialogTitle>
+                            <DialogTitle>Assign Driver</DialogTitle>
                             <DialogDescription>
-                              Assign technician for vehicle with registration: <strong>{selectedVehicleReg}</strong>
+                              Assign driver for vehicle with registration: <strong>{selectedVehicleReg}</strong>
                             </DialogDescription>
                             {/* technician search & list */}
                             <Input
-                              placeholder="Search technician by name"
+                              placeholder="Search driver by name"
                               value={searchTerm}
                               onChange={(e) => setSearchTerm(e.target.value)}
                               className="mb-4"
                             />
                             <div className="max-h-60 overflow-auto space-y-2">
-                              {filteredTechs.length > 0 ? (
+                              {/* {filteredTechs.length > 0 ? (
                                 filteredTechs.map((tech, index) => (
                                   <button
                                     key={tech.id}
@@ -857,7 +930,26 @@ export default function Vehicles() {
                                 ))
                               ) : (
                                 <p className="text-center text-sm text-gray-500 py-4">No technicians found</p>
+                              )} */}
+                              {filteredDrivers.length > 0 ? (
+                                filteredDrivers.map((driver) => (
+                                  <button
+                                    key={driver.id}
+                                    onClick={() => {
+                                      if (selectedVehicleId) {
+                                        handleAssignDriver(selectedVehicleId, driver.id);
+                                        setDialogOpen(false);
+                                      }
+                                    }}
+                                    className="w-full text-left px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                                  >
+                                    {driver.first_name} {driver.surname}
+                                  </button>
+                                ))
+                              ) : (
+                                <p className="text-center text-sm text-gray-500 py-4">No drivers found</p>
                               )}
+
                             </div>
                           </DialogContent>
                         </Dialog>
